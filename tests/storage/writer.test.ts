@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { appendToArray, mergeObject, writeAtomic } from '@/storage/writer.js'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import * as os from 'os'
-import { appendToArray, mergeObject, writeAtomic } from '../../src/storage/writer'
 
 describe('writer', () => {
   let tmpDir: string

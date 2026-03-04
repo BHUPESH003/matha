@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { readJson, readJsonOrNull } from '../../src/storage/reader.js'
+import { readJson, readJsonOrNull } from '@/storage/reader.js'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import * as os from 'os'

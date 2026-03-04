@@ -1,0 +1,10 @@
+{
+  "id": "session-002",
+  "timestamp": "2026-03-04T00:00:00Z",
+  "component": "hippocampus",
+  "previous_assumption": "Context matching would only need to check component field",
+  "correction": "Matching against both component AND description fields needed for useful filtering",
+  "trigger": "phase-0-session-2",
+  "confidence": "confirmed",
+  "status": "active"
+}
