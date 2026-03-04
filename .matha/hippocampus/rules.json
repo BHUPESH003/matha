@@ -1,0 +1,8 @@
+{
+  "rules": [
+    "Decision history is append-only. Never modify existing entries.",
+    "Gate 07 (BUILD) never opens without Gate 05 (CONTRACT) output.",
+    "All .matha/ writes must be atomic.",
+    "matha never requires network access or an API key."
+  ]
+}

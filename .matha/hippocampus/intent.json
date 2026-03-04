@@ -1,0 +1,5 @@
+{
+  "why": "Give AI agents the project context that currently only lives in a senior engineer's head",
+  "core_problem": "Every AI session starts cold — no memory of decisions, rules, or failures",
+  "core_insight": "Capture knowledge as a by-product of the work itself, not from humans writing docs"
+}
