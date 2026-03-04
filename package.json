@@ -9,8 +9,8 @@
     "dev": "tsx src/index.ts"
   },
   "bin": {
-  "matha": "./dist/index.js"
-},
+    "matha": "./dist/index.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
