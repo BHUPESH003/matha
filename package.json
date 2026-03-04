@@ -1,0 +1,30 @@
+{
+  "name": "matha",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest",
+    "dev": "tsx src/index.ts"
+  },
+  "bin": {
+  "matha": "./dist/index.js"
+},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "commander": "^14.0.3",
+    "inquirer": "^13.3.0",
+    "simple-git": "^3.32.3",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "tsx": "^4.21.0",
+    "vitest": "^4.0.18"
+  }
+}
