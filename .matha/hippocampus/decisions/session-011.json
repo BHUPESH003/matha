@@ -1,0 +1,10 @@
+{
+    "id": "session-011",
+    "timestamp": "2026-03-07T00:00:00Z",
+    "component": "analysis/stability-classifier",
+    "previous_assumption": "Stability and confidence would be the same dimension — stable files are high confidence",
+    "correction": "Confidence is orthogonal to stability. A volatile file with 6 months of history is HIGH confidence volatile. Confidence reflects data quality, not risk level. Kept as separate dimension.",
+    "trigger": "phase-1-session-11",
+    "confidence": "confirmed",
+    "status": "active"
+}
