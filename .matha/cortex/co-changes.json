@@ -1,0 +1,62 @@
+[
+  {
+    "fileA": "package-lock.json",
+    "fileB": "package.json",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "src/commands/before.ts",
+    "fileB": "src/commands/init.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "src/mcp/tools.ts",
+    "fileB": "tests/mcp/tools.test.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "src/commands/init.ts",
+    "fileB": "tests/commands/init.test.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "tests/storage/reader.test.ts",
+    "fileB": "tests/storage/writer.test.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "tests/storage/reader.test.ts",
+    "fileB": "tsconfig.json",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "tests/storage/reader.test.ts",
+    "fileB": "vitest.config.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "tests/storage/writer.test.ts",
+    "fileB": "tsconfig.json",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "tests/storage/writer.test.ts",
+    "fileB": "vitest.config.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "tsconfig.json",
+    "fileB": "vitest.config.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "package-lock.json",
+    "fileB": "tsconfig.json",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "package.json",
+    "fileB": "tsconfig.json",
+    "coChangeCount": 2
+  }
+]

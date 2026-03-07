@@ -1,0 +1,10 @@
+{
+    "id": "session-014",
+    "timestamp": "2026-03-07T17:27:00Z",
+    "component": "analysis/stability-classifier + brain/cortex",
+    "previous_assumption": "Stability classifier would produce a meaningful distribution (frozen/stable/volatile/disposable) on any repo with commits",
+    "correction": "On a young, actively-developed repo like MATHA (all files touched in last 2 weeks), every file classifies as volatile. This is mathematically correct — changesPerMonth is high for all files. The classifier only produces a distribution on repos with history spanning months, not days. For Phase 2 consideration: a 'project_age' context flag could provide better UX messaging when the repo is too young for meaningful classification.",
+    "trigger": "phase-1-validation",
+    "confidence": "confirmed",
+    "status": "active"
+}

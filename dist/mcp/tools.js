@@ -3,6 +3,7 @@ import * as path from 'path';
 import { readJsonOrNull } from '../storage/reader.js';
 import { writeAtomic } from '../storage/writer.js';
 import { getRules, getDangerZones, getDecisions, recordDecision, recordDangerZone, } from '../brain/hippocampus.js';
+import { refreshFromGit, getStability, getSnapshot, } from '../brain/cortex.js';
 // Simple UUID-like ID generator
 function generateId() {
     return Math.random().toString(36).substring(2, 15) +
@@ -49,41 +50,72 @@ export async function mathaGetDecisions(mathaDir, component, limit) {
 }
 /**
  * matha_get_stability: Returns stability classification for requested files.
+ * Uses cortex.getStability — returns StabilityRecord | null per file.
+ * repoPath assumption: process.cwd() is the project root.
  */
 export async function mathaGetStability(mathaDir, files) {
     try {
-        const stabilityPath = path.join(mathaDir, 'cortex/stability.json');
-        const stabilityData = await readJsonOrNull(stabilityPath);
-        const stability = {};
-        // Default all files to 'unknown'
-        for (const file of files) {
-            stability[file] = 'unknown';
-        }
-        // If stability data exists, find matches
-        if (stabilityData && Array.isArray(stabilityData)) {
-            for (const file of files) {
-                const match = stabilityData.find((item) => item.path === file);
-                if (match) {
-                    stability[file] = match.stability || 'unknown';
-                }
-            }
-        }
+        const stability = await getStability(mathaDir, files);
         return JSON.stringify({ stability });
     }
     catch (err) {
-        // On any error, return unknown for all
+        // On any error, return null for all
         const stability = {};
         for (const file of files) {
-            stability[file] = 'unknown';
+            stability[file] = null;
         }
         return JSON.stringify({ stability });
     }
 }
 /**
  * matha_brief: Returns the most recent session brief, or intent + rules.
+ * If directory provided, filters decisions/danger zones/stability to that directory.
  */
-export async function mathaBrief(mathaDir, scope) {
+export async function mathaBrief(mathaDir, scope, directory) {
     try {
+        // DIRECTORY FILTER MODE
+        if (directory) {
+            const dirLower = directory.toLowerCase();
+            // Filter decisions by component matching directory
+            let decisions = [];
+            try {
+                const allDecisions = await getDecisions(mathaDir);
+                decisions = allDecisions.filter((d) => (d.component || '').toLowerCase().includes(dirLower));
+            }
+            catch {
+                decisions = [];
+            }
+            // Filter danger zones by component matching directory
+            let zones = [];
+            try {
+                zones = await getDangerZones(mathaDir, directory);
+            }
+            catch {
+                zones = [];
+            }
+            // Filter stability records where filepath starts with directory
+            let stabilityRecords = [];
+            try {
+                const snapshot = await getSnapshot(mathaDir);
+                if (snapshot && snapshot.stability) {
+                    stabilityRecords = snapshot.stability.filter((s) => s.filepath.toLowerCase().startsWith(dirLower));
+                }
+            }
+            catch {
+                stabilityRecords = [];
+            }
+            const hasData = decisions.length > 0 || zones.length > 0 || stabilityRecords.length > 0;
+            return JSON.stringify({
+                directory,
+                filtered: true,
+                hasData,
+                message: hasData ? null : `No MATHA data found for directory: ${directory}`,
+                decisions,
+                dangerZones: zones,
+                stability: stabilityRecords,
+            });
+        }
+        // STANDARD MODE — most recent session brief
         const sessionsDir = path.join(mathaDir, 'sessions');
         // Try to find the most recent .brief file
         let briefData = null;
@@ -213,6 +245,36 @@ export async function mathaRecordContract(mathaDir, component, assertions) {
         return JSON.stringify({
             success: false,
             error: `Failed to record contract: ${err.message}`,
+        });
+    }
+}
+// ──────────────────────────────────────────────────────────────────────
+// CORTEX TOOLS
+// ──────────────────────────────────────────────────────────────────────
+/**
+ * matha_refresh_cortex: Triggers a git analysis refresh of the cortex.
+ * repoPath assumption: process.cwd() is the project root.
+ * Never throws to MCP caller.
+ */
+export async function mathaRefreshCortex(mathaDir) {
+    try {
+        // Use mathaDir to derive repoPath (go up from .matha)
+        const repoPath = path.dirname(mathaDir);
+        const snapshot = await refreshFromGit(repoPath, mathaDir);
+        return JSON.stringify({
+            success: true,
+            commitCount: snapshot.commitCount,
+            fileCount: snapshot.fileCount,
+            summary: snapshot.summary,
+        });
+    }
+    catch (err) {
+        return JSON.stringify({
+            success: false,
+            error: `Failed to refresh cortex: ${err.message}`,
+            commitCount: 0,
+            fileCount: 0,
+            summary: null,
         });
     }
 }

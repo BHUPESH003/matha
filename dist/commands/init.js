@@ -3,6 +3,8 @@ import * as path from 'node:path';
 import { writeAtomic } from '../storage/writer.js';
 import { readJsonOrNull } from '../storage/reader.js';
 import { getIntent, getRules } from '../brain/hippocampus.js';
+import { CURRENT_SCHEMA_VERSION } from '../utils/schema-version.js';
+import { refreshFromGit } from '../brain/cortex.js';
 const REQUIRED_DIRS = [
     '.matha/hippocampus',
     '.matha/hippocampus/decisions',
@@ -19,6 +21,7 @@ export async function runInit(projectRoot = process.cwd(), deps) {
     const ask = deps?.ask ?? defaultAsk;
     const log = deps?.log ?? console.log;
     const now = deps?.now ?? (() => new Date());
+    const seed = deps?.seed ?? null;
     const created = [];
     const skipped = [];
     for (const relDir of REQUIRED_DIRS) {
@@ -27,11 +30,47 @@ export async function runInit(projectRoot = process.cwd(), deps) {
         await fs.mkdir(absDir, { recursive: true });
         (alreadyExists ? skipped : created).push(relDir);
     }
-    const why = await safePrompt(ask, 'What problem does this project solve? (The WHY, not the features)');
-    const rules = await collectLines(ask, 'What are the non-negotiable business rules? (Enter one per line, empty line to finish)');
-    const boundaries = await collectLines(ask, 'What does this project explicitly NOT do? (Enter one per line, empty line to finish)');
-    const ownerRaw = await safePrompt(ask, 'Who owns this project? (name or team, press enter to skip)');
-    const owner = ownerRaw.trim() ? ownerRaw.trim() : null;
+    // If seed provided, print what was parsed
+    if (seed) {
+        log('Parsed from file:');
+        log(`  WHY:        ${seed.why ?? 'not found'}`);
+        log(`  RULES:      ${seed.rules.length} found`);
+        log(`  BOUNDARIES: ${seed.boundaries.length} found`);
+        log(`  OWNER:      ${seed.owner ?? 'not found'}`);
+        log('');
+    }
+    // WHY prompt — pre-fill with seed.why if available
+    const whyPrompt = seed?.why
+        ? `What problem does this project solve? (The WHY, not the features)\n  [default: ${seed.why}]`
+        : 'What problem does this project solve? (The WHY, not the features)';
+    const whyRaw = await safePrompt(ask, whyPrompt);
+    const why = whyRaw.trim() || seed?.why || '';
+    // RULES — start with seed rules, then ask for more
+    let rules = [];
+    if (seed && seed.rules.length > 0) {
+        rules = [...seed.rules];
+        log(`Pre-filled ${seed.rules.length} rules from file.`);
+    }
+    const moreRules = await collectLines(ask, seed && seed.rules.length > 0
+        ? 'Add more business rules? (Enter one per line, empty line to finish)'
+        : 'What are the non-negotiable business rules? (Enter one per line, empty line to finish)');
+    rules = [...rules, ...moreRules];
+    // BOUNDARIES — start with seed boundaries, then ask for more
+    let boundaries = [];
+    if (seed && seed.boundaries.length > 0) {
+        boundaries = [...seed.boundaries];
+        log(`Pre-filled ${seed.boundaries.length} boundaries from file.`);
+    }
+    const moreBoundaries = await collectLines(ask, seed && seed.boundaries.length > 0
+        ? 'Add more boundaries? (Enter one per line, empty line to finish)'
+        : 'What does this project explicitly NOT do? (Enter one per line, empty line to finish)');
+    boundaries = [...boundaries, ...moreBoundaries];
+    // OWNER prompt — pre-fill with seed.owner if available
+    const ownerPrompt = seed?.owner
+        ? `Who owns this project? (name or team, press enter to skip)\n  [default: ${seed.owner}]`
+        : 'Who owns this project? (name or team, press enter to skip)';
+    const ownerRaw = await safePrompt(ask, ownerPrompt);
+    const owner = ownerRaw.trim() ? ownerRaw.trim() : (seed?.owner ?? null);
     const mathaDir = path.join(projectRoot, '.matha');
     // Hippocampus writes (idempotent: write only if file missing)
     const intentPath = path.join(mathaDir, 'hippocampus', 'intent.json');
@@ -62,6 +101,7 @@ export async function runInit(projectRoot = process.cwd(), deps) {
     const configPath = path.join(mathaDir, 'config.json');
     await writeIfMissing(configPath, {
         version: '0.1.0',
+        schema_version: CURRENT_SCHEMA_VERSION,
         initialized_at: now().toISOString(),
         project_root: projectRoot,
         brain_dir: '.matha',
@@ -69,6 +109,22 @@ export async function runInit(projectRoot = process.cwd(), deps) {
     log('matha init complete');
     log(`created: ${created.length}`);
     log(`skipped: ${skipped.length}`);
+    // Cortex refresh — analyse git history if available
+    try {
+        log('\nAnalysing git history...');
+        const snapshot = await refreshFromGit(projectRoot, mathaDir);
+        if (snapshot.commitCount > 0) {
+            const s = snapshot.summary;
+            log(`Cortex built — ${snapshot.fileCount} files classified ` +
+                `(${s.frozen} frozen, ${s.stable} stable, ${s.volatile} volatile, ${s.disposable} disposable)`);
+        }
+        else {
+            log('No git history found — cortex will build as commits accumulate');
+        }
+    }
+    catch {
+        log('No git history found — cortex will build as commits accumulate');
+    }
     return {
         projectRoot,
         brainDir: '.matha',

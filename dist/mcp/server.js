@@ -4,6 +4,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { mathaGetRules, mathaGetDangerZones, mathaGetDecisions, mathaGetStability, mathaBrief, mathaRecordDecision, mathaRecordDanger, mathaRecordContract, } from './tools.js';
+import { checkSchemaVersion, getSchemaMessage } from '../utils/schema-version.js';
 /**
  * MATHA MCP Server
  *
@@ -277,6 +278,14 @@ async function initialize() {
     }
     catch {
         // Ignore write errors - server can still run in degraded mode
+    }
+    // SCHEMA VERSION CHECK
+    const schemaResult = await checkSchemaVersion(mathaDir);
+    const schemaMsg = getSchemaMessage(schemaResult);
+    if (schemaMsg)
+        console.error(schemaMsg);
+    if (schemaResult.status === 'newer') {
+        process.exit(1);
     }
 }
 /**

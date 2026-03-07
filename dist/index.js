@@ -3,6 +3,7 @@ import { Command } from 'commander';
 import { runInit } from './commands/init.js';
 import { runBefore } from './commands/before.js';
 import { runAfter } from './commands/after.js';
+import { parseMarkdownFile } from './utils/markdown-parser.js';
 const program = new Command();
 program
     .name('matha')
@@ -15,10 +16,21 @@ program
     .command('init')
     .description('Initialize MATHA in a project (one-time setup)')
     .option('--project <path>', 'Project root path (default: current directory)')
+    .option('--from <filepath>', 'Parse a markdown/text file to pre-fill init prompts')
     .action(async (options) => {
     try {
         const projectRoot = options.project || process.cwd();
-        await runInit(projectRoot, {});
+        let seed = undefined;
+        if (options.from) {
+            try {
+                seed = await parseMarkdownFile(options.from);
+            }
+            catch (err) {
+                console.error(err.message);
+                process.exit(1);
+            }
+        }
+        await runInit(projectRoot, { seed });
     }
     catch (err) {
         console.error('Init failed:', err.message);

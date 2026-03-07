@@ -1,8 +1,9 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { readJsonOrNull } from '../storage/reader.js';
 import { writeAtomic } from '../storage/writer.js';
 import { getRules, getDangerZones } from '../brain/hippocampus.js';
+import { checkSchemaVersion, getSchemaMessage } from '../utils/schema-version.js';
+import { getSnapshot, getStability } from '../brain/cortex.js';
 // Operation type mapping from menu choice to operation_type
 const operationTypeMap = {
     '1': 'rename',
@@ -53,6 +54,14 @@ async function runBefore(projectRoot = process.cwd(), deps) {
         log(message);
         return { exitCode: 1, message };
     }
+    // SCHEMA VERSION CHECK
+    const schemaResult = await checkSchemaVersion(mathaDir);
+    const schemaMsg = getSchemaMessage(schemaResult);
+    if (schemaMsg)
+        log(schemaMsg);
+    if (schemaResult.status === 'newer') {
+        return { exitCode: 1, message: schemaMsg };
+    }
     // Generate session ID
     const sessionId = generateSessionId(now());
     const timestamp = now().toISOString();
@@ -61,17 +70,42 @@ async function runBefore(projectRoot = process.cwd(), deps) {
     // GATE 02 — BOUND: Which components or files will this affect?
     const scopeInput = await ask('Which components or files will this affect? (comma separated)');
     const scope = scopeInput;
-    // GATE 03 — ORIENT: Read cortex files (no prompt)
-    let shape = null;
-    let stability = null;
+    // GATE 03 — ORIENT: Read cortex (via cortex module)
+    let cortexSnapshot = null;
+    let frozenFiles = [];
     try {
-        shape = await readJsonOrNull(path.join(mathaDir, 'cortex/shape.json'));
-        stability = await readJsonOrNull(path.join(mathaDir, 'cortex/stability.json'));
+        cortexSnapshot = await getSnapshot(mathaDir);
     }
     catch {
-        // Gracefully handle missing cortex files
-        shape = null;
-        stability = null;
+        cortexSnapshot = null;
+    }
+    if (cortexSnapshot && cortexSnapshot.stability && cortexSnapshot.stability.length > 0) {
+        const s = cortexSnapshot.summary;
+        log(`\nCORTEX (${cortexSnapshot.fileCount} files mapped):`);
+        log(`  frozen: ${s.frozen}  stable: ${s.stable}  volatile: ${s.volatile}  disposable: ${s.disposable}`);
+        // If scope was provided, check for frozen files in scope
+        if (scope) {
+            const scopeFiles = scope.split(',').map((f) => f.trim().replace(/\\/g, '/'));
+            try {
+                const stabilityMap = await getStability(mathaDir, scopeFiles);
+                for (const [fp, record] of Object.entries(stabilityMap)) {
+                    if (record && record.stability === 'frozen') {
+                        log(`  ⚠ ${fp} — FROZEN (${record.reason})`);
+                        frozenFiles.push(fp);
+                    }
+                    else if (record && record.stability === 'stable') {
+                        log(`  · ${fp} — STABLE`);
+                    }
+                }
+            }
+            catch {
+                // Gracefully handle stability lookup errors
+            }
+        }
+        log('');
+    }
+    else {
+        log('\n  Cortex empty — run matha init or commit some code\n');
     }
     // GATE 04 — SURFACE DANGER: Get danger zones and display
     let dangerZones = [];
@@ -138,6 +172,8 @@ async function runBefore(projectRoot = process.cwd(), deps) {
         tokenBudget,
         gatesCompleted: [1, 2, 3, 4, 5, 6],
         readyToBuild,
+        cortexSummary: cortexSnapshot?.summary ?? null,
+        frozenFiles,
     };
     // Write session brief to .matha/sessions/[sessionId].brief
     const briefPath = path.join(mathaDir, `sessions/${sessionId}.brief`);
