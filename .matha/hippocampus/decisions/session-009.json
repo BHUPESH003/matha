@@ -1,0 +1,10 @@
+{
+    "id": "session-009",
+    "timestamp": "2026-03-07T00:00:00Z",
+    "component": "utils/markdown-parser",
+    "previous_assumption": "Markdown parsing would need to handle tables, complex structures",
+    "correction": "Bullet points under case-insensitive heading substring match is sufficient for all real BRD formats. Simplicity wins over completeness here.",
+    "trigger": "pre-phase-1-task-2",
+    "confidence": "confirmed",
+    "status": "active"
+}

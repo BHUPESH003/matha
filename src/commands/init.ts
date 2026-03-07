@@ -4,6 +4,7 @@ import { writeAtomic } from '@/storage/writer.js'
 import { readJsonOrNull } from '@/storage/reader.js'
 import { getIntent, getRules } from '@/brain/hippocampus.js'
 import { CURRENT_SCHEMA_VERSION } from '@/utils/schema-version.js'
+import type { ParsedBrainSeed } from '@/utils/markdown-parser.js'
 
 export interface InitSummary {
   projectRoot: string
@@ -18,6 +19,7 @@ interface InitDeps {
   ask: PromptFn
   log: (message: string) => void
   now: () => Date
+  seed: ParsedBrainSeed
 }
 
 const REQUIRED_DIRS = [
@@ -41,6 +43,7 @@ export async function runInit(
   const ask = deps?.ask ?? defaultAsk
   const log = deps?.log ?? console.log
   const now = deps?.now ?? (() => new Date())
+  const seed = deps?.seed ?? null
 
   const created: string[] = []
   const skipped: string[] = []
@@ -52,23 +55,57 @@ export async function runInit(
     ;(alreadyExists ? skipped : created).push(relDir)
   }
 
-  const why = await safePrompt(
+  // If seed provided, print what was parsed
+  if (seed) {
+    log('Parsed from file:')
+    log(`  WHY:        ${seed.why ?? 'not found'}`)
+    log(`  RULES:      ${seed.rules.length} found`)
+    log(`  BOUNDARIES: ${seed.boundaries.length} found`)
+    log(`  OWNER:      ${seed.owner ?? 'not found'}`)
+    log('')
+  }
+
+  // WHY prompt — pre-fill with seed.why if available
+  const whyPrompt = seed?.why
+    ? `What problem does this project solve? (The WHY, not the features)\n  [default: ${seed.why}]`
+    : 'What problem does this project solve? (The WHY, not the features)'
+  const whyRaw = await safePrompt(ask, whyPrompt)
+  const why = whyRaw.trim() || seed?.why || ''
+
+  // RULES — start with seed rules, then ask for more
+  let rules: string[] = []
+  if (seed && seed.rules.length > 0) {
+    rules = [...seed.rules]
+    log(`Pre-filled ${seed.rules.length} rules from file.`)
+  }
+  const moreRules = await collectLines(
     ask,
-    'What problem does this project solve? (The WHY, not the features)',
+    seed && seed.rules.length > 0
+      ? 'Add more business rules? (Enter one per line, empty line to finish)'
+      : 'What are the non-negotiable business rules? (Enter one per line, empty line to finish)',
   )
-  const rules = await collectLines(
+  rules = [...rules, ...moreRules]
+
+  // BOUNDARIES — start with seed boundaries, then ask for more
+  let boundaries: string[] = []
+  if (seed && seed.boundaries.length > 0) {
+    boundaries = [...seed.boundaries]
+    log(`Pre-filled ${seed.boundaries.length} boundaries from file.`)
+  }
+  const moreBoundaries = await collectLines(
     ask,
-    'What are the non-negotiable business rules? (Enter one per line, empty line to finish)',
+    seed && seed.boundaries.length > 0
+      ? 'Add more boundaries? (Enter one per line, empty line to finish)'
+      : 'What does this project explicitly NOT do? (Enter one per line, empty line to finish)',
   )
-  const boundaries = await collectLines(
-    ask,
-    'What does this project explicitly NOT do? (Enter one per line, empty line to finish)',
-  )
-  const ownerRaw = await safePrompt(
-    ask,
-    'Who owns this project? (name or team, press enter to skip)',
-  )
-  const owner = ownerRaw.trim() ? ownerRaw.trim() : null
+  boundaries = [...boundaries, ...moreBoundaries]
+
+  // OWNER prompt — pre-fill with seed.owner if available
+  const ownerPrompt = seed?.owner
+    ? `Who owns this project? (name or team, press enter to skip)\n  [default: ${seed.owner}]`
+    : 'Who owns this project? (name or team, press enter to skip)'
+  const ownerRaw = await safePrompt(ask, ownerPrompt)
+  const owner = ownerRaw.trim() ? ownerRaw.trim() : (seed?.owner ?? null)
 
   const mathaDir = path.join(projectRoot, '.matha')
 

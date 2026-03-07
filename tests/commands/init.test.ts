@@ -184,3 +184,155 @@ describe('init command', () => {
     expect(shape.directories).not.toContain('.git')
   })
 })
+
+describe('init command --from (seed)', () => {
+  let tmpDir: string
+
+  beforeEach(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'matha-init-from-test-'))
+  })
+
+  afterEach(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true })
+  })
+
+  function makeAsk(answers: string[]) {
+    let idx = 0
+    return async () => answers[idx++] ?? ''
+  }
+
+  it('seed pre-fills WHY, rules, boundaries, and owner', async () => {
+    const logs: string[] = []
+    const seed = {
+      why: 'Parsed WHY from file',
+      rules: ['Seed Rule 1', 'Seed Rule 2'],
+      boundaries: ['Seed Boundary 1'],
+      owner: 'Seed Owner',
+    }
+
+    // All prompts answered with empty → accept seed defaults
+    const summary = await runInit(tmpDir, {
+      ask: makeAsk(['', '', '', '']),
+      log: (msg: string) => logs.push(msg),
+      seed,
+    })
+
+    expect(summary.created.length).toBeGreaterThan(0)
+
+    // Check parsed summary was logged
+    const allLogs = logs.join('\n')
+    expect(allLogs).toContain('Parsed from file')
+    expect(allLogs).toContain('2 found')  // rules
+    expect(allLogs).toContain('1 found')  // boundaries
+
+    // Check files have seed values
+    const intent = JSON.parse(
+      await fs.readFile(path.join(tmpDir, '.matha/hippocampus/intent.json'), 'utf-8'),
+    )
+    expect(intent.why).toBe('Parsed WHY from file')
+
+    const rules = JSON.parse(
+      await fs.readFile(path.join(tmpDir, '.matha/hippocampus/rules.json'), 'utf-8'),
+    )
+    expect(rules.rules).toContain('Seed Rule 1')
+    expect(rules.rules).toContain('Seed Rule 2')
+
+    const boundaries = JSON.parse(
+      await fs.readFile(path.join(tmpDir, '.matha/cortex/boundaries.json'), 'utf-8'),
+    )
+    expect(boundaries.boundaries).toContain('Seed Boundary 1')
+
+    const ownership = JSON.parse(
+      await fs.readFile(path.join(tmpDir, '.matha/cortex/ownership.json'), 'utf-8'),
+    )
+    expect(ownership.owner).toBe('Seed Owner')
+  })
+
+  it('user can override seed values', async () => {
+    const seed = {
+      why: 'Seed WHY',
+      rules: ['Seed Rule'],
+      boundaries: ['Seed Boundary'],
+      owner: 'Seed Owner',
+    }
+
+    const summary = await runInit(tmpDir, {
+      ask: makeAsk([
+        'User Overridden WHY',  // override WHY
+        'Extra Rule',           // add one more rule
+        '',                     // done with rules
+        '',                     // done with boundaries (accept seed)
+        'New Owner',            // override owner
+      ]),
+      log: () => {},
+      seed,
+    })
+
+    const intent = JSON.parse(
+      await fs.readFile(path.join(tmpDir, '.matha/hippocampus/intent.json'), 'utf-8'),
+    )
+    expect(intent.why).toBe('User Overridden WHY')
+
+    const rules = JSON.parse(
+      await fs.readFile(path.join(tmpDir, '.matha/hippocampus/rules.json'), 'utf-8'),
+    )
+    expect(rules.rules).toContain('Seed Rule')
+    expect(rules.rules).toContain('Extra Rule')
+    expect(rules.rules).toHaveLength(2)
+
+    const ownership = JSON.parse(
+      await fs.readFile(path.join(tmpDir, '.matha/cortex/ownership.json'), 'utf-8'),
+    )
+    expect(ownership.owner).toBe('New Owner')
+  })
+
+  it('empty seed behaves like no seed', async () => {
+    const seed = {
+      why: null,
+      rules: [],
+      boundaries: [],
+      owner: null,
+    }
+
+    const summary = await runInit(tmpDir, {
+      ask: makeAsk(['Manual WHY', 'Manual Rule', '', 'Manual Boundary', '', 'Manual Owner']),
+      log: () => {},
+      seed,
+    })
+
+    const intent = JSON.parse(
+      await fs.readFile(path.join(tmpDir, '.matha/hippocampus/intent.json'), 'utf-8'),
+    )
+    expect(intent.why).toBe('Manual WHY')
+
+    const rules = JSON.parse(
+      await fs.readFile(path.join(tmpDir, '.matha/hippocampus/rules.json'), 'utf-8'),
+    )
+    expect(rules.rules).toContain('Manual Rule')
+
+    const ownership = JSON.parse(
+      await fs.readFile(path.join(tmpDir, '.matha/cortex/ownership.json'), 'utf-8'),
+    )
+    expect(ownership.owner).toBe('Manual Owner')
+  })
+
+  it('seed with null owner and empty prompt → owner is null', async () => {
+    const seed = {
+      why: 'Some why',
+      rules: [],
+      boundaries: [],
+      owner: null,
+    }
+
+    await runInit(tmpDir, {
+      ask: makeAsk(['', '', '', '']),
+      log: () => {},
+      seed,
+    })
+
+    const ownership = JSON.parse(
+      await fs.readFile(path.join(tmpDir, '.matha/cortex/ownership.json'), 'utf-8'),
+    )
+    expect(ownership.owner).toBeNull()
+  })
+})
