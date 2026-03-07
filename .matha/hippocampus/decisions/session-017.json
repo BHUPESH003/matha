@@ -1,0 +1,10 @@
+{
+    "id": "session-017",
+    "timestamp": "2026-03-07T00:00:00Z",
+    "component": "commands/after",
+    "previous_assumption": "Contract validation would be a single pass/fail question per session",
+    "correction": "Per-assertion validation with individual y/n/skip produces richer violation data. Each failed assertion gets its own log entry — contract-matcher can then surface 'violated 3 times' with specifics, not just 'violated'. Granularity makes future warnings actionable.",
+    "trigger": "phase-2-session-17",
+    "confidence": "confirmed",
+    "status": "active"
+}
