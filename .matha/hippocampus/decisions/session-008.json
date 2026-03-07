@@ -1,0 +1,10 @@
+{
+    "id": "session-008",
+    "timestamp": "2026-03-07T00:00:00Z",
+    "component": "utils/schema-version",
+    "previous_assumption": "Schema migration would need to be built alongside versioning",
+    "correction": "Versioning and migration are separate concerns. Version check ships now, migration command deferred to v0.2.0. Warn-but-proceed for legacy is the right default.",
+    "trigger": "pre-phase-1-task-1",
+    "confidence": "confirmed",
+    "status": "active"
+}

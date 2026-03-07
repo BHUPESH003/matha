@@ -3,6 +3,7 @@ import * as path from 'path';
 import { readJsonOrNull } from '@/storage/reader.js';
 import { writeAtomic, appendToArray } from '@/storage/writer.js';
 import { recordDecision, recordDangerZone } from '@/brain/hippocampus.js';
+import { checkSchemaVersion, getSchemaMessage } from '@/utils/schema-version.js';
 
 interface AfterDeps {
   ask?: (question: string) => Promise<string>;
@@ -84,6 +85,14 @@ async function runAfter(projectRoot: string = process.cwd(), deps?: AfterDeps): 
     const message = 'MATHA is not initialised. Run `matha init` first.';
     log(message);
     return { exitCode: 1, message };
+  }
+
+  // SCHEMA VERSION CHECK
+  const schemaResult = await checkSchemaVersion(mathaDir);
+  const schemaMsg = getSchemaMessage(schemaResult);
+  if (schemaMsg) log(schemaMsg);
+  if (schemaResult.status === 'newer') {
+    return { exitCode: 1, message: schemaMsg! };
   }
 
   const timestamp = now().toISOString();

@@ -4,6 +4,7 @@ import { readJsonOrNull, readJson } from '@/storage/reader.js';
 import { writeAtomic } from '@/storage/writer.js';
 import { getIntent, getRules, getDangerZones } from '@/brain/hippocampus.js';
 import type { SessionBrief, SessionContext } from '@/brain/frontal-lobe.js';
+import { checkSchemaVersion, getSchemaMessage } from '@/utils/schema-version.js';
 
 interface BeforeDeps {
   ask?: (question: string) => Promise<string>;
@@ -74,6 +75,14 @@ async function runBefore(projectRoot: string = process.cwd(), deps?: BeforeDeps)
     const message = 'MATHA is not initialised. Run `matha init` first.';
     log(message);
     return { exitCode: 1, message };
+  }
+
+  // SCHEMA VERSION CHECK
+  const schemaResult = await checkSchemaVersion(mathaDir);
+  const schemaMsg = getSchemaMessage(schemaResult);
+  if (schemaMsg) log(schemaMsg);
+  if (schemaResult.status === 'newer') {
+    return { exitCode: 1, message: schemaMsg! };
   }
 
   // Generate session ID

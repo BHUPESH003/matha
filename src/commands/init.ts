@@ -3,6 +3,7 @@ import * as path from 'node:path'
 import { writeAtomic } from '@/storage/writer.js'
 import { readJsonOrNull } from '@/storage/reader.js'
 import { getIntent, getRules } from '@/brain/hippocampus.js'
+import { CURRENT_SCHEMA_VERSION } from '@/utils/schema-version.js'
 
 export interface InitSummary {
   projectRoot: string
@@ -105,6 +106,7 @@ export async function runInit(
     configPath,
     {
       version: '0.1.0',
+      schema_version: CURRENT_SCHEMA_VERSION,
       initialized_at: now().toISOString(),
       project_root: projectRoot,
       brain_dir: '.matha',
