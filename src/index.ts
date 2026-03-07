@@ -4,6 +4,7 @@ import { Command } from 'commander';
 import { runInit } from './commands/init.js';
 import { runBefore } from './commands/before.js';
 import { runAfter } from './commands/after.js';
+import { runMigrate } from './commands/migrate.js';
 import { parseMarkdownFile } from './utils/markdown-parser.js';
 import { spawn } from 'child_process';
 import * as path from 'path';
@@ -81,6 +82,18 @@ program
       console.error('After failed:', err.message);
       process.exit(1);
     }
+  });
+
+// ──────────────────────────────────────────────────────────────────────
+// MIGRATE COMMAND
+// ──────────────────────────────────────────────────────────────────────
+
+program
+  .command('migrate')
+  .description('Migrate .matha/ to current schema version')
+  .action(async () => {
+    const result = await runMigrate();
+    process.exit(result.exitCode);
   });
 
 // ──────────────────────────────────────────────────────────────────────
