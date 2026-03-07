@@ -7,5 +7,14 @@
     "token_delta": -4000,
     "files_changed": 2,
     "model_tier_used": "capable"
+  },
+  {
+    "session_id": "20260307-191146-88c4",
+    "timestamp": "2026-03-07T13:43:33.098Z",
+    "operation_type": "business_logic",
+    "contract_result": "violated",
+    "token_delta": null,
+    "files_changed": 1,
+    "model_tier_used": "capable"
   }
 ]

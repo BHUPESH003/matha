@@ -1,0 +1,43 @@
+{
+  "sessionId": "20260307-191146-88c4",
+  "scope": "src/brain/dopamine.ts, src/mcp/tools.ts",
+  "operationType": "business_logic",
+  "timestamp": "2026-03-07T13:41:46.483Z",
+  "operation_description": "Adding dopamine loop routing logic",
+  "why": "",
+  "business_rules": [
+    "Decision history is append-only. Never modify existing entries.",
+    "Gate 07 (BUILD) never opens without Gate 05 (CONTRACT) output.",
+    "All .matha/ writes must be atomic.",
+    "matha never requires network access or an API key."
+  ],
+  "matchResults": [],
+  "hasCritical": false,
+  "contract": [
+    "Must log all dopamine routing events.",
+    "Do not skip dopamine updates for cached tools."
+  ],
+  "assertions": [
+    "Must log all dopamine routing events.",
+    "Do not skip dopamine updates for cached tools."
+  ],
+  "modelTier": "capable",
+  "tokenBudget": 8000,
+  "gatesCompleted": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "readyToBuild": true,
+  "cortexSummary": {
+    "frozen": 0,
+    "stable": 0,
+    "volatile": 38,
+    "disposable": 0,
+    "declared": 0
+  },
+  "frozenFiles": []
+}

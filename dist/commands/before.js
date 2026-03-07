@@ -1,9 +1,10 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { writeAtomic } from '../storage/writer.js';
-import { getRules, getDangerZones } from '../brain/hippocampus.js';
+import { getRules } from '../brain/hippocampus.js';
 import { checkSchemaVersion, getSchemaMessage } from '../utils/schema-version.js';
 import { getSnapshot, getStability } from '../brain/cortex.js';
+import { matchAll } from '../analysis/contract-matcher.js';
 // Operation type mapping from menu choice to operation_type
 const operationTypeMap = {
     '1': 'rename',
@@ -107,24 +108,51 @@ async function runBefore(projectRoot = process.cwd(), deps) {
     else {
         log('\n  Cortex empty — run matha init or commit some code\n');
     }
-    // GATE 04 — SURFACE DANGER: Get danger zones and display
-    let dangerZones = [];
+    // GATE 04 — SENSE PAST HISTORY: Run Contract Matcher
+    const matchContext = {
+        scope,
+        intent: operationDescription,
+        operationType: 'unknown',
+        filepaths: scope.split(',').map((s) => s.trim()).filter(Boolean),
+    };
+    let matchResults = [];
     try {
-        dangerZones = await getDangerZones(mathaDir, scope);
+        matchResults = await matchAll(matchContext, mathaDir);
     }
     catch {
-        // Gracefully handle missing danger zones
-        dangerZones = [];
+        matchResults = [];
     }
-    if (dangerZones.length > 0) {
-        log('\n⚠ DANGER ZONES DETECTED:');
-        for (const zone of dangerZones) {
-            log(`  · ${zone.component}: ${zone.description}`);
-        }
-        log('');
+    const criticals = matchResults.filter(r => r.severity === 'critical');
+    const warnings = matchResults.filter(r => r.severity === 'warning');
+    const infos = matchResults.filter(r => r.severity === 'info');
+    const hasCritical = criticals.length > 0;
+    if (matchResults.length === 0) {
+        log('\n✓ No issues detected for this scope.\n');
     }
     else {
-        log('\n✓ No danger zones match this scope.\n');
+        log('');
+        if (criticals.length > 0) {
+            log(`🚨 CRITICAL — ${criticals.length} issue(s) require attention:`);
+            for (const res of criticals) {
+                log(`  ✗ ${res.title}`);
+                log(`    ${res.description}`);
+                log(`    → ${res.recommendation}`);
+            }
+        }
+        if (warnings.length > 0) {
+            log(`⚠  WARNINGS — ${warnings.length} prior finding(s):`);
+            for (const res of warnings) {
+                log(`  · ${res.title}`);
+                log(`    ${res.description}`);
+            }
+        }
+        if (infos.length > 0) {
+            log(`ℹ  CONTEXT — ${infos.length} relevant contract(s):`);
+            for (const res of infos) {
+                log(`  · ${res.title} — ${res.description}`);
+            }
+        }
+        log('');
     }
     // GATE 05 — CONTRACT: Write the behaviour contract
     const contractInput = await ask('Write the behaviour contract for this session.\nWhat must be true after your changes? (one assertion per line, empty line to finish)');
@@ -163,10 +191,10 @@ async function runBefore(projectRoot = process.cwd(), deps) {
         timestamp,
         operation_description: operationDescription,
         why: '', // Not collected interactively - would be from Gate 01 in full flow
-        bounds: businessRules,
-        dangerZones,
-        contract: assertions,
         business_rules: businessRules,
+        matchResults,
+        hasCritical,
+        contract: assertions,
         assertions,
         modelTier,
         tokenBudget,
@@ -211,10 +239,10 @@ async function runBefore(projectRoot = process.cwd(), deps) {
         log('  (none defined)');
     }
     log('');
-    log('DANGER ZONES:');
-    if (dangerZones.length > 0) {
-        for (const zone of dangerZones) {
-            log(`  · ${zone.component}: ${zone.description}`);
+    log('MATCH RESULTS:');
+    if (matchResults.length > 0) {
+        for (const res of matchResults) {
+            log(`  · [${res.severity.toUpperCase()}] ${res.title}`);
         }
     }
     else {
@@ -233,6 +261,9 @@ async function runBefore(projectRoot = process.cwd(), deps) {
     log('');
     log('════════════════════════════════════════');
     log(`READY TO BUILD: ${brief.readyToBuild ? 'YES' : 'NO (advisory only)'}`);
+    if (hasCritical) {
+        log('⚠ Critical issues detected — proceed with caution');
+    }
     log('════════════════════════════════════════\n');
     log('Paste this brief into your AI agent before starting.\n');
     return {

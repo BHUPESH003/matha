@@ -1,0 +1,12 @@
+{
+  "session_id": "20260307-191146-88c4",
+  "timestamp": "2026-03-07T13:41:46.483Z",
+  "operation_type": "business_logic",
+  "scope": "src/brain/dopamine.ts, src/mcp/tools.ts",
+  "predicted": {
+    "model_tier": "capable",
+    "token_budget": 8000
+  },
+  "actual": null,
+  "delta": null
+}
