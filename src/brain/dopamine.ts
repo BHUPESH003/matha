@@ -202,7 +202,8 @@ export async function getRecommendation(mathaDir: string, operationType: string)
   tier: 'lightweight' | 'mid' | 'capable', 
   budget: number, 
   source: 'learned' | 'default', 
-  confidence: RoutingRule['confidence'] | null 
+  confidence: RoutingRule['confidence'] | null,
+  sample_size?: number
 }> {
   try {
     const rulesPath = path.join(mathaDir, 'dopamine/routing-rules.json');
@@ -215,7 +216,8 @@ export async function getRecommendation(mathaDir: string, operationType: string)
           tier: rule.recommended_tier,
           budget: rule.recommended_budget,
           source: 'learned',
-          confidence: rule.confidence
+          confidence: rule.confidence,
+          sample_size: rule.sample_size
         };
       }
     }

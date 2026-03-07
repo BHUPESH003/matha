@@ -16,6 +16,7 @@ import {
   getSnapshot,
 } from '@/brain/cortex.js';
 import { matchAll, MatchContext } from '@/analysis/contract-matcher.js';
+import { analyseDeltas, persistAnalysis, getRecommendation } from '@/brain/dopamine.js';
 
 // Simple UUID-like ID generator
 function generateId(): string {
@@ -390,6 +391,37 @@ export async function mathaMatch(
     });
   } catch (err: any) {
     return JSON.stringify({ error: `Failed to run contract matcher: ${err.message}`, results: [], hasCritical: false });
+  }
+}
+
+/**
+ * matha_get_routing: Close the Dopamine Loop.
+ * If operationType provided: returns specific recommendation.
+ * If not provided: runs full delta analysis and returns DopamineAnalysis report.
+ */
+export async function mathaGetRouting(
+  mathaDir: string,
+  operationType?: string
+): Promise<string> {
+  try {
+    if (operationType) {
+      const rec = await getRecommendation(mathaDir, operationType);
+      return JSON.stringify({
+        operation_type: operationType,
+        recommended_tier: rec.tier,
+        recommended_budget: rec.budget,
+        source: rec.source,
+        confidence: rec.confidence,
+        sample_size: rec.sample_size
+      });
+    } else {
+      // Full analysis trigger
+      const analysis = await analyseDeltas(mathaDir);
+      await persistAnalysis(mathaDir, analysis);
+      return JSON.stringify(analysis);
+    }
+  } catch (err: any) {
+    return JSON.stringify({ error: err.message });
   }
 }
 

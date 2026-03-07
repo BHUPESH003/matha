@@ -1,0 +1,10 @@
+{
+    "id": "session-020",
+    "timestamp": "2026-03-07T00:00:00Z",
+    "component": "commands/before + mcp/tools",
+    "previous_assumption": "Routing recommendation display could be minimal — just show the tier",
+    "correction": "Transparency is trust. Showing 'learned from N sessions (medium confidence)' and upgrade/downgrade arrows is what makes users believe the system is working rather than guessing. Display is not cosmetic — it is the feedback loop made visible.",
+    "trigger": "phase-3-session-20",
+    "confidence": "confirmed",
+    "status": "active"
+}

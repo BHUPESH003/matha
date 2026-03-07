@@ -12,14 +12,24 @@ import {
   mathaRecordContract,
   mathaRefreshCortex,
   mathaMatch,
+  mathaGetRouting,
 } from '@/mcp/tools.js';
 
 const mocks = vi.hoisted(() => ({
   matchAll: vi.fn().mockResolvedValue([]),
+  getRecommendation: vi.fn(),
+  analyseDeltas: vi.fn(),
+  persistAnalysis: vi.fn(),
 }));
 
 vi.mock('@/analysis/contract-matcher.js', () => ({
   matchAll: mocks.matchAll,
+}));
+
+vi.mock('@/brain/dopamine.js', () => ({
+  getRecommendation: mocks.getRecommendation,
+  analyseDeltas: mocks.analyseDeltas,
+  persistAnalysis: mocks.persistAnalysis,
 }));
 
 // Test helpers

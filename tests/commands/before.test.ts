@@ -6,11 +6,33 @@ import { vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   matchAll: vi.fn().mockResolvedValue([]),
+  getRecommendation: vi.fn().mockResolvedValue({
+    tier: 'lightweight',
+    budget: 2000,
+    source: 'default',
+    confidence: null
+  }),
+  analyseDeltas: vi.fn(),
+  persistAnalysis: vi.fn(),
 }));
 
 vi.mock('@/analysis/contract-matcher.js', () => ({
   matchAll: mocks.matchAll,
 }));
+
+vi.mock('@/brain/dopamine.js', () => ({
+  getRecommendation: mocks.getRecommendation,
+  analyseDeltas: mocks.analyseDeltas,
+  persistAnalysis: mocks.persistAnalysis,
+}));
+
+const modelTierBudget: Record<string, { modelTier: string; tokenBudget: number }> = {
+  rename: { modelTier: 'lightweight', tokenBudget: 2000 },
+  crud: { modelTier: 'lightweight', tokenBudget: 2000 },
+  business_logic: { modelTier: 'capable', tokenBudget: 8000 },
+  architecture: { modelTier: 'capable', tokenBudget: 16000 },
+  frozen_component: { modelTier: 'capable', tokenBudget: 16000 },
+};
 
 // Test helpers
 async function createTmpDir(): Promise<string> {
@@ -121,6 +143,7 @@ describe('before command', () => {
     } catch {
       // ignore cleanup errors
     }
+    vi.clearAllMocks();
   });
 
   it('should exit with code 1 if .matha/config.json does not exist', async () => {
@@ -386,6 +409,12 @@ describe('before command', () => {
     ];
 
     for (const testCase of testCases) {
+      mocks.getRecommendation.mockResolvedValueOnce({
+        tier: modelTierBudget[testCase.expected as any].modelTier,
+        budget: modelTierBudget[testCase.expected as any].tokenBudget,
+        source: 'default',
+        confidence: null
+      });
       const result = await runBefore(tmpDir, {
         ask: async (question: string) => {
           if (question.includes('about to build')) {
@@ -484,5 +513,86 @@ describe('before command', () => {
     expect(result.exitCode).toBe(0);
     expect(result.brief.matchResults.length).toBe(0);
     expect(outputLog.join('\n')).toContain('No issues detected for this scope');
+  });
+
+  describe('Dopamine Routing Integration (Gate 06)', () => {
+    it('should display learned routing info with sample size and confidence', async () => {
+      await initProject(tmpDir);
+      
+      mocks.getRecommendation.mockResolvedValue({
+        tier: 'capable',
+        budget: 12000,
+        source: 'learned',
+        confidence: 'high',
+        sample_size: 15
+      });
+
+      let logs: string[] = [];
+      const result = await runBefore(tmpDir, {
+        ask: async (question: string) => {
+          if (question.includes('components')) return 'src/test.ts';
+          if (question.includes('about to build')) return 'Test';
+          if (question.includes('behaviour contract')) return 'A\n';
+          if (question.includes('type of operation')) return '3'; // business_logic
+          return '';
+        },
+        log: (msg: string) => logs.push(msg),
+      });
+
+      const output = logs.join('\n');
+      expect(output).toContain('Model: capable (budget: 12000 tokens) — learned from 15 sessions (high confidence)');
+      expect(result.brief.routingSource).toBe('learned');
+      expect(result.brief.routingConfidence).toBe('high');
+      expect(result.brief.modelTier).toBe('capable');
+      expect(result.brief.tokenBudget).toBe(12000);
+    });
+
+    it('should show upgrade arrow when learned tier is higher than default', async () => {
+      await initProject(tmpDir);
+      
+      mocks.getRecommendation.mockResolvedValue({
+        tier: 'capable',
+        budget: 9000,
+        source: 'learned',
+        confidence: 'medium',
+        sample_size: 5
+      });
+
+      let logs: string[] = [];
+      await runBefore(tmpDir, {
+        ask: async (question: string) => {
+          if (question.includes('type of operation')) return '2'; // crud, default is lightweight
+          return 'test';
+        },
+        log: (msg: string) => logs.push(msg),
+      });
+
+      const output = logs.join('\n');
+      expect(output).toContain('↑ Upgraded from lightweight based on history');
+    });
+
+    it('should show insufficient history when source is default', async () => {
+      await initProject(tmpDir);
+      
+      mocks.getRecommendation.mockResolvedValue({
+        tier: 'lightweight',
+        budget: 2000,
+        source: 'default',
+        confidence: null
+      });
+
+      let logs: string[] = [];
+      await runBefore(tmpDir, {
+        ask: async (question: string) => {
+          if (question.includes('type of operation')) return '1';
+          return 'test';
+        },
+        log: (msg: string) => logs.push(msg),
+      });
+
+      const output = logs.join('\n');
+      expect(output).toContain('Model: lightweight (budget: 2000 tokens) — default (insufficient history for this operation type)');
+      expect(output).not.toContain('learned from');
+    });
   });
 });
