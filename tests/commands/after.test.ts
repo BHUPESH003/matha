@@ -617,4 +617,279 @@ describe('after command', () => {
     expect(result.exitCode).toBe(0);
     expect(result.scope).toBe('unknown');
   });
+
+  describe('Automatic Contract Validation', () => {
+    it('should show per-assertion prompts and log violations if any fail', async () => {
+      await initProject(tmpDir);
+      const sessionId = '20260304-143022-a1b2';
+      await createPredictionFile(tmpDir, sessionId);
+      
+      const briefPath = path.join(tmpDir, `.matha/sessions/${sessionId}.brief`);
+      await fs.writeFile(
+        briefPath,
+        JSON.stringify({ sessionId, scope: 'src/test.ts', contract: ['Wait for init', 'Do not use eval'] }, null, 2)
+      );
+
+      let askCount = 0;
+      const result = await runAfter(tmpDir, {
+        ask: async (q) => {
+          if (q.includes('Did this pass?')) {
+            askCount++;
+            return askCount === 1 ? 'n' : 'y';
+          }
+          if (q.includes('files')) return '1';
+          return '';
+        },
+        log: () => {}
+      });
+
+      expect(result.exitCode).toBe(0);
+      const violationPath = path.join(tmpDir, '.matha/cerebellum/violation-log.json');
+      const violations = JSON.parse(await fs.readFile(violationPath, 'utf8'));
+      
+      expect(violations.length).toBe(1);
+      expect(violations[0].assertion).toBe('Wait for init');
+      expect(violations[0].result).toBe('violated');
+    });
+
+    it('should pass with no violations if all assertions pass', async () => {
+      await initProject(tmpDir);
+      const sessionId = '20260304-143022-a1b2';
+      await createPredictionFile(tmpDir, sessionId);
+      
+      const briefPath = path.join(tmpDir, `.matha/sessions/${sessionId}.brief`);
+      await fs.writeFile(
+        briefPath,
+        JSON.stringify({ sessionId, scope: 'src/test.ts', contract: ['A1', 'A2'] }, null, 2)
+      );
+
+      const result = await runAfter(tmpDir, {
+        ask: async (q) => {
+          if (q.includes('Did this pass?')) return 'y';
+          if (q.includes('files')) return '1';
+          return '';
+        },
+        log: () => {}
+      });
+
+      expect(result.exitCode).toBe(0);
+      const violationPath = path.join(tmpDir, '.matha/cerebellum/violation-log.json');
+      const exists = await fs.access(violationPath).then(() => true).catch(() => false);
+      expect(exists).toBe(false);
+    });
+
+    it('should handle partial if some pass and some skipped', async () => {
+      await initProject(tmpDir);
+      const sessionId = '20260304-143022-a1b2';
+      await createPredictionFile(tmpDir, sessionId);
+      
+      const briefPath = path.join(tmpDir, `.matha/sessions/${sessionId}.brief`);
+      await fs.writeFile(
+        briefPath,
+        JSON.stringify({ sessionId, scope: 'src/test.ts', contract: ['A1', 'A2'] }, null, 2)
+      );
+
+      let askCount = 0;
+      const result = await runAfter(tmpDir, {
+        ask: async (q) => {
+          if (q.includes('Did this pass?')) {
+            askCount++;
+            return askCount === 1 ? 'y' : 'skip';
+          }
+          if (q.includes('files')) return '1';
+          return '';
+        },
+        log: () => {}
+      });
+
+      expect(result.exitCode).toBe(0);
+      
+      // Dopamine delta should show partial
+      const deltaPath = path.join(tmpDir, '.matha/dopamine/deltas.json');
+      const deltas = JSON.parse(await fs.readFile(deltaPath, 'utf8'));
+      expect(deltas[deltas.length - 1].contract_result).toBe('partial');
+    });
+
+    it('should handle none if all skipped', async () => {
+      await initProject(tmpDir);
+      const sessionId = '20260304-143022-a1b2';
+      await createPredictionFile(tmpDir, sessionId);
+      
+      const briefPath = path.join(tmpDir, `.matha/sessions/${sessionId}.brief`);
+      await fs.writeFile(
+        briefPath,
+        JSON.stringify({ sessionId, scope: 'src/test.ts', contract: ['A1', 'A2'] }, null, 2)
+      );
+
+      const result = await runAfter(tmpDir, {
+        ask: async (q) => {
+          if (q.includes('Did this pass?')) return 's';
+          if (q.includes('files')) return '1';
+          return '';
+        },
+        log: () => {}
+      });
+
+      expect(result.exitCode).toBe(0);
+      const deltaPath = path.join(tmpDir, '.matha/dopamine/deltas.json');
+      const deltas = JSON.parse(await fs.readFile(deltaPath, 'utf8'));
+      expect(deltas[deltas.length - 1].contract_result).toBe('none');
+    });
+
+    it('should log separate entries for multiple failed assertions', async () => {
+      await initProject(tmpDir);
+      const sessionId = '20260304-143022-a1b2';
+      await createPredictionFile(tmpDir, sessionId);
+      
+      const briefPath = path.join(tmpDir, `.matha/sessions/${sessionId}.brief`);
+      await fs.writeFile(
+        briefPath,
+        JSON.stringify({ sessionId, scope: 'src/test.ts', contract: ['Fail1', 'Fail2'] }, null, 2)
+      );
+
+      const result = await runAfter(tmpDir, {
+        ask: async (q) => {
+          if (q.includes('Did this pass?')) return 'no';
+          if (q.includes('files')) return '1';
+          return '';
+        },
+        log: () => {}
+      });
+
+      expect(result.exitCode).toBe(0);
+      const violationPath = path.join(tmpDir, '.matha/cerebellum/violation-log.json');
+      const violations = JSON.parse(await fs.readFile(violationPath, 'utf8'));
+      expect(violations.length).toBe(2);
+      expect(violations[0].assertion).toBe('Fail1');
+      expect(violations[1].assertion).toBe('Fail2');
+    });
+
+    it('should update component contract violation count if exists', async () => {
+      await initProject(tmpDir);
+      const sessionId = '20260304-143022-a1b2';
+      await createPredictionFile(tmpDir, sessionId);
+      
+      const contractPath = path.join(tmpDir, '.matha/cerebellum/contracts/src_test_ts.json');
+      await fs.writeFile(
+        contractPath,
+        JSON.stringify({
+          component: 'src/test.ts',
+          assertions: [{ description: 'Must not use global state', violation_count: 0 }]
+        }, null, 2)
+      );
+
+      const briefPath = path.join(tmpDir, `.matha/sessions/${sessionId}.brief`);
+      await fs.writeFile(
+        briefPath,
+        JSON.stringify({ sessionId, scope: 'src/test.ts', contract: ['Must not use global state'] }, null, 2)
+      );
+
+      const result = await runAfter(tmpDir, {
+        ask: async (q) => {
+          if (q.includes('Did this pass?')) return 'n';
+          if (q.includes('files')) return '1';
+          return '';
+        },
+        log: () => {}
+      });
+
+      expect(result.exitCode).toBe(0);
+      const updatedContract = JSON.parse(await fs.readFile(contractPath, 'utf8'));
+      expect(updatedContract.assertions[0].violation_count).toBe(1);
+      expect(updatedContract.assertions[0].last_violated).toBeDefined();
+    });
+
+    it('updateContractViolation matches trimmed lowercase assertion', async () => {
+      await initProject(tmpDir);
+      const sessionId = '20260304-143022-a1b2';
+      await createPredictionFile(tmpDir, sessionId);
+      
+      const contractPath = path.join(tmpDir, '.matha/cerebellum/contracts/src_test_ts.json');
+      await fs.writeFile(
+        contractPath,
+        JSON.stringify({
+          component: 'src/test.ts',
+          assertions: [{ description: 'Case INsensItiVE', violation_count: 5 }]
+        }, null, 2)
+      );
+
+      const briefPath = path.join(tmpDir, `.matha/sessions/${sessionId}.brief`);
+      await fs.writeFile(
+        briefPath,
+        JSON.stringify({ sessionId, scope: 'src/test.ts', contract: ['  case insensitive  '] }, null, 2)
+      );
+
+      await runAfter(tmpDir, {
+        ask: async (q) => {
+          if (q.includes('Did this pass?')) return 'fail';
+          if (q.includes('files')) return '1';
+          return '';
+        },
+        log: () => {}
+      });
+
+      const updatedContract = JSON.parse(await fs.readFile(contractPath, 'utf8'));
+      expect(updatedContract.assertions[0].violation_count).toBe(6);
+    });
+
+    it('should not throw if updateContractViolation finds no contract', async () => {
+      await initProject(tmpDir);
+      const sessionId = '20260304-143022-a1b2';
+      await createPredictionFile(tmpDir, sessionId);
+      
+      const briefPath = path.join(tmpDir, `.matha/sessions/${sessionId}.brief`);
+      await fs.writeFile(
+        briefPath,
+        JSON.stringify({ sessionId, scope: 'src/missing.ts', contract: ['Some rule'] }, null, 2)
+      );
+
+      const result = await runAfter(tmpDir, {
+        ask: async (q) => {
+          if (q.includes('Did this pass?')) return 'n';
+          if (q.includes('files')) return '1';
+          return '';
+        },
+        log: () => {}
+      });
+
+      expect(result.exitCode).toBe(0);
+      
+      const violationPath = path.join(tmpDir, '.matha/cerebellum/violation-log.json');
+      const violations = JSON.parse(await fs.readFile(violationPath, 'utf8'));
+      expect(violations[0].assertion).toBe('Some rule');
+    });
+
+    it('SIGINT safety test: no writes if interrupted before completion', async () => {
+      await initProject(tmpDir);
+      const sessionId = '20260304-143022-a1b2';
+      await createPredictionFile(tmpDir, sessionId);
+      
+      const briefPath = path.join(tmpDir, `.matha/sessions/${sessionId}.brief`);
+      await fs.writeFile(
+        briefPath,
+        JSON.stringify({ sessionId, scope: 'src/test.ts', contract: ['A1', 'A2', 'A3'] }, null, 2)
+      );
+
+      let askCount = 0;
+      await expect(runAfter(tmpDir, {
+        ask: async (q) => {
+          if (q.includes('Did this pass?')) {
+            askCount++;
+            if (askCount === 1) return 'n';
+            if (askCount === 2) throw new Error('SIGINT');
+          }
+          return '';
+        },
+        log: () => {}
+      })).rejects.toThrow('SIGINT');
+
+      const violationPath = path.join(tmpDir, '.matha/cerebellum/violation-log.json');
+      const violationExists = await fs.access(violationPath).then(() => true).catch(() => false);
+      expect(violationExists).toBe(false);
+      
+      const deltasPath = path.join(tmpDir, '.matha/dopamine/deltas.json');
+      const deltasExists = await fs.access(deltasPath).then(() => true).catch(() => false);
+      expect(deltasExists).toBe(false);
+    });
+  });
 });

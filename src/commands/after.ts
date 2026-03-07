@@ -61,13 +61,12 @@ async function findMostRecentPredictionFile(predictionsDir: string): Promise<str
   }
 }
 
-async function getLinkedSessionBriefScope(mathaDir: string, sessionId: string): Promise<string> {
+async function getLinkedSessionBrief(mathaDir: string, sessionId: string): Promise<any> {
   try {
     const briefPath = path.join(mathaDir, `sessions/${sessionId}.brief`);
-    const brief = await readJsonOrNull<{ scope?: string }>(briefPath);
-    return brief?.scope ?? 'unknown';
+    return await readJsonOrNull(briefPath);
   } catch {
-    return 'unknown';
+    return null;
   }
 }
 
@@ -106,8 +105,10 @@ async function runAfter(projectRoot: string = process.cwd(), deps?: AfterDeps): 
     log(`\nLinking to session: ${linkedSessionId}\n`);
   }
 
-  // Get scope from linked session brief if available
-  let scope = await getLinkedSessionBriefScope(mathaDir, sessionId);
+  // Get scope and contract from linked session brief if available
+  const brief = await getLinkedSessionBrief(mathaDir, sessionId);
+  let scope = brief?.scope ?? 'unknown';
+  const assertions: string[] = brief?.contract && Array.isArray(brief.contract) ? brief.contract : [];
 
   // PROMPT 01 — DISCOVERY: What assumption broke?
   const assumptionInput = await ask(
@@ -132,21 +133,72 @@ async function runAfter(projectRoot: string = process.cwd(), deps?: AfterDeps): 
   const dangerPattern = dangerPatternInput.trim() || null;
 
   // PROMPT 04 — CONTRACT RESULT
-  log('\nDid the behaviour contract pass?');
-  log('  1. Yes — all assertions passed');
-  log('  2. Partial — some assertions passed');
-  log('  3. No — contract was violated');
-  log('  4. No contract was written');
-  log('');
+  let contractResult: 'passed' | 'partial' | 'violated' | 'none' = 'none';
+  const failedAssertions: string[] = [];
 
-  const contractChoice = await ask('Did the behaviour contract pass? (1-4):');
-  const contractResultMap: Record<string, 'passed' | 'partial' | 'violated' | 'none'> = {
-    '1': 'passed',
-    '2': 'partial',
-    '3': 'violated',
-    '4': 'none',
-  };
-  const contractResult = contractResultMap[contractChoice] || 'none';
+  if (assertions.length > 0) {
+    log(`\nCONTRACT VALIDATION — ${assertions.length} assertion(s) to check:\n`);
+
+    let passCount = 0;
+    let failCount = 0;
+    let skipCount = 0;
+
+    for (let i = 0; i < assertions.length; i++) {
+      const assertionText = assertions[i];
+      log(`  [${i + 1}/${assertions.length}] ${assertionText}`);
+      
+      let valid = false;
+      while (!valid) {
+        let answer = await ask('  Did this pass? (y/n/skip)');
+        answer = answer.trim().toLowerCase();
+        
+        if (answer === 'y' || answer === 'yes' || answer === 'pass') {
+          passCount++;
+          valid = true;
+        } else if (answer === 'n' || answer === 'no' || answer === 'fail') {
+          failCount++;
+          failedAssertions.push(assertionText);
+          valid = true;
+        } else if (answer === 'skip' || answer === 's') {
+          skipCount++;
+          valid = true;
+        } else {
+          log('  Please answer y, n, or skip.');
+        }
+      }
+    }
+
+    if (failCount > 0) {
+      contractResult = 'violated';
+    } else if (passCount === 0 && skipCount > 0) {
+      contractResult = 'none';
+    } else if (passCount > 0 && skipCount > 0) {
+      contractResult = 'partial';
+    } else if (passCount > 0) {
+      contractResult = 'passed';
+    } else {
+      contractResult = 'none';
+    }
+
+    const marks: Record<string, string> = { passed: 'PASSED ✓', violated: 'VIOLATED ✗', partial: 'PARTIAL ~', none: 'NONE –' };
+    log(`\nContract result: ${marks[contractResult]}`);
+  } else {
+    log('\nDid the behaviour contract pass?');
+    log('  1. Yes — all assertions passed');
+    log('  2. Partial — some assertions passed');
+    log('  3. No — contract was violated');
+    log('  4. No contract was written');
+    log('');
+
+    const contractChoice = await ask('Did the behaviour contract pass? (1-4):');
+    const contractResultMap: Record<string, 'passed' | 'partial' | 'violated' | 'none'> = {
+      '1': 'passed',
+      '2': 'partial',
+      '3': 'violated',
+      '4': 'none',
+    };
+    contractResult = contractResultMap[contractChoice] || 'none';
+  }
 
   // PROMPT 05 — ACTUALS: Files changed
   const filesInput = await ask('Approximately how many files were changed in this session?');
@@ -245,14 +297,27 @@ async function runAfter(projectRoot: string = process.cwd(), deps?: AfterDeps): 
   await appendToArray(deltasPath, deltaEntry);
 
   // 5. CONTRACT VIOLATION LOG (only if violated or partial)
-  if (contractResult === 'violated' || contractResult === 'partial') {
+  if (failedAssertions.length > 0) {
+    const violationPath = path.join(mathaDir, 'cerebellum/violation-log.json');
+    for (const assertionText of failedAssertions) {
+      const violationEntry = {
+        session_id: sessionId,
+        timestamp,
+        result: 'violated',
+        scope,
+        assertion: assertionText,
+        component: scope,
+      };
+      await appendToArray(violationPath, violationEntry);
+      await updateContractViolation(mathaDir, scope, assertionText, timestamp);
+    }
+  } else if (contractResult === 'violated' || contractResult === 'partial') {
     const violationEntry = {
       session_id: sessionId,
       timestamp,
       result: contractResult,
       scope,
     };
-
     const violationPath = path.join(mathaDir, 'cerebellum/violation-log.json');
     await appendToArray(violationPath, violationEntry);
   }
@@ -290,6 +355,34 @@ async function runAfter(projectRoot: string = process.cwd(), deps?: AfterDeps): 
     decisionRecorded,
     dangerZoneRecorded,
   };
+}
+
+async function updateContractViolation(mathaDir: string, component: string, assertionText: string, timestamp: string): Promise<void> {
+  try {
+    const sanitizedComponent = component.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const contractPath = path.join(mathaDir, `cerebellum/contracts/${sanitizedComponent}.json`);
+    const contract = await readJsonOrNull<any>(contractPath);
+    if (!contract || !Array.isArray(contract.assertions)) {
+      return;
+    }
+
+    let modified = false;
+    const searchTarget = assertionText.trim().toLowerCase();
+
+    for (const assertion of contract.assertions) {
+      if (assertion.description && assertion.description.trim().toLowerCase() === searchTarget) {
+        assertion.violation_count = (assertion.violation_count || 0) + 1;
+        assertion.last_violated = timestamp;
+        modified = true;
+      }
+    }
+
+    if (modified) {
+      await writeAtomic(contractPath, contract, { overwrite: true });
+    }
+  } catch {
+    // Fail silently
+  }
 }
 
 // Default ask implementation using @inquirer/prompts
