@@ -5,6 +5,7 @@ import { readJsonOrNull } from '@/storage/reader.js'
 import { getIntent, getRules } from '@/brain/hippocampus.js'
 import { CURRENT_SCHEMA_VERSION } from '@/utils/schema-version.js'
 import type { ParsedBrainSeed } from '@/utils/markdown-parser.js'
+import { refreshFromGit } from '@/brain/cortex.js'
 
 export interface InitSummary {
   projectRoot: string
@@ -156,6 +157,23 @@ export async function runInit(
   log('matha init complete')
   log(`created: ${created.length}`)
   log(`skipped: ${skipped.length}`)
+
+  // Cortex refresh — analyse git history if available
+  try {
+    log('\nAnalysing git history...')
+    const snapshot = await refreshFromGit(projectRoot, mathaDir)
+    if (snapshot.commitCount > 0) {
+      const s = snapshot.summary
+      log(
+        `Cortex built — ${snapshot.fileCount} files classified ` +
+        `(${s.frozen} frozen, ${s.stable} stable, ${s.volatile} volatile, ${s.disposable} disposable)`,
+      )
+    } else {
+      log('No git history found — cortex will build as commits accumulate')
+    }
+  } catch {
+    log('No git history found — cortex will build as commits accumulate')
+  }
 
   return {
     projectRoot,

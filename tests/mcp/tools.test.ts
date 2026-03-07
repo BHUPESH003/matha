@@ -10,6 +10,7 @@ import {
   mathaRecordDecision,
   mathaRecordDanger,
   mathaRecordContract,
+  mathaRefreshCortex,
 } from '@/mcp/tools.js';
 
 // Test helpers
@@ -222,31 +223,34 @@ describe('MCP tools', () => {
 
   describe('matha_get_stability', () => {
     beforeEach(async () => {
+      // Use cortex StabilityRecord format (filepath field, not path)
       await fs.writeFile(
         path.join(mathaDir, 'cortex/stability.json'),
         JSON.stringify(
           [
             {
-              path: 'src/api.ts',
+              filepath: 'src/api.ts',
               stability: 'stable',
-              classification_source: 'derived',
-              reason: 'Rarely changes',
-              owner: null,
-              last_changed: '2026-02-01T00:00:00Z',
-              change_frequency: 1,
-              blast_radius: 5,
+              classificationSource: 'derived',
+              reason: 'Moderate churn',
               confidence: 'high',
+              changeCount: 3,
+              coChangeCount: 1,
+              ageInDays: 60,
+              daysSinceLastChange: 5,
             },
             {
-              path: 'src/experimental.ts',
+              filepath: 'src/experimental.ts',
               stability: 'volatile',
-              classification_source: 'declared',
+              classificationSource: 'declared',
               reason: 'Under development',
-              owner: null,
-              last_changed: '2026-03-04T00:00:00Z',
-              change_frequency: 20,
-              blast_radius: 2,
               confidence: 'high',
+              changeCount: 20,
+              coChangeCount: 2,
+              ageInDays: 30,
+              daysSinceLastChange: 1,
+              declaredBy: 'alice',
+              declaredAt: '2026-03-04T00:00:00Z',
             },
           ],
           null,
@@ -255,28 +259,31 @@ describe('MCP tools', () => {
       );
     });
 
-    it('should return stability for requested files', async () => {
+    it('should return StabilityRecord for requested files', async () => {
       const result = await mathaGetStability(mathaDir, ['src/api.ts', 'src/experimental.ts']);
       const parsed = JSON.parse(result);
       
-      expect(parsed.stability['src/api.ts']).toBe('stable');
-      expect(parsed.stability['src/experimental.ts']).toBe('volatile');
+      // Now returns StabilityRecord objects, not plain strings
+      expect(parsed.stability['src/api.ts']).toBeTruthy();
+      expect(parsed.stability['src/api.ts'].stability).toBe('stable');
+      expect(parsed.stability['src/api.ts'].confidence).toBe('high');
+      expect(parsed.stability['src/experimental.ts'].stability).toBe('volatile');
     });
 
-    it('should return unknown for files not in stability.json', async () => {
+    it('should return null for files not in stability.json', async () => {
       const result = await mathaGetStability(mathaDir, ['src/unknown.ts']);
       const parsed = JSON.parse(result);
       
-      expect(parsed.stability['src/unknown.ts']).toBe('unknown');
+      expect(parsed.stability['src/unknown.ts']).toBeNull();
     });
 
-    it('should return unknown for all files if stability.json missing', async () => {
+    it('should return null for all files if stability.json missing', async () => {
       await fs.rm(path.join(mathaDir, 'cortex/stability.json'));
       
       const result = await mathaGetStability(mathaDir, ['src/api.ts']);
       const parsed = JSON.parse(result);
       
-      expect(parsed.stability['src/api.ts']).toBe('unknown');
+      expect(parsed.stability['src/api.ts']).toBeNull();
     });
   });
 
@@ -506,6 +513,67 @@ describe('MCP tools', () => {
       } else {
         expect(parsed.component).toBe('src/api.ts');
       }
+    });
+  });
+
+  describe('matha_refresh_cortex', () => {
+    it('should succeed on a non-git directory (commitCount: 0)', async () => {
+      const result = await mathaRefreshCortex(mathaDir);
+      const parsed = JSON.parse(result);
+
+      expect(parsed.success).toBe(true);
+      expect(parsed.commitCount).toBe(0);
+      expect(parsed.fileCount).toBe(0);
+    });
+  });
+
+  describe('matha_brief with directory filter', () => {
+    it('should return filtered results for directory that matches', async () => {
+      // Seed stability data
+      await fs.writeFile(
+        path.join(mathaDir, 'cortex/stability.json'),
+        JSON.stringify([
+          {
+            filepath: 'src/api/handler.ts',
+            stability: 'stable',
+            classificationSource: 'derived',
+            reason: 'Moderate churn',
+            confidence: 'high',
+            changeCount: 3,
+            coChangeCount: 1,
+            ageInDays: 60,
+            daysSinceLastChange: 5,
+          },
+          {
+            filepath: 'tests/api.test.ts',
+            stability: 'volatile',
+            classificationSource: 'derived',
+            reason: 'High churn',
+            confidence: 'medium',
+            changeCount: 15,
+            coChangeCount: 0,
+            ageInDays: 30,
+            daysSinceLastChange: 1,
+          },
+        ], null, 2),
+      );
+
+      const result = await mathaBrief(mathaDir, undefined, 'src/');
+      const parsed = JSON.parse(result);
+
+      expect(parsed.filtered).toBe(true);
+      expect(parsed.directory).toBe('src/');
+      expect(parsed.stability.length).toBe(1);
+      expect(parsed.stability[0].filepath).toBe('src/api/handler.ts');
+    });
+
+    it('should return empty + message for directory matching nothing', async () => {
+      const result = await mathaBrief(mathaDir, undefined, 'nonexistent/');
+      const parsed = JSON.parse(result);
+
+      expect(parsed.filtered).toBe(true);
+      expect(parsed.hasData).toBe(false);
+      expect(parsed.message).toContain('nonexistent/');
     });
   });
 });

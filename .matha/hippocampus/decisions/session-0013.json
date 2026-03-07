@@ -1,0 +1,10 @@
+{
+    "id": "session-013",
+    "timestamp": "2026-03-07T00:00:00Z",
+    "component": "mcp/tools + commands/before + commands/init",
+    "previous_assumption": "Wiring cortex into existing tools would require significant refactoring",
+    "correction": "3 targeted changes — tools.ts, before.ts, init.ts — were sufficient. The clean module boundaries from Phase 0 made wiring straightforward. Good architecture pays off at integration time.",
+    "trigger": "phase-1-session-13",
+    "confidence": "confirmed",
+    "status": "active"
+}

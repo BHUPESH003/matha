@@ -5,6 +5,7 @@ import { writeAtomic } from '@/storage/writer.js';
 import { getIntent, getRules, getDangerZones } from '@/brain/hippocampus.js';
 import type { SessionBrief, SessionContext } from '@/brain/frontal-lobe.js';
 import { checkSchemaVersion, getSchemaMessage } from '@/utils/schema-version.js';
+import { getSnapshot, getStability } from '@/brain/cortex.js';
 
 interface BeforeDeps {
   ask?: (question: string) => Promise<string>;
@@ -96,16 +97,40 @@ async function runBefore(projectRoot: string = process.cwd(), deps?: BeforeDeps)
   const scopeInput = await ask('Which components or files will this affect? (comma separated)');
   const scope = scopeInput;
 
-  // GATE 03 — ORIENT: Read cortex files (no prompt)
-  let shape: any = null;
-  let stability: any = null;
+  // GATE 03 — ORIENT: Read cortex (via cortex module)
+  let cortexSnapshot: any = null;
+  let frozenFiles: string[] = [];
   try {
-    shape = await readJsonOrNull(path.join(mathaDir, 'cortex/shape.json'));
-    stability = await readJsonOrNull(path.join(mathaDir, 'cortex/stability.json'));
+    cortexSnapshot = await getSnapshot(mathaDir);
   } catch {
-    // Gracefully handle missing cortex files
-    shape = null;
-    stability = null;
+    cortexSnapshot = null;
+  }
+
+  if (cortexSnapshot && cortexSnapshot.stability && cortexSnapshot.stability.length > 0) {
+    const s = cortexSnapshot.summary;
+    log(`\nCORTEX (${cortexSnapshot.fileCount} files mapped):`);
+    log(`  frozen: ${s.frozen}  stable: ${s.stable}  volatile: ${s.volatile}  disposable: ${s.disposable}`);
+
+    // If scope was provided, check for frozen files in scope
+    if (scope) {
+      const scopeFiles = scope.split(',').map((f: string) => f.trim().replace(/\\/g, '/'));
+      try {
+        const stabilityMap = await getStability(mathaDir, scopeFiles);
+        for (const [fp, record] of Object.entries(stabilityMap)) {
+          if (record && record.stability === 'frozen') {
+            log(`  ⚠ ${fp} — FROZEN (${record.reason})`);
+            frozenFiles.push(fp);
+          } else if (record && record.stability === 'stable') {
+            log(`  · ${fp} — STABLE`);
+          }
+        }
+      } catch {
+        // Gracefully handle stability lookup errors
+      }
+    }
+    log('');
+  } else {
+    log('\n  Cortex empty — run matha init or commit some code\n');
   }
 
   // GATE 04 — SURFACE DANGER: Get danger zones and display
@@ -179,6 +204,8 @@ async function runBefore(projectRoot: string = process.cwd(), deps?: BeforeDeps)
     tokenBudget,
     gatesCompleted: [1, 2, 3, 4, 5, 6],
     readyToBuild,
+    cortexSummary: cortexSnapshot?.summary ?? null,
+    frozenFiles,
   };
 
   // Write session brief to .matha/sessions/[sessionId].brief
