@@ -1,0 +1,10 @@
+{
+    "id": "session-010",
+    "timestamp": "2026-03-07T00:00:00Z",
+    "component": "analysis/git-analyser",
+    "previous_assumption": "Excluding .git directory could be done with simple substring match on '.git'",
+    "correction": "Substring match falsely catches .gitignore and .gitattributes. Must check for '.git/' path prefix to exclude only the git directory itself.",
+    "trigger": "phase-1-session-10",
+    "confidence": "confirmed",
+    "status": "active"
+}
