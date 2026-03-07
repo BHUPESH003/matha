@@ -140,6 +140,17 @@ export async function runInit(
   await writeIfMissing(shapePath, shape, created, skipped, projectRoot)
 
   const configPath = path.join(mathaDir, 'config.json')
+  const existingConfig = await readJsonOrNull<any>(configPath)
+  if (existingConfig && !existingConfig.schema_version) {
+    await writeAtomic(
+      configPath,
+      {
+        ...existingConfig,
+        schema_version: CURRENT_SCHEMA_VERSION,
+      },
+      { overwrite: true },
+    )
+  }
   await writeIfMissing(
     configPath,
     {

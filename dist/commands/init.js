@@ -99,6 +99,13 @@ export async function runInit(projectRoot = process.cwd(), deps) {
     const shapePath = path.join(mathaDir, 'cortex', 'shape.json');
     await writeIfMissing(shapePath, shape, created, skipped, projectRoot);
     const configPath = path.join(mathaDir, 'config.json');
+    const existingConfig = await readJsonOrNull(configPath);
+    if (existingConfig && !existingConfig.schema_version) {
+        await writeAtomic(configPath, {
+            ...existingConfig,
+            schema_version: CURRENT_SCHEMA_VERSION,
+        }, { overwrite: true });
+    }
     await writeIfMissing(configPath, {
         version: '0.1.0',
         schema_version: CURRENT_SCHEMA_VERSION,
