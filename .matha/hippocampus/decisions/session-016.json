@@ -1,0 +1,10 @@
+{
+    "id": "session-016",
+    "timestamp": "2026-03-07T00:00:00Z",
+    "component": "commands/before + mcp/tools",
+    "previous_assumption": "Blocking on critical matches would make MATHA more trustworthy",
+    "correction": "MATHA warns loudly, never blocks. hasCritical adds visual weight to READY TO BUILD without gatekeeping. A tool that blocks gets disabled. A tool that informs gets trusted.",
+    "trigger": "phase-2-session-16",
+    "confidence": "confirmed",
+    "status": "active"
+}

@@ -15,6 +15,7 @@ import {
   getCoChanges,
   getSnapshot,
 } from '@/brain/cortex.js';
+import { matchAll, MatchContext } from '@/analysis/contract-matcher.js';
 
 // Simple UUID-like ID generator
 function generateId(): string {
@@ -139,6 +140,20 @@ export async function mathaBrief(
 
       const hasData = decisions.length > 0 || zones.length > 0 || stabilityRecords.length > 0;
 
+      const matchContext: MatchContext = {
+        scope: directory,
+        intent: '',
+        operationType: 'unknown',
+        filepaths: [directory],
+      };
+      let matchResults: any[] = [];
+      try {
+        matchResults = await matchAll(matchContext, mathaDir);
+      } catch {
+        matchResults = [];
+      }
+      const hasCritical = matchResults.some((r: any) => r.severity === 'critical');
+
       return JSON.stringify({
         directory,
         filtered: true,
@@ -147,6 +162,8 @@ export async function mathaBrief(
         decisions,
         dangerZones: zones,
         stability: stabilityRecords,
+        matchResults,
+        hasCritical,
       });
     }
 
@@ -179,21 +196,45 @@ export async function mathaBrief(
       }
     }
 
-    // If we have valid brief data, return it
+    // Determine base response
+    let baseResponse: any;
+
     if (briefData) {
-      return JSON.stringify(briefData);
+      baseResponse = briefData;
+    } else {
+      // Otherwise return intent + rules
+      const intentPath = path.join(mathaDir, 'hippocampus/intent.json');
+      const intent = await readJsonOrNull<{ why?: string }>(intentPath);
+
+      const rules = await getRules(mathaDir).catch(() => []);
+      const parsedRules = typeof rules === 'string' ? JSON.parse(rules).rules : [];
+
+      baseResponse = {
+        why: intent?.why ?? '',
+        rules: parsedRules,
+      };
     }
 
-    // Otherwise return intent + rules
-    const intentPath = path.join(mathaDir, 'hippocampus/intent.json');
-    const intent = await readJsonOrNull<{ why?: string }>(intentPath);
+    // Augment with matchAll
+    const matchContext: MatchContext = {
+      scope: baseResponse.scope || '',
+      intent: baseResponse.operation_description || baseResponse.why || '',
+      operationType: baseResponse.operationType || 'unknown',
+      filepaths: (baseResponse.scope || '').split(',').map((s: string) => s.trim()).filter(Boolean),
+    };
 
-    const rules = await getRules(mathaDir).catch(() => []);
-    const parsedRules = typeof rules === 'string' ? JSON.parse(rules).rules : [];
+    let matchResults: any[] = [];
+    try {
+      matchResults = await matchAll(matchContext, mathaDir);
+    } catch {
+      matchResults = [];
+    }
+    const hasCritical = matchResults.some((r: any) => r.severity === 'critical');
 
     return JSON.stringify({
-      why: intent?.why ?? '',
-      rules: parsedRules,
+      ...baseResponse,
+      matchResults,
+      hasCritical,
     });
   } catch (err: any) {
     return JSON.stringify({ error: `Failed to get brief: ${err.message}` });
@@ -311,6 +352,44 @@ export async function mathaRecordContract(
       success: false,
       error: `Failed to record contract: ${err.message}`,
     });
+  }
+}
+
+/**
+ * matha_match: Runs the contract matcher independently to get danger/history warnings.
+ */
+export async function mathaMatch(
+  mathaDir: string,
+  scope: string,
+  intent: string,
+  operationType: string = 'unknown',
+  filepaths: string[] = []
+): Promise<string> {
+  try {
+    const context: MatchContext = {
+      scope,
+      intent,
+      operationType,
+      filepaths: filepaths.length > 0 ? filepaths : scope.split(',').map((s) => s.trim()).filter(Boolean),
+    };
+
+    const results = await matchAll(context, mathaDir);
+    const hasCritical = results.some((r: any) => r.severity === 'critical');
+
+    const summary = {
+      critical: results.filter((r: any) => r.severity === 'critical').length,
+      warning: results.filter((r: any) => r.severity === 'warning').length,
+      info: results.filter((r: any) => r.severity === 'info').length,
+      total: results.length,
+    };
+
+    return JSON.stringify({
+      results,
+      hasCritical,
+      summary,
+    });
+  } catch (err: any) {
+    return JSON.stringify({ error: `Failed to run contract matcher: ${err.message}`, results: [], hasCritical: false });
   }
 }
 

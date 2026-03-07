@@ -11,7 +11,16 @@ import {
   mathaRecordDanger,
   mathaRecordContract,
   mathaRefreshCortex,
+  mathaMatch,
 } from '@/mcp/tools.js';
+
+const mocks = vi.hoisted(() => ({
+  matchAll: vi.fn().mockResolvedValue([]),
+}));
+
+vi.mock('@/analysis/contract-matcher.js', () => ({
+  matchAll: mocks.matchAll,
+}));
 
 // Test helpers
 async function createTmpDir(): Promise<string> {
@@ -78,6 +87,8 @@ describe('MCP tools', () => {
     } catch {
       // ignore cleanup errors
     }
+    mocks.matchAll.mockReset();
+    mocks.matchAll.mockResolvedValue([]);
   });
 
   describe('matha_get_rules', () => {
@@ -345,6 +356,67 @@ describe('MCP tools', () => {
       const parsed = JSON.parse(result);
       
       expect(parsed.scope).toContain('api');
+    });
+
+    it('should include matchResults and hasCritical from matchAll', async () => {
+      mocks.matchAll.mockResolvedValue([
+        { matchType: 'danger_zone', severity: 'critical', component: 'test', title: '', description: '', source: '', recommendation: '' }
+      ]);
+      const result = await mathaBrief(mathaDir);
+      const parsed = JSON.parse(result);
+
+      expect(parsed.matchResults).toBeDefined();
+      expect(parsed.matchResults).toHaveLength(1);
+      expect(parsed.hasCritical).toBe(true);
+    });
+  });
+
+  describe('matha_match', () => {
+    it('returns structured summary of matchAll results', async () => {
+      mocks.matchAll.mockResolvedValue([
+        { matchType: 'danger_zone', severity: 'critical', component: 'api', title: 'A', description: 'B', source: 'C', recommendation: 'D' },
+        { matchType: 'decision_pattern', severity: 'warning', component: 'api', title: 'E', description: 'F', source: 'G', recommendation: 'H' },
+        { matchType: 'contract', severity: 'info', component: 'api', title: 'I', description: 'J', source: 'K', recommendation: 'L' }
+      ]);
+
+      const result = await mathaMatch(mathaDir, 'api', 'Update api');
+      const parsed = JSON.parse(result);
+
+      expect(parsed.results).toHaveLength(3);
+      expect(parsed.hasCritical).toBe(true);
+      expect(parsed.summary).toEqual({
+        critical: 1,
+        warning: 1,
+        info: 1,
+        total: 3
+      });
+    });
+
+    it('returns empty results and false hasCritical if no matches', async () => {
+      mocks.matchAll.mockResolvedValue([]);
+
+      const result = await mathaMatch(mathaDir, 'ui', 'Fix ui');
+      const parsed = JSON.parse(result);
+
+      expect(parsed.results).toEqual([]);
+      expect(parsed.hasCritical).toBe(false);
+      expect(parsed.summary).toEqual({
+        critical: 0,
+        warning: 0,
+        info: 0,
+        total: 0
+      });
+    });
+
+    it('handles errors gracefully without throwing', async () => {
+      mocks.matchAll.mockRejectedValue(new Error('Internal failure'));
+
+      const result = await mathaMatch(mathaDir, 'api', 'Update');
+      const parsed = JSON.parse(result);
+
+      expect(parsed.results).toEqual([]);
+      expect(parsed.hasCritical).toBe(false);
+      expect(parsed.error).toContain('Internal failure');
     });
   });
 

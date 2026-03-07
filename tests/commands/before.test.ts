@@ -2,6 +2,15 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { runBefore } from '@/commands/before.js';
+import { vi } from 'vitest';
+
+const mocks = vi.hoisted(() => ({
+  matchAll: vi.fn().mockResolvedValue([]),
+}));
+
+vi.mock('@/analysis/contract-matcher.js', () => ({
+  matchAll: mocks.matchAll,
+}));
 
 // Test helpers
 async function createTmpDir(): Promise<string> {
@@ -157,40 +166,112 @@ describe('before command', () => {
     expect(result.brief.scope).toBe('src/api.ts, src/utils.ts');
     expect(result.brief.operationType).toBe('business_logic');
     expect(result.brief.assertions).toContain('API returns valid JSON');
+    expect(result.brief.matchResults).toEqual([]);
+    expect(result.brief.hasCritical).toBe(false);
   });
 
-  it('should surface danger zones matching scope', async () => {
-    await initProject(tmpDir);
-
-    let dangerZonesSurfaced = false;
-    const result = await runBefore(tmpDir, {
-      ask: async (question: string) => {
-        if (question.includes('components')) {
-          // Match "storage" which has a danger zone
-          return 'storage';
-        }
-        if (question.includes('about to build')) {
-          return 'Update storage';
-        }
-        if (question.includes('behaviour contract')) {
-          return '';
-        }
-        if (question.includes('type of operation')) {
-          return '2';
-        }
-        return '';
-      },
-      log: (msg: string) => {
-        if (msg.includes('DANGER ZONES') || msg.includes('DANGER ZONE 001')) {
-          dangerZonesSurfaced = true;
-        }
-      },
-      now: () => new Date('2026-03-04T14:30:22.000Z'),
+  describe('Contract Matcher Integration (Gate 04)', () => {
+    afterEach(() => {
+      mocks.matchAll.mockReset();
+      mocks.matchAll.mockResolvedValue([]);
     });
 
-    expect(result.exitCode).toBe(0);
-    expect(dangerZonesSurfaced).toBe(true);
-    expect(result.brief.dangerZones.length).toBeGreaterThan(0);
+    it('should surface critical, warning, and info results gracefully', async () => {
+      await initProject(tmpDir);
+
+      mocks.matchAll.mockResolvedValue([
+        {
+          matchType: 'danger_zone',
+          severity: 'critical',
+          title: 'Danger Zone: storage',
+          description: 'Always use atomic write pattern',
+          source: 'danger-zones.json',
+          component: 'storage',
+          recommendation: 'Review danger zone before proceeding',
+        },
+        {
+          matchType: 'decision_pattern',
+          severity: 'warning',
+          title: 'Prior Decision: storage',
+          description: 'Previous: X. Correction: Y',
+          source: 'hippocampus/decisions',
+          component: 'storage',
+          recommendation: 'Be aware',
+        },
+        {
+          matchType: 'contract',
+          severity: 'info',
+          title: 'Contract: storage',
+          description: 'Contract is currently clean.',
+          source: 'contracts',
+          component: 'storage',
+          recommendation: 'Verify assertions',
+        }
+      ]);
+
+      let logs: string[] = [];
+      const result = await runBefore(tmpDir, {
+        ask: async (question: string) => {
+          if (question.includes('components')) return 'storage';
+          if (question.includes('about to build')) return 'Update storage';
+          if (question.includes('behaviour contract')) return 'A\n';
+          if (question.includes('type of operation')) return '2';
+          return '';
+        },
+        log: (msg: string) => logs.push(msg),
+        now: () => new Date('2026-03-04T14:30:22.000Z'),
+      });
+
+      expect(result.exitCode).toBe(0);
+      const output = logs.join('\n');
+      
+      // Verification of display formatting
+      expect(output).toContain('🚨 CRITICAL — 1 issue(s) require attention:');
+      expect(output).toContain('✗ Danger Zone: storage');
+      expect(output).toContain('Always use atomic write pattern');
+      expect(output).toContain('→ Review danger zone before proceeding');
+      
+      expect(output).toContain('⚠  WARNINGS — 1 prior finding(s):');
+      expect(output).toContain('· Prior Decision: storage');
+      expect(output).toContain('Previous: X. Correction: Y');
+      
+      expect(output).toContain('ℹ  CONTEXT — 1 relevant contract(s):');
+      expect(output).toContain('· Contract: storage — Contract is currently clean.');
+      
+      // Verification of SessionBrief
+      expect(result.brief.matchResults).toHaveLength(3);
+      expect(result.brief.hasCritical).toBe(true);
+      
+      // READY TO BUILD is distinct
+      expect(output).toContain('⚠ Critical issues detected — proceed with caution');
+      expect(result.readyToBuild).toBe(true); // never blocks
+    });
+
+    it('should show clean checkmark if no issues found', async () => {
+      await initProject(tmpDir);
+      mocks.matchAll.mockResolvedValue([]);
+
+      let logs: string[] = [];
+      const result = await runBefore(tmpDir, {
+        ask: async (question: string) => {
+          if (question.includes('components')) return 'storage';
+          if (question.includes('about to build')) return 'Update storage';
+          if (question.includes('behaviour contract')) return 'A\n';
+          if (question.includes('type of operation')) return '2';
+          return '';
+        },
+        log: (msg: string) => logs.push(msg),
+        now: () => new Date('2026-03-04T14:30:22.000Z'),
+      });
+
+      expect(result.exitCode).toBe(0);
+      const output = logs.join('\n');
+      
+      expect(output).toContain('✓ No issues detected for this scope.');
+      expect(result.brief.matchResults).toEqual([]);
+      expect(result.brief.hasCritical).toBe(false);
+      expect(output).not.toContain('⚠ Critical issues detected');
+    });
   });
 
   it('should handle skipped contract gracefully', async () => {
@@ -383,33 +464,25 @@ describe('before command', () => {
     expect(result.brief.business_rules).toContain('rule2');
   });
 
-  it('should display "No danger zones" when none match scope', async () => {
+  it('should display "No issues detected" when none match scope', async () => {
     await initProject(tmpDir);
+    mocks.matchAll.mockResolvedValue([]);
 
     let outputLog: string[] = [];
     const result = await runBefore(tmpDir, {
       ask: async (question: string) => {
-        if (question.includes('about to build')) {
-          return 'Test';
-        }
-        if (question.includes('components')) {
-          return 'nonexistent/component.ts'; // No matching danger zone
-        }
-        if (question.includes('behaviour contract')) {
-          return '';
-        }
-        if (question.includes('type of operation')) {
-          return '1';
-        }
+        if (question.includes('about to build')) return 'Test';
+        if (question.includes('components')) return 'nonexistent/component.ts';
+        if (question.includes('behaviour contract')) return '';
+        if (question.includes('type of operation')) return '1';
         return '';
       },
-      log: (msg: string) => {
-        outputLog.push(msg);
-      },
+      log: (msg: string) => outputLog.push(msg),
       now: () => new Date('2026-03-04T14:30:22.000Z'),
     });
 
     expect(result.exitCode).toBe(0);
-    expect(result.brief.dangerZones.length).toBe(0);
+    expect(result.brief.matchResults.length).toBe(0);
+    expect(outputLog.join('\n')).toContain('No issues detected for this scope');
   });
 });

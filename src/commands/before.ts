@@ -2,10 +2,11 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { readJsonOrNull, readJson } from '@/storage/reader.js';
 import { writeAtomic } from '@/storage/writer.js';
-import { getIntent, getRules, getDangerZones } from '@/brain/hippocampus.js';
+import { getIntent, getRules } from '@/brain/hippocampus.js';
 import type { SessionBrief, SessionContext } from '@/brain/frontal-lobe.js';
 import { checkSchemaVersion, getSchemaMessage } from '@/utils/schema-version.js';
 import { getSnapshot, getStability } from '@/brain/cortex.js';
+import { matchAll, MatchContext, MatchResult } from '@/analysis/contract-matcher.js';
 
 interface BeforeDeps {
   ask?: (question: string) => Promise<string>;
@@ -133,23 +134,52 @@ async function runBefore(projectRoot: string = process.cwd(), deps?: BeforeDeps)
     log('\n  Cortex empty — run matha init or commit some code\n');
   }
 
-  // GATE 04 — SURFACE DANGER: Get danger zones and display
-  let dangerZones: any[] = [];
+  // GATE 04 — SENSE PAST HISTORY: Run Contract Matcher
+  const matchContext: MatchContext = {
+    scope,
+    intent: operationDescription,
+    operationType: 'unknown',
+    filepaths: scope.split(',').map((s: string) => s.trim()).filter(Boolean),
+  };
+
+  let matchResults: MatchResult[] = [];
   try {
-    dangerZones = await getDangerZones(mathaDir, scope);
+    matchResults = await matchAll(matchContext, mathaDir);
   } catch {
-    // Gracefully handle missing danger zones
-    dangerZones = [];
+    matchResults = [];
   }
 
-  if (dangerZones.length > 0) {
-    log('\n⚠ DANGER ZONES DETECTED:');
-    for (const zone of dangerZones) {
-      log(`  · ${zone.component}: ${zone.description}`);
+  const criticals = matchResults.filter(r => r.severity === 'critical');
+  const warnings = matchResults.filter(r => r.severity === 'warning');
+  const infos = matchResults.filter(r => r.severity === 'info');
+  const hasCritical = criticals.length > 0;
+
+  if (matchResults.length === 0) {
+    log('\n✓ No issues detected for this scope.\n');
+  } else {
+    log('');
+    if (criticals.length > 0) {
+      log(`🚨 CRITICAL — ${criticals.length} issue(s) require attention:`);
+      for (const res of criticals) {
+        log(`  ✗ ${res.title}`);
+        log(`    ${res.description}`);
+        log(`    → ${res.recommendation}`);
+      }
+    }
+    if (warnings.length > 0) {
+      log(`⚠  WARNINGS — ${warnings.length} prior finding(s):`);
+      for (const res of warnings) {
+        log(`  · ${res.title}`);
+        log(`    ${res.description}`);
+      }
+    }
+    if (infos.length > 0) {
+      log(`ℹ  CONTEXT — ${infos.length} relevant contract(s):`);
+      for (const res of infos) {
+        log(`  · ${res.title} — ${res.description}`);
+      }
     }
     log('');
-  } else {
-    log('\n✓ No danger zones match this scope.\n');
   }
 
   // GATE 05 — CONTRACT: Write the behaviour contract
@@ -195,10 +225,10 @@ async function runBefore(projectRoot: string = process.cwd(), deps?: BeforeDeps)
     timestamp,
     operation_description: operationDescription,
     why: '', // Not collected interactively - would be from Gate 01 in full flow
-    bounds: businessRules,
-    dangerZones,
-    contract: assertions,
     business_rules: businessRules,
+    matchResults,
+    hasCritical,
+    contract: assertions,
     assertions,
     modelTier,
     tokenBudget,
@@ -249,10 +279,10 @@ async function runBefore(projectRoot: string = process.cwd(), deps?: BeforeDeps)
   }
   log('');
 
-  log('DANGER ZONES:');
-  if (dangerZones.length > 0) {
-    for (const zone of dangerZones) {
-      log(`  · ${zone.component}: ${zone.description}`);
+  log('MATCH RESULTS:');
+  if (matchResults.length > 0) {
+    for (const res of matchResults) {
+      log(`  · [${res.severity.toUpperCase()}] ${res.title}`);
     }
   } else {
     log('  None detected');
@@ -271,6 +301,9 @@ async function runBefore(projectRoot: string = process.cwd(), deps?: BeforeDeps)
 
   log('════════════════════════════════════════');
   log(`READY TO BUILD: ${brief.readyToBuild ? 'YES' : 'NO (advisory only)'}`);
+  if (hasCritical) {
+    log('⚠ Critical issues detected — proceed with caution');
+  }
   log('════════════════════════════════════════\n');
 
   log('Paste this brief into your AI agent before starting.\n');
