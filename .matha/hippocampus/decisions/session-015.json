@@ -1,0 +1,10 @@
+{
+    "id": "session-015",
+    "timestamp": "2026-03-07T00:00:00Z",
+    "component": "analysis/contract-matcher",
+    "previous_assumption": "Semantic/AI-based matching would be needed for useful danger zone detection",
+    "correction": "Deterministic rule-based matching with keyword extraction and case-insensitive substring is sufficient and far more predictable. Fast, testable, no external dependencies. Semantic matching deferred to post-v1.",
+    "trigger": "phase-2-session-15",
+    "confidence": "confirmed",
+    "status": "active"
+}
