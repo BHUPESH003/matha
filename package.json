@@ -1,20 +1,27 @@
 {
   "name": "matha",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "MATHA: Persistent cognitive layer for AI-assisted development",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "test": "vitest",
-    "dev": "tsx src/index.ts"
+    "dev": "tsx src/index.ts",
+    "serve": "tsx src/index.ts serve",
+    "cli": "tsx src/index.ts"
   },
   "bin": {
     "matha": "./dist/index.js"
   },
-  "keywords": [],
+  "type": "module",
+  "keywords": [
+    "ai",
+    "cognitive",
+    "memory",
+    "development"
+  ],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",
     "commander": "^14.0.3",
@@ -24,6 +31,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.3.3",
+    "tsc-alias": "^1.8.16",
     "tsx": "^4.21.0",
     "vitest": "^4.0.18"
   }

@@ -1,0 +1,12 @@
+{
+  "session_id": "20260305-000713-7b6a",
+  "timestamp": "2026-03-04T18:37:13.566Z",
+  "operation_type": "business_logic",
+  "scope": "mcp directory",
+  "predicted": {
+    "model_tier": "capable",
+    "token_budget": 8000
+  },
+  "actual": null,
+  "delta": null
+}

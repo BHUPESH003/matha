@@ -1,0 +1,10 @@
+{
+  "zones": [
+    {
+      "id": "20260305-000713-7b6a-danger",
+      "component": "mcp directory",
+      "pattern": "Session-discovered pattern",
+      "description": "type errors"
+    }
+  ]
+}

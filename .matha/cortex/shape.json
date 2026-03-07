@@ -1,0 +1,14 @@
+{
+  "directories": [
+    ".vscode",
+    "dist",
+    "src",
+    "tests"
+  ],
+  "detected_stack": [
+    "node",
+    "typescript"
+  ],
+  "file_count": 38,
+  "derived_at": "2026-03-04T18:29:30.462Z"
+}
