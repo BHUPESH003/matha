@@ -1,0 +1,10 @@
+{
+    "id": "session-019",
+    "timestamp": "2026-03-07T00:00:00Z",
+    "component": "brain/dopamine",
+    "previous_assumption": "Component confidence would track per-component accuracy using component names from delta records",
+    "correction": "Delta records don't carry component names — model_tier_used is the available proxy. ComponentConfidence entries represent tier behaviour not component behaviour. Accurate to the data we actually have. Component-level confidence deferred to post-v1 when session briefs carry richer metadata.",
+    "trigger": "phase-3-session-19",
+    "confidence": "confirmed",
+    "status": "active"
+}
