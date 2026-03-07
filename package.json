@@ -1,27 +1,51 @@
 {
   "name": "matha",
-  "version": "1.0.0",
-  "description": "MATHA: Persistent cognitive layer for AI-assisted development",
-  "main": "dist/index.js",
+  "version": "0.1.0",
+  "description": "The persistent cognitive layer for AI-assisted development. Gives AI agents the project context that currently only exists inside a senior engineer's head.",
+  "main": "./dist/index.js",
+  "bin": {
+    "matha": "dist/index.js"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc && tsc-alias",
     "test": "vitest",
     "dev": "tsx src/index.ts",
     "serve": "tsx src/index.ts serve",
-    "cli": "tsx src/index.ts"
-  },
-  "bin": {
-    "matha": "./dist/index.js"
+    "cli": "tsx src/index.ts",
+    "prepublishOnly": "npm run build && npx vitest run"
   },
   "type": "module",
   "keywords": [
     "ai",
-    "cognitive",
+    "mcp",
+    "llm",
+    "context",
     "memory",
-    "development"
+    "claude",
+    "cursor",
+    "copilot",
+    "developer-tools",
+    "productivity",
+    "model-context-protocol"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "Bhupesh",
+  "license": "MIT",
+  "homepage": "https://github.com/bhupesh003/matha#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bhupesh003/matha.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bhupesh003/matha/issues"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",
     "commander": "^14.0.3",

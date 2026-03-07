@@ -9,7 +9,7 @@ const program = new Command();
 program
     .name('matha')
     .description('MATHA: Persistent cognitive layer for AI-assisted development')
-    .version('1.0.0');
+    .version('0.1.0');
 // ──────────────────────────────────────────────────────────────────────
 // INIT COMMAND
 // ──────────────────────────────────────────────────────────────────────

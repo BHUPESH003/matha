@@ -1,0 +1,25 @@
+# Source — not needed in published package
+src/
+tests/
+
+# TypeScript / build config
+tsconfig.json
+vitest.config.ts
+
+# Documentation (not needed in package, README.md kept below)
+docs/
+CONTRIBUTING.md
+
+# Dev / brain data
+.matha/
+/tmp/
+
+# All markdown except README
+*.md
+!README.md
+
+# OS artifacts
+.DS_Store
+
+# Dependencies (never publish these)
+node_modules/
