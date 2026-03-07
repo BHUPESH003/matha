@@ -1,0 +1,12 @@
+{
+  "id": "20260307-221610-183e-decision",
+  "timestamp": "2026-03-07T16:46:10.924Z",
+  "component": "README.md, docs/pamm-case-study.md",
+  "previous_assumption": "y",
+  "correction": "y",
+  "trigger": "20260307-221610-183e",
+  "confidence": "confirmed",
+  "status": "active",
+  "supersedes": null,
+  "session_id": "20260307-221610-183e"
+}

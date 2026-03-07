@@ -5,6 +5,7 @@ import { getRules } from '../brain/hippocampus.js';
 import { checkSchemaVersion, getSchemaMessage } from '../utils/schema-version.js';
 import { getSnapshot, getStability } from '../brain/cortex.js';
 import { matchAll } from '../analysis/contract-matcher.js';
+import { getRecommendation } from '../brain/dopamine.js';
 // Operation type mapping from menu choice to operation_type
 const operationTypeMap = {
     '1': 'rename',
@@ -173,7 +174,26 @@ async function runBefore(projectRoot = process.cwd(), deps) {
     log('');
     const operationTypeChoice = await ask('What type of operation is this? (1-5):');
     const operationType = operationTypeMap[operationTypeChoice] || 'rename';
-    const { modelTier, tokenBudget } = modelTierBudget[operationType];
+    const rec = await getRecommendation(mathaDir, operationType);
+    const defaultDef = modelTierBudget[operationType];
+    const modelTier = rec.tier;
+    const tokenBudget = rec.budget;
+    if (rec.source === 'learned') {
+        log(`Model: ${modelTier} (budget: ${tokenBudget} tokens) — learned from ${rec.sample_size} sessions (${rec.confidence} confidence)`);
+        if (modelTier !== defaultDef.modelTier) {
+            const isUpgrade = (modelTier === 'capable' && (defaultDef.modelTier === 'mid' || defaultDef.modelTier === 'lightweight')) ||
+                (modelTier === 'mid' && defaultDef.modelTier === 'lightweight');
+            if (isUpgrade) {
+                log(`  ↑ Upgraded from ${defaultDef.modelTier} based on history`);
+            }
+            else {
+                log(`  ↓ Downgraded from ${defaultDef.modelTier} based on history`);
+            }
+        }
+    }
+    else {
+        log(`Model: ${modelTier} (budget: ${tokenBudget} tokens) — default (insufficient history for this operation type)`);
+    }
     // Read hippocampus context
     let businessRules = [];
     try {
@@ -198,6 +218,8 @@ async function runBefore(projectRoot = process.cwd(), deps) {
         assertions,
         modelTier,
         tokenBudget,
+        routingSource: rec.source,
+        routingConfidence: rec.confidence,
         gatesCompleted: [1, 2, 3, 4, 5, 6],
         readyToBuild,
         cortexSummary: cortexSnapshot?.summary ?? null,
@@ -228,7 +250,8 @@ async function runBefore(projectRoot = process.cwd(), deps) {
     log(`SCOPE:    ${scope}`);
     log(`WHAT:     ${operationDescription}`);
     log(`TYPE:     ${operationType}`);
-    log(`MODEL:    ${modelTier} (budget: ${tokenBudget} tokens)\n`);
+    const learnedSuffix = rec.source === 'learned' ? ` — learned from ${rec.sample_size} sessions (${rec.confidence} confidence)` : ' — default';
+    log(`MODEL:    ${modelTier} (budget: ${tokenBudget} tokens)${learnedSuffix}\n`);
     log('BUSINESS RULES:');
     if (businessRules.length > 0) {
         for (const rule of businessRules) {

@@ -5,6 +5,12 @@
       "component": "mcp directory",
       "pattern": "Session-discovered pattern",
       "description": "type errors"
+    },
+    {
+      "id": "20260307-221610-183e-danger",
+      "component": "README.md, docs/pamm-case-study.md",
+      "pattern": "Session-discovered pattern",
+      "description": "1500"
     }
   ]
 }

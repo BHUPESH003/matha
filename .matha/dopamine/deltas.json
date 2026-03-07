@@ -16,5 +16,14 @@
     "token_delta": null,
     "files_changed": 1,
     "model_tier_used": "capable"
+  },
+  {
+    "session_id": "20260307-221610-183e",
+    "timestamp": "2026-03-07T16:46:10.924Z",
+    "operation_type": "rename",
+    "contract_result": "none",
+    "token_delta": null,
+    "files_changed": 0,
+    "model_tier_used": "mid"
   }
 ]
