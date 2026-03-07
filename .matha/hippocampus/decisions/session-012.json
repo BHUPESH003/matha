@@ -1,0 +1,10 @@
+{
+    "id": "session-012",
+    "timestamp": "2026-03-07T00:00:00Z",
+    "component": "brain/cortex",
+    "previous_assumption": "Declared overrides would need a separate file from derived classifications",
+    "correction": "Single stability.json with classificationSource field per record is cleaner. Declared and derived coexist in same file. refreshFromGit checks source before overwriting. Simpler reads, simpler writes.",
+    "trigger": "phase-1-session-12",
+    "confidence": "confirmed",
+    "status": "active"
+}
