@@ -1,5 +1,5 @@
 {
-  "name": "matha",
+  "name": "@10kdevs/matha",
   "version": "0.1.0",
   "description": "The persistent cognitive layer for AI-assisted development. Gives AI agents the project context that currently only exists inside a senior engineer's head.",
   "main": "./dist/index.js",

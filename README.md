@@ -60,12 +60,12 @@ The write-back from `matha after` means that correction never has to be made twi
 ## Installation
 
 ```bash
-npm install -g matha
+npm install -g @10kdevs/matha
 ```
 
 Zero-install first run:
 ```bash
-npx matha init
+npx @10kdevs/matha init
 ```
 
 Requires Node.js 20+. No API key. No cloud dependency. All data stays in your repository.
