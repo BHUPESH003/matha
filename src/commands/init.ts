@@ -186,6 +186,29 @@ export async function runInit(
     log('No git history found — cortex will build as commits accumulate')
   }
 
+  // Write MCP server config
+  try {
+    const mcpServerPath = await resolveMcpServerPath(projectRoot)
+    const mcpConfigContent = {
+      mcpServers: {
+        matha: {
+          command: 'node',
+          args: [mcpServerPath, 'serve'],
+          description: 'MATHA persistent cognitive layer',
+        },
+      },
+    }
+    const mcpConfigPath = path.join(mathaDir, 'mcp-config.json')
+    await writeAtomic(mcpConfigPath, mcpConfigContent, { overwrite: true })
+    
+    log('')
+    log('MCP server config written to .matha/mcp-config.json')
+    log('Add this to your IDE MCP settings:')
+    log(JSON.stringify(mcpConfigContent, null, 2))
+  } catch (err) {
+    log(`Warning: Could not write MCP config: ${(err as Error).message}`)
+  }
+
   return {
     projectRoot,
     brainDir: '.matha',
@@ -338,3 +361,16 @@ async function defaultAsk(message: string): Promise<string> {
   const prompts = await import('@inquirer/prompts')
   return prompts.input({ message })
 }
+
+async function resolveMcpServerPath(projectRoot: string): Promise<string> {
+  // Try node_modules/.bin/matha first
+  const npmBinPath = path.join(projectRoot, 'node_modules', '.bin', 'matha')
+  if (await pathExists(npmBinPath)) {
+    return npmBinPath
+  }
+
+  // Fall back to dist/index.js
+  const distPath = path.join(projectRoot, 'dist', 'index.js')
+  return distPath
+}
+

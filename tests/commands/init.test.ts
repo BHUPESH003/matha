@@ -183,6 +183,44 @@ describe('init command', () => {
     expect(shape.directories).not.toContain('node_modules')
     expect(shape.directories).not.toContain('.git')
   })
+
+  it('mcp-config.json is written after init completes', async () => {
+    // Create dist/index.js as fallback so we have a predictable path
+    await fs.mkdir(path.join(tmpDir, 'dist'), { recursive: true })
+    await fs.writeFile(path.join(tmpDir, 'dist/index.js'), 'module.exports = {}', 'utf-8')
+
+    const logs: string[] = []
+    await runInit(tmpDir, {
+      ask: makeAsk(['why', '', '', '']),
+      log: (msg: string) => logs.push(msg),
+    })
+
+    // Check that mcp-config.json exists
+    const mcpConfigPath = path.join(tmpDir, '.matha/mcp-config.json')
+    await expect(fs.access(mcpConfigPath)).resolves.toBeUndefined()
+
+    // Check mcp-config.json structure and content
+    const mcpConfig = JSON.parse(
+      await fs.readFile(mcpConfigPath, 'utf-8'),
+    )
+
+    expect(mcpConfig.mcpServers).toBeDefined()
+    expect(mcpConfig.mcpServers.matha).toBeDefined()
+    expect(mcpConfig.mcpServers.matha.command).toBe('node')
+    expect(mcpConfig.mcpServers.matha.description).toBe('MATHA persistent cognitive layer')
+    expect(Array.isArray(mcpConfig.mcpServers.matha.args)).toBe(true)
+    expect(mcpConfig.mcpServers.matha.args).toHaveLength(2)
+    expect(mcpConfig.mcpServers.matha.args[1]).toBe('serve')
+
+    // Check that the path is absolute
+    const mcpPath = mcpConfig.mcpServers.matha.args[0]
+    expect(path.isAbsolute(mcpPath)).toBe(true)
+
+    // Check that log message was printed
+    const allLogs = logs.join('\n')
+    expect(allLogs).toContain('MCP server config written to .matha/mcp-config.json')
+    expect(allLogs).toContain('Add this to your IDE MCP settings')
+  })
 })
 
 describe('init command --from (seed)', () => {
