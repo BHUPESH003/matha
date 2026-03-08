@@ -162,14 +162,59 @@ matha_get_routing(operationType?)   Learned model routing rules
 ## Initialising From An Existing Document
 
 If your project already has a BRD, spec, or requirements document:
+## Setting Up Your Project Brain
+
+Before running `matha init`, generate a `requirements.md` file that 
+captures your project's intent, rules, and boundaries in a format 
+MATHA understands deeply.
+
+**Paste this prompt into any AI assistant:**
+```
+I am setting up MATHA — a persistent cognitive layer for AI-assisted 
+development. I need you to generate a requirements.md file for my 
+project that MATHA will parse during initialisation.
+
+My project: [describe your project in 2-3 sentences]
+
+Generate a requirements.md with exactly these sections:
+
+## Overview
+A concise paragraph explaining what problem this project solves 
+and why it exists. Focus on the WHY, not the features.
+
+## Business Rules
+A bullet list of non-negotiable rules that must always be true.
+These are constraints the codebase must never violate.
+Examples: calculation logic, data integrity rules, 
+financial constraints, domain-specific invariants.
+
+## Out of Scope
+A bullet list of things this project explicitly does NOT do.
+These are boundaries that protect the system from scope creep.
+
+## Owner
+The name or team responsible for this project.
+
+Be specific and precise. Vague rules are useless. 
+Each rule should be concrete enough that a developer 
+who has never seen the codebase understands exactly 
+what it means.
+```
+
+Then run:
 
 ```bash
 matha init --from requirements.md
 ```
 
+MATHA will parse the document, show you what it found, 
+and let you confirm or override before writing anything.
+
+
 MATHA parses business rules, boundaries, and intent from the document and pre-fills the init prompts. You review and confirm. Nothing is written without your sign-off.
 
 ---
+
 
 ## What MATHA Is Not
 
