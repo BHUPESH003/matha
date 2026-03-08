@@ -16,8 +16,12 @@ import { checkSchemaVersion, getSchemaMessage } from '../utils/schema-version.js
  * - WRITE: matha_record_decision, matha_record_danger, matha_record_contract
  */
 const server = new Server({
-    name: 'MATHA',
-    version: '1.0.0',
+    name: 'matha',
+    version: '0.1.0'
+}, {
+    capabilities: {
+        tools: {}
+    }
 });
 let mathaDir;
 // ──────────────────────────────────────────────────────────────────────
