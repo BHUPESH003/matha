@@ -295,7 +295,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
  * 4. Write mcp-config.json with absolute paths for this session
  */
 async function initialize(): Promise<void> {
-  const cwd = process.cwd();
+  const explicitRoot = process.argv[3]
+  const cwd = explicitRoot || process.cwd()
 
   // Try to find existing .matha directory
   let found = false;
