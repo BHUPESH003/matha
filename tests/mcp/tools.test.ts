@@ -291,20 +291,30 @@ describe('MCP tools', () => {
       expect(parsed.stability['src/experimental.ts'].stability).toBe('volatile');
     });
 
-    it('should return null for files not in stability.json', async () => {
+    it('should return unknown stability for files not in stability.json', async () => {
       const result = await mathaGetStability(mathaDir, ['src/unknown.ts']);
       const parsed = JSON.parse(result);
       
-      expect(parsed.stability['src/unknown.ts']).toBeNull();
+      expect(parsed.stability['src/unknown.ts']).toEqual({
+        filepath: 'src/unknown.ts',
+        stability: 'unknown',
+        confidence: 'low',
+        reason: 'No git history found for this file'
+      });
     });
 
-    it('should return null for all files if stability.json missing', async () => {
+    it('should return unknown stability for all files if stability.json missing', async () => {
       await fs.rm(path.join(mathaDir, 'cortex/stability.json'));
       
       const result = await mathaGetStability(mathaDir, ['src/api.ts']);
       const parsed = JSON.parse(result);
       
-      expect(parsed.stability['src/api.ts']).toBeNull();
+      expect(parsed.stability['src/api.ts']).toEqual({
+        filepath: 'src/api.ts',
+        stability: 'unknown',
+        confidence: 'low',
+        reason: 'No git history found for this file'
+      });
     });
   });
 
