@@ -81,13 +81,33 @@ export async function mathaGetStability(
   files: string[],
 ): Promise<string> {
   try {
-    const stability = await getStability(mathaDir, files);
+    const snapshot = await getSnapshot(mathaDir);
+    const allRecords = snapshot?.stability || [];
+    const stability: Record<string, any> = {};
+    for (const file of files) {
+      const cleanFile = file.replace(/^\/+/, '').toLowerCase();
+      const match = allRecords.find((r: any) => r.filepath.replace(/^\/+/, '').toLowerCase() === cleanFile);
+      if (match) {
+        stability[file] = match;
+      } else {
+        stability[file] = {
+          filepath: file,
+          stability: 'unknown',
+          confidence: 'low',
+          reason: 'No git history found for this file'
+        };
+      }
+    }
     return JSON.stringify({ stability });
   } catch (err: any) {
-    // On any error, return null for all
-    const stability: Record<string, null> = {};
+    const stability: Record<string, any> = {};
     for (const file of files) {
-      stability[file] = null;
+      stability[file] = {
+        filepath: file,
+        stability: 'unknown',
+        confidence: 'low',
+        reason: 'No git history found for this file'
+      };
     }
     return JSON.stringify({ stability });
   }
@@ -207,8 +227,7 @@ export async function mathaBrief(
       const intentPath = path.join(mathaDir, 'hippocampus/intent.json');
       const intent = await readJsonOrNull<{ why?: string }>(intentPath);
 
-      const rules = await getRules(mathaDir).catch(() => []);
-      const parsedRules = typeof rules === 'string' ? JSON.parse(rules).rules : [];
+      const parsedRules = await getRules(mathaDir).catch(() => []);
 
       baseResponse = {
         why: intent?.why ?? '',
@@ -217,11 +236,12 @@ export async function mathaBrief(
     }
 
     // Augment with matchAll
+    const usedScope = baseResponse.scope || scope || '';
     const matchContext: MatchContext = {
-      scope: baseResponse.scope || '',
-      intent: baseResponse.operation_description || baseResponse.why || '',
+      scope: usedScope,
+      intent: baseResponse.operation_description || baseResponse.why || ('reviewing project context for ' + (usedScope || 'general work')),
       operationType: baseResponse.operationType || 'unknown',
-      filepaths: (baseResponse.scope || '').split(',').map((s: string) => s.trim()).filter(Boolean),
+      filepaths: usedScope ? usedScope.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
     };
 
     let matchResults: any[] = [];
@@ -390,9 +410,42 @@ export async function mathaMatch(
       summary,
     });
   } catch (err: any) {
-    return JSON.stringify({ error: `Failed to run contract matcher: ${err.message}`, results: [], hasCritical: false });
+    return JSON.stringify({
+      error: `Failed to run contract matcher: ${err.message}`,
+      results: [],
+      hasCritical: false,
+      summary: { critical: 0, warning: 0, info: 0, total: 0 }
+    });
   }
 }
+
+export const mathaMatchToolDefinition = {
+  name: 'matha_match',
+  description: 'Matches current operation context against all known danger zones, contracts, frozen files, and prior decisions. Call this before making any changes to understand what the brain knows about this area. Returns critical warnings, prior findings, and contract context.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      scope: {
+        type: 'string',
+        description: 'Files or components being changed (comma-separated)'
+      },
+      intent: {
+        type: 'string',
+        description: 'What you are trying to do'
+      },
+      operationType: {
+        type: 'string',
+        description: 'Operation type: rename/crud, business_logic, architecture, frozen_component, unknown'
+      },
+      filepaths: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Specific files that will be modified'
+      }
+    },
+    required: ['scope', 'intent']
+  }
+};
 
 /**
  * matha_get_routing: Close the Dopamine Loop.
