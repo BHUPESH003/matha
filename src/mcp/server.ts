@@ -1,12 +1,12 @@
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
   Tool,
-} from '@modelcontextprotocol/sdk/types.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import * as fs from 'fs/promises';
-import * as path from 'path';
+} from "@modelcontextprotocol/sdk/types.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import * as fs from "fs/promises";
+import * as path from "path";
 import {
   mathaGetRules,
   mathaGetDangerZones,
@@ -16,8 +16,12 @@ import {
   mathaRecordDecision,
   mathaRecordDanger,
   mathaRecordContract,
-} from './tools.js';
-import { checkSchemaVersion, getSchemaMessage } from '@/utils/schema-version.js';
+  mathaMatch,
+} from "./tools.js";
+import {
+  checkSchemaVersion,
+  getSchemaMessage,
+} from "@/utils/schema-version.js";
 
 /**
  * MATHA MCP Server
@@ -32,15 +36,15 @@ import { checkSchemaVersion, getSchemaMessage } from '@/utils/schema-version.js'
 
 const server = new Server(
   {
-    name: 'matha',
-    version: '0.1.0'
+    name: "matha",
+    version: "0.1.0",
   },
   {
     capabilities: {
-      tools: {}
-    }
-  }
-)
+      tools: {},
+    },
+  },
+);
 
 let mathaDir: string;
 
@@ -50,146 +54,180 @@ let mathaDir: string;
 
 const tools: Tool[] = [
   {
-    name: 'matha_get_rules',
+    name: "matha_get_rules",
     description:
-      'Returns all non-negotiable business rules for the project. Used to understand project constraints.',
+      "Returns all non-negotiable business rules for the project. Used to understand project constraints.",
     inputSchema: {
-      type: 'object' as const,
+      type: "object" as const,
       properties: {},
       required: [],
     },
   },
   {
-    name: 'matha_get_danger_zones',
+    name: "matha_get_danger_zones",
     description:
-      'Returns identified danger zones (patterns to avoid). Optionally filter by context.',
+      "Returns identified danger zones (patterns to avoid). Optionally filter by context.",
     inputSchema: {
-      type: 'object' as const,
+      type: "object" as const,
       properties: {
         context: {
-          type: 'string',
-          description: 'Optional context to filter danger zones (e.g., component name)',
+          type: "string",
+          description:
+            "Optional context to filter danger zones (e.g., component name)",
         },
       },
       required: [],
     },
   },
   {
-    name: 'matha_get_decisions',
+    name: "matha_get_decisions",
     description:
-      'Returns past decisions made on this project. Optionally filter by component.',
+      "Returns past decisions made on this project. Optionally filter by component.",
     inputSchema: {
-      type: 'object' as const,
+      type: "object" as const,
       properties: {
         component: {
-          type: 'string',
-          description: 'Optional component name to filter decisions',
+          type: "string",
+          description: "Optional component name to filter decisions",
         },
         limit: {
-          type: 'number',
-          description: 'Optional limit on number of results',
+          type: "number",
+          description: "Optional limit on number of results",
         },
       },
       required: [],
     },
   },
   {
-    name: 'matha_get_stability',
+    name: "matha_get_stability",
     description:
-      'Returns stability classification for specified files. Stability indicates how mature/frozen a file is.',
+      "Returns stability classification for specified files. Stability indicates how mature/frozen a file is.",
     inputSchema: {
-      type: 'object' as const,
+      type: "object" as const,
       properties: {
         files: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'Array of file paths to check stability for',
+          type: "array",
+          items: { type: "string" },
+          description: "Array of file paths to check stability for",
         },
       },
-      required: ['files'],
+      required: ["files"],
     },
   },
   {
-    name: 'matha_brief',
+    name: "matha_brief",
     description:
-      'Returns the most recent session brief, or intent + rules if no session exists. Used to understand current project state.',
+      "Returns the most recent session brief, or intent + rules if no session exists. Used to understand current project state.",
     inputSchema: {
-      type: 'object' as const,
+      type: "object" as const,
       properties: {
         scope: {
-          type: 'string',
-          description: 'Optional scope to filter session brief',
+          type: "string",
+          description: "Optional scope to filter session brief",
         },
       },
       required: [],
     },
   },
   {
-    name: 'matha_record_decision',
+    name: "matha_record_decision",
     description:
       'Records a decision (learning) about what was assumed vs. what was discovered. Confidence defaults to "probable" (not "confirmed" which requires human verification).',
     inputSchema: {
-      type: 'object' as const,
+      type: "object" as const,
       properties: {
         component: {
-          type: 'string',
-          description: 'Component or file this decision relates to',
+          type: "string",
+          description: "Component or file this decision relates to",
         },
         previous_assumption: {
-          type: 'string',
-          description: 'What was previously thought to be true',
+          type: "string",
+          description: "What was previously thought to be true",
         },
         correction: {
-          type: 'string',
-          description: 'What was discovered to actually be true',
+          type: "string",
+          description: "What was discovered to actually be true",
         },
         confidence: {
-          type: 'string',
-          enum: ['confirmed', 'probable', 'uncertain'],
+          type: "string",
+          enum: ["confirmed", "probable", "uncertain"],
           description:
             'Confidence level. Default: probable (agent-level). Use "confirmed" only for human-verified facts.',
         },
       },
-      required: ['component', 'previous_assumption', 'correction'],
+      required: ["component", "previous_assumption", "correction"],
     },
   },
   {
-    name: 'matha_record_danger',
+    name: "matha_record_danger",
     description:
-      'Records a danger zone (pattern to avoid) discovered during development.',
+      "Records a danger zone (pattern to avoid) discovered during development.",
     inputSchema: {
-      type: 'object' as const,
+      type: "object" as const,
       properties: {
         component: {
-          type: 'string',
-          description: 'Component or file where danger zone was found',
+          type: "string",
+          description: "Component or file where danger zone was found",
         },
         description: {
-          type: 'string',
-          description: 'Description of the danger pattern',
+          type: "string",
+          description: "Description of the danger pattern",
         },
       },
-      required: ['component', 'description'],
+      required: ["component", "description"],
     },
   },
   {
-    name: 'matha_record_contract',
+    name: "matha_record_contract",
     description:
-      'Records a behaviour contract (set of invariant assertions) for a component. Overwrites existing contract for the same component.',
+      "Records a behaviour contract (set of invariant assertions) for a component. Overwrites existing contract for the same component.",
     inputSchema: {
-      type: 'object' as const,
+      type: "object" as const,
       properties: {
         component: {
-          type: 'string',
-          description: 'Component or file this contract applies to',
+          type: "string",
+          description: "Component or file this contract applies to",
         },
         assertions: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'List of invariant assertions (must remain true)',
+          type: "array",
+          items: { type: "string" },
+          description: "List of invariant assertions (must remain true)",
         },
       },
-      required: ['component', 'assertions'],
+      required: ["component", "assertions"],
+    },
+  },
+  {
+    name: "matha_match",
+    description:
+      "Matches current operation context against all known danger zones, " +
+      "contracts, frozen files, and prior decisions. Call this BEFORE making " +
+      "any changes to understand what the brain knows about this area. " +
+      "Returns critical warnings, prior findings, and contract context. " +
+      "A hasCritical:true result means proceed with caution.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        scope: {
+          type: "string",
+          description: "Files or components being changed (comma-separated)",
+        },
+        intent: {
+          type: "string",
+          description: "What you are trying to do",
+        },
+        operationType: {
+          type: "string",
+          description:
+            "rename/crud, business_logic, architecture, frozen_component, unknown",
+        },
+        filepaths: {
+          type: "array",
+          items: { type: "string" },
+          description: "Specific files that will be modified",
+        },
+      },
+      required: ["scope", "intent"],
     },
   },
 ];
@@ -210,49 +248,70 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
     let result: string;
 
     switch (name) {
-      case 'matha_get_rules':
+      case "matha_get_rules":
         result = await mathaGetRules(mathaDir);
         break;
 
-      case 'matha_get_danger_zones':
+      case "matha_get_danger_zones":
         result = await mathaGetDangerZones(mathaDir, args?.context);
         break;
 
-      case 'matha_get_decisions':
-        result = await mathaGetDecisions(mathaDir, args?.component, args?.limit);
+      case "matha_get_decisions":
+        result = await mathaGetDecisions(
+          mathaDir,
+          args?.component,
+          args?.limit,
+        );
         break;
 
-      case 'matha_get_stability':
+      case "matha_get_stability":
         result = await mathaGetStability(mathaDir, args?.files || []);
         break;
 
-      case 'matha_brief':
+      case "matha_brief":
         result = await mathaBrief(mathaDir, args?.scope);
         break;
 
-      case 'matha_record_decision':
+      case "matha_record_decision":
         result = await mathaRecordDecision(
           mathaDir,
           args?.component,
           args?.previous_assumption,
           args?.correction,
-          args?.confidence || 'probable',
+          args?.confidence || "probable",
         );
         break;
 
-      case 'matha_record_danger':
-        result = await mathaRecordDanger(mathaDir, args?.component, args?.description);
+      case "matha_record_danger":
+        result = await mathaRecordDanger(
+          mathaDir,
+          args?.component,
+          args?.description,
+        );
         break;
 
-      case 'matha_record_contract':
-        result = await mathaRecordContract(mathaDir, args?.component, args?.assertions);
+      case "matha_record_contract":
+        result = await mathaRecordContract(
+          mathaDir,
+          args?.component,
+          args?.assertions,
+        );
+        break;
+      case "matha_match":
+        result = await mathaMatch(
+          mathaDir,
+          args?.scope,
+          args?.intent,
+          args?.operationType,
+          args?.filepaths,
+        );
         break;
 
       default:
         return {
           content: [
             {
-              type: 'text',
+              type: "text",
               text: JSON.stringify({ error: `Unknown tool: ${name}` }),
             },
           ],
@@ -263,7 +322,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
     return {
       content: [
         {
-          type: 'text',
+          type: "text",
           text: result,
         },
       ],
@@ -272,8 +331,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
     return {
       content: [
         {
-          type: 'text',
-          text: JSON.stringify({ error: `Tool execution failed: ${err.message}` }),
+          type: "text",
+          text: JSON.stringify({
+            error: `Tool execution failed: ${err.message}`,
+          }),
         },
       ],
       isError: true,
@@ -295,15 +356,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
  * 4. Write mcp-config.json with absolute paths for this session
  */
 async function initialize(): Promise<void> {
-  const explicitRoot = process.argv[3]
-  const cwd = explicitRoot || process.cwd()
+  const explicitRoot = process.argv[3];
+  const cwd = explicitRoot || process.cwd();
 
   // Try to find existing .matha directory
   let found = false;
   let searchDir = cwd;
 
   for (let i = 0; i < 10; i++) {
-    const candidate = path.join(searchDir, '.matha');
+    const candidate = path.join(searchDir, ".matha");
     try {
       await fs.access(candidate);
       mathaDir = candidate;
@@ -320,12 +381,12 @@ async function initialize(): Promise<void> {
 
   // If not found, use default location
   if (!found) {
-    mathaDir = path.join(cwd, '.matha');
+    mathaDir = path.join(cwd, ".matha");
   }
 
   // Write mcp-config.json with absolute paths
   try {
-    const configPath = path.join(mathaDir, 'mcp-config.json');
+    const configPath = path.join(mathaDir, "mcp-config.json");
     const config = {
       matha_dir: mathaDir,
       cwd: cwd,
@@ -343,7 +404,7 @@ async function initialize(): Promise<void> {
   const schemaResult = await checkSchemaVersion(mathaDir);
   const schemaMsg = getSchemaMessage(schemaResult);
   if (schemaMsg) console.error(schemaMsg);
-  if (schemaResult.status === 'newer') {
+  if (schemaResult.status === "newer") {
     process.exit(1);
   }
 }
@@ -363,6 +424,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  console.error('Server initialization failed:', err);
+  console.error("Server initialization failed:", err);
   process.exit(1);
 });
