@@ -245,6 +245,26 @@ That knowledge survives sessions. It survives team changes. It survives the mome
 The code gets better. The context never resets. The brain stays on.
 
 ---
+## Auto-Wiring MATHA (Set Once, Works Forever)
+
+After connecting MATHA as an MCP server, add this rule to your IDE's
+AI settings. It eliminates the manual before/after step entirely.
+
+**Cursor** → Settings → Rules for AI  
+**Windsurf** → Settings → AI Rules  
+**Claude Code** → CLAUDE.md in project root  
+
+Paste this rule:
+
+> At the start of every conversation, call matha_brief() before
+> writing any code. Review all rules, danger zones, and prior
+> decisions. Flag any hasCritical:true results before proceeding.
+> After completing work, call matha_record_decision() for any
+> assumption that changed during the session.
+
+One rule. Every session starts warm.
+
+---
 
 ## Case Study
 
