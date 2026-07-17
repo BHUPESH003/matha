@@ -1,16 +1,3 @@
 {
-  "zones": [
-    {
-      "id": "20260305-000713-7b6a-danger",
-      "component": "mcp directory",
-      "pattern": "Session-discovered pattern",
-      "description": "type errors"
-    },
-    {
-      "id": "20260307-221610-183e-danger",
-      "component": "README.md, docs/pamm-case-study.md",
-      "pattern": "Session-discovered pattern",
-      "description": "1500"
-    }
-  ]
+  "zones": []
 }

@@ -2,10 +2,10 @@ import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 import { writeAtomic } from '@/storage/writer.js'
 import { readJsonOrNull } from '@/storage/reader.js'
-import { getIntent, getRules } from '@/brain/hippocampus.js'
-import { CURRENT_SCHEMA_VERSION } from '@/utils/schema-version.js'
+import { getIntent, getRules } from '@/store/records.js'
+import { CURRENT_SCHEMA_VERSION } from '@/core/schema.js'
 import type { ParsedBrainSeed } from '@/utils/markdown-parser.js'
-import { refreshFromGit } from '@/brain/cortex.js'
+import { refreshFromGit } from '@/codemap/index.js'
 
 export interface InitSummary {
   projectRoot: string
@@ -29,10 +29,6 @@ const REQUIRED_DIRS = [
   '.matha/cerebellum',
   '.matha/cerebellum/contracts',
   '.matha/cortex',
-  '.matha/dopamine',
-  '.matha/dopamine/predictions',
-  '.matha/dopamine/actuals',
-  '.matha/sessions',
 ] as const
 
 const IGNORE_DIRS = new Set(['.matha', '.git', 'node_modules'])
@@ -188,22 +184,17 @@ export async function runInit(
 
   // Write MCP server config
   try {
-    const mcpServerPath = await resolveMcpServerPath(projectRoot)
     const mcpConfigContent = {
       mcpServers: {
-        matha: {
-          command: 'node',
-          args: [mcpServerPath, 'serve'],
-          description: 'MATHA persistent cognitive layer',
-        },
+        matha: await buildMcpServerConfig(projectRoot),
       },
     }
     const mcpConfigPath = path.join(mathaDir, 'mcp-config.json')
     await writeAtomic(mcpConfigPath, mcpConfigContent, { overwrite: true })
-    
+
     log('')
     log('MCP server config written to .matha/mcp-config.json')
-    log('Add this to your IDE MCP settings:')
+    log('Add this to your IDE MCP settings (e.g. .mcp.json for Claude Code):')
     log(JSON.stringify(mcpConfigContent, null, 2))
   } catch (err) {
     log(`Warning: Could not write MCP config: ${(err as Error).message}`)
@@ -362,15 +353,27 @@ async function defaultAsk(message: string): Promise<string> {
   return prompts.input({ message })
 }
 
-async function resolveMcpServerPath(projectRoot: string): Promise<string> {
-  // Try node_modules/.bin/matha first
-  const npmBinPath = path.join(projectRoot, 'node_modules', '.bin', 'matha')
-  if (await pathExists(npmBinPath)) {
-    return npmBinPath
+/**
+ * Build a portable MCP server launch config.
+ * Prefers the locally-installed package entry (a real JS file — works with
+ * `node` on every platform, unlike the .bin shim which is a script on
+ * Windows). Falls back to npx for global/zero-install setups.
+ * Always passes --project explicitly so the server never guesses its brain.
+ */
+async function buildMcpServerConfig(
+  projectRoot: string,
+): Promise<{ command: string; args: string[]; description: string }> {
+  const description = 'MATHA persistent cognitive layer'
+  const localEntry = path.join(
+    projectRoot, 'node_modules', '@10kdevs', 'matha', 'dist', 'index.js',
+  )
+  if (await pathExists(localEntry)) {
+    return { command: 'node', args: [localEntry, 'serve', '--project', projectRoot], description }
   }
-
-  // Fall back to dist/index.js
-  const distPath = path.join(projectRoot, 'dist', 'index.js')
-  return distPath
+  return {
+    command: 'npx',
+    args: ['-y', '@10kdevs/matha', 'serve', '--project', projectRoot],
+    description,
+  }
 }
 

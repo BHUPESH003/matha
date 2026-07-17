@@ -1,429 +1,370 @@
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
   Tool,
-} from "@modelcontextprotocol/sdk/types.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import * as fs from "fs/promises";
-import * as path from "path";
+} from '@modelcontextprotocol/sdk/types.js'
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
+import * as url from 'url'
+import { createRequire } from 'module'
+import { Engine } from '@/core/engine.js'
+import { resolveBrainDir, BrainNotFoundError } from '@/core/resolve.js'
+import { checkSchemaVersion, getSchemaMessage } from '@/utils/schema-version.js'
 import {
-  mathaGetRules,
+  mathaBrief,
   mathaGetDangerZones,
   mathaGetDecisions,
+  mathaGetRules,
   mathaGetStability,
-  mathaBrief,
-  mathaRecordDecision,
-  mathaRecordDanger,
-  mathaRecordContract,
   mathaMatch,
-} from "./tools.js";
-import {
-  checkSchemaVersion,
-  getSchemaMessage,
-} from "@/utils/schema-version.js";
+  mathaRecordContract,
+  mathaRecordDanger,
+  mathaRecordDecision,
+  mathaRefresh,
+} from './tools.js'
 
 /**
- * MATHA MCP Server
+ * MATHA MCP Server.
  *
- * Exposes the MATHA brain via MCP protocol for IDE integration.
- * Loads config from .matha/config.json or uses project root if not initialized.
+ * Brain resolution order (see core/resolve.ts):
+ *   1. explicit --project (authoritative: wrong path = startup error, loud)
+ *   2. MCP client roots (workspace folders reported by the IDE)
+ *   3. per-call: walk up from the tool call's filepaths
+ *   4. walk up from cwd
  *
- * Tools:
- * - READ: matha_get_rules, matha_get_danger_zones, matha_get_decisions, matha_get_stability, matha_brief
- * - WRITE: matha_record_decision, matha_record_danger, matha_record_contract
+ * If no brain resolves, every tool returns an error naming the paths tried.
+ * The server NEVER creates a .matha directory — that is `matha init`'s job.
  */
 
-const server = new Server(
-  {
-    name: "matha",
-    version: "0.1.0",
-  },
-  {
-    capabilities: {
-      tools: {},
-    },
-  },
-);
+const require = createRequire(import.meta.url)
+const { version } = require('../../package.json')
 
-let mathaDir: string;
-
-// ──────────────────────────────────────────────────────────────────────
-// TOOL DEFINITIONS
-// ──────────────────────────────────────────────────────────────────────
+// ── TOOL DEFINITIONS ─────────────────────────────────────────────────
 
 const tools: Tool[] = [
   {
-    name: "matha_get_rules",
+    name: 'matha_brief',
     description:
-      "Returns all non-negotiable business rules for the project. Used to understand project constraints.",
+      'Returns project context: why the project exists, business rules, recent decisions, ' +
+      'and matches against the given scope. Call this FIRST in any session, before touching code.',
     inputSchema: {
-      type: "object" as const,
-      properties: {},
-      required: [],
-    },
-  },
-  {
-    name: "matha_get_danger_zones",
-    description:
-      "Returns identified danger zones (patterns to avoid). Optionally filter by context.",
-    inputSchema: {
-      type: "object" as const,
+      type: 'object' as const,
       properties: {
-        context: {
-          type: "string",
-          description:
-            "Optional context to filter danger zones (e.g., component name)",
+        scope: {
+          type: 'string',
+          description: 'Files or components you plan to work on (comma-separated)',
+        },
+        intent: { type: 'string', description: 'What you are trying to do' },
+        filepaths: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Specific files that will be read or modified (absolute or repo-relative)',
         },
       },
       required: [],
     },
   },
   {
-    name: "matha_get_decisions",
+    name: 'matha_match',
     description:
-      "Returns past decisions made on this project. Optionally filter by component.",
+      'Matches your planned change against known danger zones, contracts, frozen files, and ' +
+      'prior decisions. Call BEFORE modifying files. hasCritical:true means proceed with caution.',
     inputSchema: {
-      type: "object" as const,
+      type: 'object' as const,
       properties: {
-        component: {
-          type: "string",
-          description: "Optional component name to filter decisions",
+        scope: {
+          type: 'string',
+          description: 'Files or components being changed (comma-separated)',
         },
-        limit: {
-          type: "number",
-          description: "Optional limit on number of results",
+        intent: { type: 'string', description: 'What you are trying to do' },
+        filepaths: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Specific files that will be modified',
         },
+      },
+      required: ['scope', 'intent'],
+    },
+  },
+  {
+    name: 'matha_get_rules',
+    description: 'Returns all non-negotiable business rules for the project.',
+    inputSchema: { type: 'object' as const, properties: {}, required: [] },
+  },
+  {
+    name: 'matha_get_danger_zones',
+    description: 'Returns known danger zones (patterns to avoid). Optionally filter by context.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        context: { type: 'string', description: 'Optional filter (e.g. component name)' },
       },
       required: [],
     },
   },
   {
-    name: "matha_get_stability",
-    description:
-      "Returns stability classification for specified files. Stability indicates how mature/frozen a file is.",
+    name: 'matha_get_decisions',
+    description: 'Returns past decisions (broken assumptions and their corrections).',
     inputSchema: {
-      type: "object" as const,
+      type: 'object' as const,
+      properties: {
+        component: { type: 'string', description: 'Optional component filter' },
+        limit: { type: 'number', description: 'Max results (default 20)' },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'matha_get_stability',
+    description:
+      'Returns git-derived stability classification (frozen/stable/volatile/disposable) for files.',
+    inputSchema: {
+      type: 'object' as const,
       properties: {
         files: {
-          type: "array",
-          items: { type: "string" },
-          description: "Array of file paths to check stability for",
+          type: 'array',
+          items: { type: 'string' },
+          description: 'File paths to check (repo-relative)',
         },
       },
-      required: ["files"],
+      required: ['files'],
     },
   },
   {
-    name: "matha_brief",
+    name: 'matha_record_decision',
     description:
-      "Returns the most recent session brief, or intent + rules if no session exists. Used to understand current project state.",
+      'Records a durable learning: a stated assumption about this codebase that proved wrong, ' +
+      'and the correction. Call when you discover the code behaves differently than documented ' +
+      'or expected. Not for trivial observations — for corrections a future session must know.',
     inputSchema: {
-      type: "object" as const,
-      properties: {
-        scope: {
-          type: "string",
-          description: "Optional scope to filter session brief",
-        },
-      },
-      required: [],
-    },
-  },
-  {
-    name: "matha_record_decision",
-    description:
-      'Records a decision (learning) about what was assumed vs. what was discovered. Confidence defaults to "probable" (not "confirmed" which requires human verification).',
-    inputSchema: {
-      type: "object" as const,
+      type: 'object' as const,
       properties: {
         component: {
-          type: "string",
-          description: "Component or file this decision relates to",
+          type: 'string',
+          description: 'File path(s) or component this applies to (prefer paths)',
         },
-        previous_assumption: {
-          type: "string",
-          description: "What was previously thought to be true",
-        },
-        correction: {
-          type: "string",
-          description: "What was discovered to actually be true",
-        },
+        previous_assumption: { type: 'string', description: 'What was believed to be true' },
+        correction: { type: 'string', description: 'What is actually true' },
         confidence: {
-          type: "string",
-          enum: ["confirmed", "probable", "uncertain"],
-          description:
-            'Confidence level. Default: probable (agent-level). Use "confirmed" only for human-verified facts.',
+          type: 'string',
+          enum: ['confirmed', 'probable', 'uncertain'],
+          description: 'Default: probable. Use confirmed only for human-verified facts.',
         },
       },
-      required: ["component", "previous_assumption", "correction"],
+      required: ['component', 'previous_assumption', 'correction'],
     },
   },
   {
-    name: "matha_record_danger",
+    name: 'matha_record_danger',
     description:
-      "Records a danger zone (pattern to avoid) discovered during development.",
+      'Records a danger zone: a pattern that breaks something non-obvious. Call when a change ' +
+      'in one place caused unexpected breakage elsewhere, so future sessions get warned.',
     inputSchema: {
-      type: "object" as const,
+      type: 'object' as const,
       properties: {
         component: {
-          type: "string",
-          description: "Component or file where danger zone was found",
+          type: 'string',
+          description: 'File path(s) or component where the danger lives (prefer paths)',
         },
-        description: {
-          type: "string",
-          description: "Description of the danger pattern",
-        },
+        description: { type: 'string', description: 'The pattern to watch for, specifically' },
       },
-      required: ["component", "description"],
+      required: ['component', 'description'],
     },
   },
   {
-    name: "matha_record_contract",
+    name: 'matha_record_contract',
     description:
-      "Records a behaviour contract (set of invariant assertions) for a component. Overwrites existing contract for the same component.",
+      'Records the behaviour contract for a component: assertions that must remain true after ' +
+      'any change. Overwrites the existing contract for the same component (version increments).',
     inputSchema: {
-      type: "object" as const,
+      type: 'object' as const,
       properties: {
-        component: {
-          type: "string",
-          description: "Component or file this contract applies to",
-        },
+        component: { type: 'string', description: 'File path or component the contract covers' },
         assertions: {
-          type: "array",
-          items: { type: "string" },
-          description: "List of invariant assertions (must remain true)",
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Invariant assertions (must remain true)',
         },
       },
-      required: ["component", "assertions"],
+      required: ['component', 'assertions'],
     },
   },
   {
-    name: "matha_match",
+    name: 'matha_refresh',
     description:
-      "Matches current operation context against all known danger zones, " +
-      "contracts, frozen files, and prior decisions. Call this BEFORE making " +
-      "any changes to understand what the brain knows about this area. " +
-      "Returns critical warnings, prior findings, and contract context. " +
-      "A hasCritical:true result means proceed with caution.",
-    inputSchema: {
-      type: "object" as const,
-      properties: {
-        scope: {
-          type: "string",
-          description: "Files or components being changed (comma-separated)",
-        },
-        intent: {
-          type: "string",
-          description: "What you are trying to do",
-        },
-        operationType: {
-          type: "string",
-          description:
-            "rename/crud, business_logic, architecture, frozen_component, unknown",
-        },
-        filepaths: {
-          type: "array",
-          items: { type: "string" },
-          description: "Specific files that will be modified",
-        },
-      },
-      required: ["scope", "intent"],
-    },
+      'Re-analyses git history to refresh file stability and co-change data. Call if stability ' +
+      'results look stale (many commits since last analysis).',
+    inputSchema: { type: 'object' as const, properties: {}, required: [] },
   },
-];
+]
 
-// ──────────────────────────────────────────────────────────────────────
-// REQUEST HANDLERS
-// ──────────────────────────────────────────────────────────────────────
+// ── SERVER ───────────────────────────────────────────────────────────
 
-server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools,
-}));
+export async function startServer(explicitRoot?: string): Promise<void> {
+  let engine: Engine | null = null
+  let triedPaths: string[] = []
 
-server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
-  const name = request.params?.name;
-  const args = request.params?.arguments;
+  // 1. Explicit root is authoritative — a wrong path is a loud startup error.
+  if (explicitRoot) {
+    const resolved = await resolveBrainDir({ explicitRoot }) // throws BrainNotFoundError
+    engine = new Engine(resolved.mathaDir)
+  } else {
+    // 2. Best-effort cwd resolution; failure is fine, we retry per-call.
+    try {
+      const resolved = await resolveBrainDir({ cwd: process.cwd() })
+      engine = new Engine(resolved.mathaDir)
+    } catch (err) {
+      if (err instanceof BrainNotFoundError) triedPaths = err.tried
+      else throw err
+    }
+  }
 
-  try {
-    let result: string;
+  const server = new Server({ name: 'matha', version }, { capabilities: { tools: {} } })
 
-    switch (name) {
-      case "matha_get_rules":
-        result = await mathaGetRules(mathaDir);
-        break;
+  /** Per-call resolution fallback using the tool call's own filepaths. */
+  async function getEngine(args: any): Promise<Engine | null> {
+    if (engine) return engine
+    const filepaths: string[] = [
+      ...(Array.isArray(args?.filepaths) ? args.filepaths : []),
+      ...(Array.isArray(args?.files) ? args.files : []),
+    ]
+    try {
+      const resolved = await resolveBrainDir({ filepaths })
+      engine = new Engine(resolved.mathaDir)
+      return engine
+    } catch (err) {
+      if (err instanceof BrainNotFoundError) {
+        triedPaths = [...new Set([...triedPaths, ...err.tried])]
+        return null
+      }
+      throw err
+    }
+  }
 
-      case "matha_get_danger_zones":
-        result = await mathaGetDangerZones(mathaDir, args?.context);
-        break;
+  // 3. MCP roots: once the client is initialised, ask it for workspace roots.
+  server.oninitialized = async () => {
+    if (engine) return
+    try {
+      if (!server.getClientCapabilities()?.roots) return
+      const res = await server.listRoots()
+      for (const root of res.roots ?? []) {
+        if (!root.uri?.startsWith('file://')) continue
+        try {
+          const resolved = await resolveBrainDir({ explicitRoot: url.fileURLToPath(root.uri) })
+          engine = new Engine(resolved.mathaDir)
+          console.error(`matha: brain resolved from client root: ${resolved.mathaDir}`)
+          return
+        } catch (err) {
+          if (err instanceof BrainNotFoundError) {
+            triedPaths = [...new Set([...triedPaths, ...err.tried])]
+          }
+        }
+      }
+    } catch {
+      // Client declared roots capability but the request failed — per-call
+      // filepath resolution still applies.
+    }
+  }
 
-      case "matha_get_decisions":
-        result = await mathaGetDecisions(
-          mathaDir,
-          args?.component,
-          args?.limit,
-        );
-        break;
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }))
 
-      case "matha_get_stability":
-        result = await mathaGetStability(mathaDir, args?.files || []);
-        break;
+  server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
+    const name = request.params?.name
+    const args = request.params?.arguments ?? {}
 
-      case "matha_brief":
-        result = await mathaBrief(mathaDir, args?.scope);
-        break;
-
-      case "matha_record_decision":
-        result = await mathaRecordDecision(
-          mathaDir,
-          args?.component,
-          args?.previous_assumption,
-          args?.correction,
-          args?.confidence || "probable",
-        );
-        break;
-
-      case "matha_record_danger":
-        result = await mathaRecordDanger(
-          mathaDir,
-          args?.component,
-          args?.description,
-        );
-        break;
-
-      case "matha_record_contract":
-        result = await mathaRecordContract(
-          mathaDir,
-          args?.component,
-          args?.assertions,
-        );
-        break;
-      case "matha_match":
-        result = await mathaMatch(
-          mathaDir,
-          args?.scope,
-          args?.intent,
-          args?.operationType,
-          args?.filepaths,
-        );
-        break;
-
-      default:
+    try {
+      const eng = await getEngine(args)
+      if (!eng) {
         return {
           content: [
             {
-              type: "text",
-              text: JSON.stringify({ error: `Unknown tool: ${name}` }),
+              type: 'text',
+              text: JSON.stringify({
+                error:
+                  'No .matha brain found. Run `matha init` in your project root, or start the ' +
+                  'server with `matha serve --project <path>`.',
+                triedPaths,
+              }),
             },
           ],
-        };
+          isError: true,
+        }
+      }
+
+      let result: string
+      switch (name) {
+        case 'matha_brief':
+          result = await mathaBrief(eng, args.scope, args.intent, args.filepaths)
+          break
+        case 'matha_match':
+          result = await mathaMatch(eng, args.scope, args.intent, args.filepaths)
+          break
+        case 'matha_get_rules':
+          result = await mathaGetRules(eng)
+          break
+        case 'matha_get_danger_zones':
+          result = await mathaGetDangerZones(eng, args.context)
+          break
+        case 'matha_get_decisions':
+          result = await mathaGetDecisions(eng, args.component, args.limit)
+          break
+        case 'matha_get_stability':
+          result = await mathaGetStability(eng, args.files || [])
+          break
+        case 'matha_record_decision':
+          result = await mathaRecordDecision(
+            eng,
+            args.component,
+            args.previous_assumption,
+            args.correction,
+            args.confidence || 'probable',
+          )
+          break
+        case 'matha_record_danger':
+          result = await mathaRecordDanger(eng, args.component, args.description)
+          break
+        case 'matha_record_contract':
+          result = await mathaRecordContract(eng, args.component, args.assertions)
+          break
+        case 'matha_refresh':
+          result = await mathaRefresh(eng)
+          break
+        default:
+          return {
+            content: [
+              { type: 'text', text: JSON.stringify({ error: `Unknown tool: ${name}` }) },
+            ],
+            isError: true,
+          }
+      }
+
+      return { content: [{ type: 'text', text: result }] }
+    } catch (err: any) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({ error: `Tool execution failed: ${err.message}` }),
+          },
+        ],
+        isError: true,
+      }
     }
+  })
 
-    // All tool results are JSON strings
-    return {
-      content: [
-        {
-          type: "text",
-          text: result,
-        },
-      ],
-    };
-  } catch (err: any) {
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify({
-            error: `Tool execution failed: ${err.message}`,
-          }),
-        },
-      ],
-      isError: true,
-    };
-  }
-});
-
-// ──────────────────────────────────────────────────────────────────────
-// INITIALIZATION & STARTUP
-// ──────────────────────────────────────────────────────────────────────
-
-/**
- * Initialize the server by locating and validating the MATHA directory.
- *
- * Strategy:
- * 1. Look for .matha/ directory in current working directory or parent directories
- * 2. If found, use that
- * 3. If not found, use CWD/.matha (will use defaults gracefully)
- * 4. Write mcp-config.json with absolute paths for this session
- */
-async function initialize(): Promise<void> {
-  const explicitRoot = process.argv[3];
-  const cwd = explicitRoot || process.cwd();
-
-  // Try to find existing .matha directory
-  let found = false;
-  let searchDir = cwd;
-
-  for (let i = 0; i < 10; i++) {
-    const candidate = path.join(searchDir, ".matha");
-    try {
-      await fs.access(candidate);
-      mathaDir = candidate;
-      found = true;
-      break;
-    } catch {
-      // Not found, try parent
-    }
-
-    const parent = path.dirname(searchDir);
-    if (parent === searchDir) break; // Reached root
-    searchDir = parent;
+  // Schema version warning (stderr only, never blocks the stdio protocol)
+  if (engine) {
+    const schemaResult = await checkSchemaVersion(engine.mathaDir)
+    const schemaMsg = getSchemaMessage(schemaResult)
+    if (schemaMsg) console.error(schemaMsg)
   }
 
-  // If not found, use default location
-  if (!found) {
-    mathaDir = path.join(cwd, ".matha");
-  }
+  const transport = new StdioServerTransport()
+  await server.connect(transport)
 
-  // Write mcp-config.json with absolute paths
-  try {
-    const configPath = path.join(mathaDir, "mcp-config.json");
-    const config = {
-      matha_dir: mathaDir,
-      cwd: cwd,
-      initialized: found,
-      timestamp: new Date().toISOString(),
-    };
-
-    await fs.mkdir(mathaDir, { recursive: true });
-    await fs.writeFile(configPath, JSON.stringify(config, null, 2));
-  } catch {
-    // Ignore write errors - server can still run in degraded mode
-  }
-
-  // SCHEMA VERSION CHECK
-  const schemaResult = await checkSchemaVersion(mathaDir);
-  const schemaMsg = getSchemaMessage(schemaResult);
-  if (schemaMsg) console.error(schemaMsg);
-  if (schemaResult.status === "newer") {
-    process.exit(1);
-  }
+  console.error(
+    engine
+      ? `MATHA MCP server running on stdio, brain: ${engine.mathaDir}`
+      : `MATHA MCP server running on stdio, brain NOT yet resolved (will retry from client roots / tool filepaths). Tried: ${triedPaths.join(', ')}`,
+  )
 }
-
-/**
- * Start the MCP server on stdio
- */
-async function main(): Promise<void> {
-  await initialize();
-
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-
-  // Log startup info to stderr so it doesn't interfere with stdio protocol
-  const msg = `MATHA MCP server running on stdio, mathaDir: ${mathaDir}`;
-  console.error(msg);
-}
-
-main().catch((err) => {
-  console.error("Server initialization failed:", err);
-  process.exit(1);
-});

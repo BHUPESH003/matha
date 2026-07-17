@@ -1,10 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-/**
- * Single source of truth for the current schema version.
- * Bump this when the .matha/ directory structure changes.
- */
-export const CURRENT_SCHEMA_VERSION = '0.1.0';
+import { CURRENT_SCHEMA_VERSION } from '../core/schema.js';
+export { CURRENT_SCHEMA_VERSION };
 /**
  * Compare two semver strings (major.minor.patch).
  * Returns -1 if a < b, 0 if a === b, 1 if a > b.
@@ -78,14 +75,14 @@ export function getSchemaMessage(result) {
             return null;
         case 'legacy':
             return ('⚠ This .matha/ was created before schema versioning. ' +
-                'Run `matha migrate` to upgrade. (Coming in v0.2.0)');
+                'Run `matha migrate` to upgrade.');
         case 'outdated':
             return (`⚠ This .matha/ uses schema v${result.version}. ` +
                 `Current is v${CURRENT_SCHEMA_VERSION}. ` +
-                'Run `matha migrate` to upgrade. (Coming in v0.2.0)');
+                'Run `matha migrate` to upgrade.');
         case 'newer':
             return (`✗ This .matha/ uses schema v${result.version} which is newer ` +
                 `than this version of MATHA (v${CURRENT_SCHEMA_VERSION}). ` +
-                'Upgrade MATHA: npm install -g matha');
+                'Upgrade MATHA: npm install -g @10kdevs/matha');
     }
 }

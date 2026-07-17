@@ -5,6 +5,7 @@ import { runInit } from "./commands/init.js";
 import { runBefore } from "./commands/before.js";
 import { runAfter } from "./commands/after.js";
 import { runMigrate } from "./commands/migrate.js";
+import { runDoctor } from "./commands/doctor.js";
 import { parseMarkdownFile } from "./utils/markdown-parser.js";
 import { createRequire } from "module";
 
@@ -17,10 +18,6 @@ program
   .name("matha")
   .description("MATHA: Persistent cognitive layer for AI-assisted development");
 program.version(version);
-
-// ──────────────────────────────────────────────────────────────────────
-// INIT COMMAND
-// ──────────────────────────────────────────────────────────────────────
 
 program
   .command("init")
@@ -51,83 +48,73 @@ program
     }
   });
 
-// ──────────────────────────────────────────────────────────────────────
-// BEFORE COMMAND
-// ──────────────────────────────────────────────────────────────────────
-
 program
   .command("before")
-  .description("Run gates 01-06: pre-session context gathering")
+  .description("Print the project brief for a scope (paste into your agent, or use MCP)")
   .option("--project <path>", "Project root path (default: current directory)")
+  .option("--scope <scope>", "Files or components you plan to work on (comma-separated)")
+  .option("--intent <intent>", "What you are about to do")
   .action(async (options) => {
     try {
       const projectRoot = options.project || process.cwd();
-
-      await runBefore(projectRoot, {});
+      const result = await runBefore(projectRoot, {
+        scope: options.scope,
+        intent: options.intent,
+      });
+      process.exit(result.exitCode);
     } catch (err: any) {
       console.error("Before failed:", err.message);
       process.exit(1);
     }
   });
 
-// ──────────────────────────────────────────────────────────────────────
-// AFTER COMMAND
-// ──────────────────────────────────────────────────────────────────────
-
 program
   .command("after")
-  .description("Run gate 08: post-session write-back and loop closure")
+  .description("Record what this session learned (decision / danger zone)")
   .option("--project <path>", "Project root path (default: current directory)")
   .action(async (options) => {
     try {
       const projectRoot = options.project || process.cwd();
-
-      await runAfter(projectRoot, {});
+      const result = await runAfter(projectRoot, {});
+      process.exit(result.exitCode);
     } catch (err: any) {
       console.error("After failed:", err.message);
       process.exit(1);
     }
   });
 
-// ──────────────────────────────────────────────────────────────────────
-// MIGRATE COMMAND
-// ──────────────────────────────────────────────────────────────────────
-
 program
   .command("migrate")
   .description("Migrate .matha/ to current schema version")
-  .action(async () => {
-    const result = await runMigrate();
+  .option("--project <path>", "Project root path (default: current directory)")
+  .action(async (options) => {
+    const projectRoot = options.project || process.cwd();
+    const result = await runMigrate(projectRoot);
     process.exit(result.exitCode);
   });
 
-// ──────────────────────────────────────────────────────────────────────
-// SERVE COMMAND
-// ──────────────────────────────────────────────────────────────────────
+program
+  .command("doctor")
+  .description("Diagnose the MATHA setup: brain location, schema, record counts, staleness")
+  .option("--project <path>", "Project root path (default: current directory)")
+  .action(async (options) => {
+    const result = await runDoctor({ explicitRoot: options.project });
+    process.exit(result.exitCode);
+  });
 
 program
   .command("serve")
   .description("Start MCP server on stdio for IDE integration")
-  .option("--project <path>", "Project root path (default: current directory)")
-  .action((options) => {
+  .option("--project <path>", "Project root path (default: resolve from client roots / cwd)")
+  .action(async (options) => {
     try {
-      const projectRoot = options.project || process.cwd();
-
-      // Import and run the server directly instead of spawning
-      // This keeps the stdio channel intact for MCP protocol
-      import("./mcp/server.js").catch((err) => {
-        console.error("Failed to start MCP server:", err.message);
-        process.exit(1);
-      });
+      const { startServer } = await import("./mcp/server.js");
+      await startServer(options.project);
     } catch (err: any) {
-      console.error("Serve failed:", err.message);
+      console.error("Failed to start MCP server:", err.message);
       process.exit(1);
     }
   });
-
-// ──────────────────────────────────────────────────────────────────────
-// PARSE & EXECUTE
-// ──────────────────────────────────────────────────────────────────────
 
 program.parse(process.argv);
 

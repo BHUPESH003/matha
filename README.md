@@ -26,9 +26,9 @@ It captures three things that no markdown file can hold:
 
 **Intent** — why the project exists, what the non-negotiable rules are, what it explicitly does not do. Not features. The reasoning behind them.
 
-**Decisions** — every assumption that broke, every correction that was made, every "no that's wrong" moment that cost you days. Captured automatically from the work itself, not from humans writing docs after the fact.
+**Decisions** — every assumption that broke, every correction that was made, every "no that's wrong" moment that cost you days. Recorded by the agent itself over MCP as a by-product of the work (with a CLI fallback), not by humans writing docs after the fact.
 
-**Behaviour contracts** — what the system must do, written before code is written. Machine-verifiable. Validated after every session. Violations recorded and surfaced automatically next time.
+**Behaviour contracts** — assertions that must remain true for a component. Stored with the component, surfaced whenever an agent is about to touch it, with violation history escalating the warning.
 
 Every session writes back what it learned. Every session starts warmer than the last. The brain stays on.
 
@@ -36,24 +36,26 @@ Every session writes back what it learned. Every session starts warmer than the 
 
 ## How It Works
 
-Three commands. That's the entire interface.
+MCP is the primary surface: the agent calls `matha_brief` before touching code and `matha_record_*` when it learns something. The CLI is for setup, diagnostics, and agents without MCP support:
 
 ```bash
 # Once per project — seeds the brain from your project's intent and git history
 matha init
 
-# Before every AI session — surfaces what the brain knows, fires warnings, 
-# writes behaviour contract before a single line of code is written
-matha before
+# Print the project brief for a scope (copy-paste fallback for non-MCP agents)
+matha before --scope src/payments/ --intent "change retry logic"
 
-# After every AI session — captures what was learned, records violations,
-# updates the brain so the next session starts with full context
+# Record what a session learned (fallback for non-MCP agents)
 matha after
+
+# Diagnose the setup: which brain, schema status, record counts, staleness
+matha doctor
+
+# Upgrade .matha/ after a matha version bump
+matha migrate
 ```
 
-The session brief produced by `matha before` is copy-pasteable directly into any AI agent. It tells the agent what it needs to know before it touches anything — danger zones, prior decisions, frozen files, behaviour contract.
-
-The write-back from `matha after` means that correction never has to be made twice.
+The write-back means a correction never has to be made twice.
 
 ---
 
@@ -89,33 +91,14 @@ The init command writes `.matha/mcp-config.json` with the exact config for your 
 {
   "mcpServers": {
     "matha": {
-      "command": "node",
-      "args": ["/path/to/your/project/node_modules/.bin/matha", "serve"]
+      "command": "npx",
+      "args": ["-y", "@10kdevs/matha", "serve", "--project", "/path/to/your/project"]
     }
   }
 }
 ```
 
-Once connected, your AI agent can call `matha_brief()` as its first action in any session — receiving the full project context before writing a line.
-
----
-
-## The Eight Gates
-
-`matha before` runs eight structured gates before allowing the AI to build. Not as a prompt. As enforced infrastructure.
-
-```
-GATE 01  UNDERSTAND     What is the WHY of this change?
-GATE 02  BOUND          What are the non-negotiable rules?
-GATE 03  ORIENT         What exists? What is stable, frozen, volatile?
-GATE 04  SURFACE DANGER Any prior failures in this area?
-GATE 05  CONTRACT       What must be true after? Written before code.
-GATE 06  COST CHECK     What model tier? What token budget?
-GATE 07  BUILD          AI is now allowed to generate code.
-GATE 08  WRITE BACK     What was learned? Captured. Never lost.
-```
-
-Gate 07 does not open until Gates 01 through 05 are complete.
+Once connected, your AI agent can call `matha_brief()` as its first action in any session — receiving the full project context before writing a line. The server resolves the right `.matha/` from `--project`, the IDE's workspace roots, or the file paths in each tool call — and if none resolves, it says so explicitly rather than serving an empty brain. Run `matha doctor` any time to see exactly which brain is being served.
 
 ---
 
@@ -126,15 +109,13 @@ MATHA's knowledge lives in `.matha/` in your repository. Committed to version co
 ```
 .matha/
 ├── hippocampus/        intent, rules, decisions, danger zones
-├── cerebellum/         behaviour contracts, violation log  
-├── cortex/             stability map, co-change graph, boundaries
-├── dopamine/           session history, routing rules, deltas
-└── sessions/           session briefs
+├── cerebellum/         behaviour contracts, violation log
+└── cortex/             stability map, co-change graph, boundaries
 ```
 
-The cortex builds itself from git history. Files that change together are linked. Files with low churn and high connectivity are classified frozen — AI agents are warned before touching them.
+The codemap (cortex) builds itself from git history. Files that change together are linked. Files with low churn and high connectivity are classified frozen — AI agents are warned before touching them.
 
-The dopamine loop learns from every session. If business logic changes in your project consistently burn three times the predicted token budget, MATHA adjusts its recommendation automatically. It tells you why.
+Retrieval is hierarchical: a danger zone recorded against `src/payments/` fires for `src/payments/retry.ts`. Records written by an agent carry `probable` confidence until a human confirms them; garbage inputs (empty components, one-letter "corrections") are rejected at write time.
 
 ---
 
@@ -143,19 +124,19 @@ The dopamine loop learns from every session. If business logic changes in your p
 AI agents connected via MCP have access to:
 
 ```
-matha_brief(scope?, directory?)     Full session context
-matha_get_rules()                   Non-negotiable business rules
-matha_get_danger_zones(context?)    Known failure patterns
-matha_get_decisions(component?)     Decision history
-matha_get_stability(files[])        Stability classification per file
-matha_match(scope, intent)          Full cerebellum match — what does
-                                    the brain know about this operation?
-matha_record_decision(...)          Write a decision back to the brain
-matha_record_danger(...)            Flag a new danger zone
-matha_record_contract(...)          Store a behaviour contract
-matha_refresh_cortex()              Rebuild from git history
-matha_get_routing(operationType?)   Learned model routing rules
+matha_brief(scope?, intent?, filepaths?)   Project context + matches for a scope
+matha_match(scope, intent, filepaths?)     What does the brain know about this change?
+matha_get_rules()                          Non-negotiable business rules
+matha_get_danger_zones(context?)           Known failure patterns
+matha_get_decisions(component?, limit?)    Decision history
+matha_get_stability(files[])               Stability classification per file
+matha_record_decision(...)                 Write a decision back to the brain
+matha_record_danger(...)                   Flag a new danger zone
+matha_record_contract(...)                 Store a behaviour contract
+matha_refresh()                            Rebuild the codemap from git history
 ```
+
+Every response includes `diagnostics.brainDir` — you always know which brain answered.
 
 ---
 

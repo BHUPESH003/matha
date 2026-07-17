@@ -2,21 +2,61 @@
   {
     "fileA": "package-lock.json",
     "fileB": "package.json",
-    "coChangeCount": 3
-  },
-  {
-    "fileA": "src/commands/before.ts",
-    "fileB": "src/commands/init.ts",
-    "coChangeCount": 2
+    "coChangeCount": 15
   },
   {
     "fileA": "src/mcp/tools.ts",
     "fileB": "tests/mcp/tools.test.ts",
-    "coChangeCount": 2
+    "coChangeCount": 4
   },
   {
     "fileA": "src/commands/init.ts",
     "fileB": "tests/commands/init.test.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "src/commands/before.ts",
+    "fileB": "src/mcp/tools.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "src/commands/before.ts",
+    "fileB": "tests/commands/before.test.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "src/commands/before.ts",
+    "fileB": "tests/mcp/tools.test.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": ".gitignore",
+    "fileB": "package.json",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "package.json",
+    "fileB": "src/index.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "src/mcp/tools.ts",
+    "fileB": "tests/commands/before.test.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "tests/commands/before.test.ts",
+    "fileB": "tests/mcp/tools.test.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "src/commands/after.ts",
+    "fileB": "tests/commands/after.test.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "src/commands/before.ts",
+    "fileB": "src/commands/init.ts",
     "coChangeCount": 2
   },
   {

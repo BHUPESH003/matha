@@ -1,6 +1,15 @@
 # matha — Project Roadmap & Implementation Guide
 ### The Persistent Cognitive Layer for AI-Assisted Development
 
+> **SUPERSEDED (2026-07-11).** This was the 0.1.x design document. The
+> product boundary has since been cut: matha is a project-memory server
+> (capture → store → retrieve → eval), NOT a process enforcer — the gate
+> ceremony, model-tier routing, and dopamine loop described below were
+> removed in 0.2.0. The current architecture and roadmap live in
+> [docs/analysis/03-target-architecture.md](docs/analysis/03-target-architecture.md)
+> (with the current-state audit in 01 and the supermemory comparison in 02).
+> This file is kept for history.
+
 ---
 
 ## 0. How To Use This Document

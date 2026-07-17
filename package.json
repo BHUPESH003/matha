@@ -1,6 +1,6 @@
 {
   "name": "@10kdevs/matha",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "description": "The persistent cognitive layer for AI-assisted development. Gives AI agents the project context that currently only exists inside a senior engineer's head.",
   "main": "./dist/index.js",
   "bin": {
@@ -47,16 +47,16 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
+    "@inquirer/prompts": "^8.5.2",
     "@modelcontextprotocol/sdk": "^1.27.1",
     "commander": "^14.0.3",
-    "inquirer": "^13.3.0",
-    "simple-git": "^3.32.3",
-    "typescript": "^5.9.3"
+    "simple-git": "^3.32.3"
   },
   "devDependencies": {
     "@types/node": "^25.3.3",
     "tsc-alias": "^1.8.16",
     "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   }
 }

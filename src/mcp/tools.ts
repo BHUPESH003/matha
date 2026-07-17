@@ -1,513 +1,167 @@
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { readJsonOrNull } from '@/storage/reader.js';
-import { writeAtomic, appendToArray } from '@/storage/writer.js';
+import * as path from 'path'
+import * as crypto from 'crypto'
+import type { Engine } from '@/core/engine.js'
 import {
-  getRules,
-  getDangerZones,
-  getDecisions,
-  recordDecision,
-  recordDangerZone,
-} from '@/brain/hippocampus.js';
-import {
-  refreshFromGit,
-  getStability,
-  getCoChanges,
-  getSnapshot,
-} from '@/brain/cortex.js';
-import { matchAll, MatchContext } from '@/analysis/contract-matcher.js';
-import { analyseDeltas, persistAnalysis, getRecommendation } from '@/brain/dopamine.js';
+  validateContractInput,
+  validateDangerInput,
+  validateDecisionInput,
+  type Confidence,
+} from '@/core/schema.js'
+import { recordContract, recordDangerZone, recordDecision } from '@/store/records.js'
+import { refreshFromGit } from '@/codemap/index.js'
+import { assembleBrief } from '@/retrieve/brief.js'
+import type { MatchContext } from '@/retrieve/match.js'
 
-// Simple UUID-like ID generator
+/**
+ * MCP tool implementations. Thin: every read goes through the Engine
+ * (cached), every write through store/records with schema validation.
+ * All results are JSON strings; every success carries `diagnostics` so a
+ * wrong-brain failure is visible instead of silently empty.
+ */
+
 function generateId(): string {
-  return Math.random().toString(36).substring(2, 15) + 
-         Math.random().toString(36).substring(2, 15);
+  return crypto.randomBytes(8).toString('hex')
 }
 
-// ──────────────────────────────────────────────────────────────────────
-// READ TOOLS
-// ──────────────────────────────────────────────────────────────────────
-
-/**
- * matha_get_rules: Returns all business rules.
- */
-export async function mathaGetRules(mathaDir: string): Promise<string> {
-  try {
-    const rules = await getRules(mathaDir);
-    return JSON.stringify({ rules });
-  } catch (err: any) {
-    return JSON.stringify({ error: `Failed to get rules: ${err.message}` });
-  }
+function withDiagnostics(engine: Engine, payload: Record<string, unknown>): string {
+  return JSON.stringify({ ...payload, diagnostics: { brainDir: engine.mathaDir } })
 }
 
-/**
- * matha_get_danger_zones: Returns danger zones, optionally filtered by context.
- */
-export async function mathaGetDangerZones(
-  mathaDir: string,
-  context?: string,
-): Promise<string> {
-  try {
-    const zones = await getDangerZones(mathaDir, context);
-    return JSON.stringify({ zones });
-  } catch (err: any) {
-    return JSON.stringify({ error: `Failed to get danger zones: ${err.message}` });
-  }
+// ── READ TOOLS ───────────────────────────────────────────────────────
+
+export async function mathaGetRules(engine: Engine): Promise<string> {
+  const rules = await engine.getRules()
+  return withDiagnostics(engine, { rules })
 }
 
-/**
- * matha_get_decisions: Returns decisions, optionally filtered by component and limit.
- */
+export async function mathaGetDangerZones(engine: Engine, context?: string): Promise<string> {
+  const zones = await engine.getDangerZones(context)
+  return withDiagnostics(engine, { zones })
+}
+
 export async function mathaGetDecisions(
-  mathaDir: string,
+  engine: Engine,
   component?: string,
   limit?: number,
 ): Promise<string> {
-  try {
-    const decisions = await getDecisions(mathaDir, component, limit);
-    return JSON.stringify({ decisions });
-  } catch (err: any) {
-    return JSON.stringify({ error: `Failed to get decisions: ${err.message}` });
-  }
+  const decisions = await engine.getDecisions(component, limit ?? 20)
+  return withDiagnostics(engine, { decisions })
 }
 
-/**
- * matha_get_stability: Returns stability classification for requested files.
- * Uses cortex.getStability — returns StabilityRecord | null per file.
- * repoPath assumption: process.cwd() is the project root.
- */
-export async function mathaGetStability(
-  mathaDir: string,
-  files: string[],
-): Promise<string> {
-  try {
-    const snapshot = await getSnapshot(mathaDir);
-    const allRecords = snapshot?.stability || [];
-    const stability: Record<string, any> = {};
-    for (const file of files) {
-      const cleanFile = file.replace(/^\/+/, '').toLowerCase();
-      const match = allRecords.find((r: any) => r.filepath.replace(/^\/+/, '').toLowerCase() === cleanFile);
-      if (match) {
-        stability[file] = match;
-      } else {
-        stability[file] = {
-          filepath: file,
-          stability: 'unknown',
-          confidence: 'low',
-          reason: 'No git history found for this file'
-        };
-      }
-    }
-    return JSON.stringify({ stability });
-  } catch (err: any) {
-    const stability: Record<string, any> = {};
-    for (const file of files) {
-      stability[file] = {
-        filepath: file,
-        stability: 'unknown',
-        confidence: 'low',
-        reason: 'No git history found for this file'
-      };
-    }
-    return JSON.stringify({ stability });
-  }
+export async function mathaGetStability(engine: Engine, files: string[]): Promise<string> {
+  const stability = await engine.stabilityFor(files)
+  return withDiagnostics(engine, { stability })
 }
 
-/**
- * matha_brief: Returns the most recent session brief, or intent + rules.
- * If directory provided, filters decisions/danger zones/stability to that directory.
- */
 export async function mathaBrief(
-  mathaDir: string,
+  engine: Engine,
   scope?: string,
-  directory?: string,
+  intent?: string,
+  filepaths?: string[],
 ): Promise<string> {
-  try {
-    // DIRECTORY FILTER MODE
-    if (directory) {
-      const dirLower = directory.toLowerCase();
-
-      // Filter decisions by component matching directory
-      let decisions: any[] = [];
-      try {
-        const allDecisions = await getDecisions(mathaDir);
-        decisions = allDecisions.filter((d: any) =>
-          (d.component || '').toLowerCase().includes(dirLower),
-        );
-      } catch {
-        decisions = [];
-      }
-
-      // Filter danger zones by component matching directory
-      let zones: any[] = [];
-      try {
-        zones = await getDangerZones(mathaDir, directory);
-      } catch {
-        zones = [];
-      }
-
-      // Filter stability records where filepath starts with directory
-      let stabilityRecords: any[] = [];
-      try {
-        const snapshot = await getSnapshot(mathaDir);
-        if (snapshot && snapshot.stability) {
-          stabilityRecords = snapshot.stability.filter((s: any) =>
-            s.filepath.toLowerCase().startsWith(dirLower),
-          );
-        }
-      } catch {
-        stabilityRecords = [];
-      }
-
-      const hasData = decisions.length > 0 || zones.length > 0 || stabilityRecords.length > 0;
-
-      const matchContext: MatchContext = {
-        scope: directory,
-        intent: '',
-        operationType: 'unknown',
-        filepaths: [directory],
-      };
-      let matchResults: any[] = [];
-      try {
-        matchResults = await matchAll(matchContext, mathaDir);
-      } catch {
-        matchResults = [];
-      }
-      const hasCritical = matchResults.some((r: any) => r.severity === 'critical');
-
-      return JSON.stringify({
-        directory,
-        filtered: true,
-        hasData,
-        message: hasData ? null : `No MATHA data found for directory: ${directory}`,
-        decisions,
-        dangerZones: zones,
-        stability: stabilityRecords,
-        matchResults,
-        hasCritical,
-      });
-    }
-
-    // STANDARD MODE — most recent session brief
-    const sessionsDir = path.join(mathaDir, 'sessions');
-
-    // Try to find the most recent .brief file
-    let briefData: any = null;
-    try {
-      const files = await fs.readdir(sessionsDir);
-      const briefFiles = files
-        .filter((f) => f.endsWith('.brief'))
-        .sort()
-        .reverse();
-
-      if (briefFiles.length > 0) {
-        const briefPath = path.join(sessionsDir, briefFiles[0]);
-        briefData = await readJsonOrNull(briefPath);
-      }
-    } catch {
-      // Sessions directory might not exist
-      briefData = null;
-    }
-
-    // If we have a brief and scope provided, check if it matches
-    if (briefData && scope) {
-      const briefScope = briefData.scope || '';
-      if (!briefScope.toLowerCase().includes(scope.toLowerCase())) {
-        briefData = null;
-      }
-    }
-
-    // Determine base response
-    let baseResponse: any;
-
-    if (briefData) {
-      baseResponse = briefData;
-    } else {
-      // Otherwise return intent + rules
-      const intentPath = path.join(mathaDir, 'hippocampus/intent.json');
-      const intent = await readJsonOrNull<{ why?: string }>(intentPath);
-
-      const parsedRules = await getRules(mathaDir).catch(() => []);
-
-      baseResponse = {
-        why: intent?.why ?? '',
-        rules: parsedRules,
-      };
-    }
-
-    // Augment with matchAll
-    const usedScope = baseResponse.scope || scope || '';
-    const matchContext: MatchContext = {
-      scope: usedScope,
-      intent: baseResponse.operation_description || baseResponse.why || ('reviewing project context for ' + (usedScope || 'general work')),
-      operationType: baseResponse.operationType || 'unknown',
-      filepaths: usedScope ? usedScope.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
-    };
-
-    let matchResults: any[] = [];
-    try {
-      matchResults = await matchAll(matchContext, mathaDir);
-    } catch {
-      matchResults = [];
-    }
-    const hasCritical = matchResults.some((r: any) => r.severity === 'critical');
-
-    return JSON.stringify({
-      ...baseResponse,
-      matchResults,
-      hasCritical,
-    });
-  } catch (err: any) {
-    return JSON.stringify({ error: `Failed to get brief: ${err.message}` });
-  }
+  const brief = await assembleBrief(engine, { scope, intent, filepaths })
+  return JSON.stringify(brief)
 }
 
-// ──────────────────────────────────────────────────────────────────────
-// WRITE TOOLS
-// ──────────────────────────────────────────────────────────────────────
+export async function mathaMatch(
+  engine: Engine,
+  scope: string,
+  intent: string,
+  filepaths: string[] = [],
+): Promise<string> {
+  const context: MatchContext = { scope, intent, filepaths }
+  const { results, diagnostics } = await engine.match(context)
+  const hasCritical = results.some((r) => r.severity === 'critical')
+  return JSON.stringify({
+    results,
+    hasCritical,
+    summary: {
+      critical: results.filter((r) => r.severity === 'critical').length,
+      warning: results.filter((r) => r.severity === 'warning').length,
+      info: results.filter((r) => r.severity === 'info').length,
+      total: results.length,
+    },
+    diagnostics,
+  })
+}
 
-/**
- * matha_record_decision: Records a decision from an AI agent.
- * Uses 'probable' confidence (not 'confirmed' — that is human-verified).
- */
+// ── WRITE TOOLS ──────────────────────────────────────────────────────
+
 export async function mathaRecordDecision(
-  mathaDir: string,
+  engine: Engine,
   component: string,
   previousAssumption: string,
   correction: string,
-  confidence: 'confirmed' | 'probable' | 'uncertain' = 'probable',
+  confidence: Confidence = 'probable',
 ): Promise<string> {
-  try {
-    const id = `${Date.now()}-${generateId()}`;
-    const timestamp = new Date().toISOString();
-
-    const decision = {
-      id,
-      timestamp,
-      component,
-      previous_assumption: previousAssumption,
-      correction,
-      trigger: 'mcp-call',
-      confidence,
-      status: 'active' as const,
-      supersedes: null,
-      session_id: id,
-    };
-
-    await recordDecision(mathaDir, decision);
-
-    return JSON.stringify({ success: true, id });
-  } catch (err: any) {
-    return JSON.stringify({
-      success: false,
-      error: `Failed to record decision: ${err.message}`,
-    });
+  const valid = validateDecisionInput({
+    component,
+    previous_assumption: previousAssumption,
+    correction,
+  })
+  if (!valid.ok) {
+    return JSON.stringify({ success: false, error: `Rejected: ${valid.reason}` })
   }
+
+  const id = `${Date.now()}-${generateId()}`
+  await recordDecision(engine.mathaDir, {
+    id,
+    timestamp: new Date().toISOString(),
+    component,
+    previous_assumption: previousAssumption,
+    correction,
+    trigger: 'mcp-call',
+    confidence,
+    status: 'active',
+    supersedes: null,
+    session_id: id,
+  })
+  return withDiagnostics(engine, { success: true, id })
 }
 
-/**
- * matha_record_danger: Records a danger zone discovered by an agent.
- */
 export async function mathaRecordDanger(
-  mathaDir: string,
+  engine: Engine,
   component: string,
   description: string,
 ): Promise<string> {
-  try {
-    const id = `danger-${Date.now()}-${generateId()}`;
-
-    const zone = {
-      id,
-      component,
-      pattern: description,
-      description: description,
-    };
-
-    await recordDangerZone(mathaDir, zone);
-
-    return JSON.stringify({ success: true, id });
-  } catch (err: any) {
-    return JSON.stringify({
-      success: false,
-      error: `Failed to record danger zone: ${err.message}`,
-    });
+  const valid = validateDangerInput({ component, description })
+  if (!valid.ok) {
+    return JSON.stringify({ success: false, error: `Rejected: ${valid.reason}` })
   }
+
+  const id = `danger-${Date.now()}-${generateId()}`
+  await recordDangerZone(engine.mathaDir, {
+    id,
+    component,
+    pattern: description,
+    description,
+  })
+  return withDiagnostics(engine, { success: true, id })
 }
 
-/**
- * matha_record_contract: Records a behaviour contract for a component.
- * Overwrites existing contract for same component (versioned).
- */
 export async function mathaRecordContract(
-  mathaDir: string,
+  engine: Engine,
   component: string,
   assertions: string[],
 ): Promise<string> {
-  try {
-    // Sanitize component name for filename
-    const filename = component
-      .replace(/[^a-zA-Z0-9._-]/g, '-')
-      .toLowerCase();
-
-    const contractPath = path.join(mathaDir, `cerebellum/contracts/${filename}.json`);
-
-    const contract = {
-      component,
-      version: 1,
-      last_updated: new Date().toISOString(),
-      assertions: assertions.map((description, idx) => ({
-        id: `${component}-assertion-${idx}`,
-        description,
-        type: 'invariant' as const,
-        status: 'active' as const,
-        violation_count: 0,
-        last_violated: null,
-      })),
-    };
-
-    await writeAtomic(contractPath, contract, { overwrite: true });
-
-    return JSON.stringify({ success: true, component });
-  } catch (err: any) {
-    return JSON.stringify({
-      success: false,
-      error: `Failed to record contract: ${err.message}`,
-    });
+  const valid = validateContractInput({ component, assertions })
+  if (!valid.ok) {
+    return JSON.stringify({ success: false, error: `Rejected: ${valid.reason}` })
   }
+
+  await recordContract(engine.mathaDir, component, assertions)
+  return withDiagnostics(engine, { success: true, component })
 }
 
-/**
- * matha_match: Runs the contract matcher independently to get danger/history warnings.
- */
-export async function mathaMatch(
-  mathaDir: string,
-  scope: string,
-  intent: string,
-  operationType: string = 'unknown',
-  filepaths: string[] = []
-): Promise<string> {
-  try {
-    const context: MatchContext = {
-      scope,
-      intent,
-      operationType,
-      filepaths: filepaths.length > 0 ? filepaths : scope.split(',').map((s) => s.trim()).filter(Boolean),
-    };
+// ── CODEMAP ──────────────────────────────────────────────────────────
 
-    const results = await matchAll(context, mathaDir);
-    const hasCritical = results.some((r: any) => r.severity === 'critical');
-
-    const summary = {
-      critical: results.filter((r: any) => r.severity === 'critical').length,
-      warning: results.filter((r: any) => r.severity === 'warning').length,
-      info: results.filter((r: any) => r.severity === 'info').length,
-      total: results.length,
-    };
-
-    return JSON.stringify({
-      results,
-      hasCritical,
-      summary,
-    });
-  } catch (err: any) {
-    return JSON.stringify({
-      error: `Failed to run contract matcher: ${err.message}`,
-      results: [],
-      hasCritical: false,
-      summary: { critical: 0, warning: 0, info: 0, total: 0 }
-    });
-  }
-}
-
-export const mathaMatchToolDefinition = {
-  name: 'matha_match',
-  description: 'Matches current operation context against all known danger zones, contracts, frozen files, and prior decisions. Call this before making any changes to understand what the brain knows about this area. Returns critical warnings, prior findings, and contract context.',
-  inputSchema: {
-    type: 'object',
-    properties: {
-      scope: {
-        type: 'string',
-        description: 'Files or components being changed (comma-separated)'
-      },
-      intent: {
-        type: 'string',
-        description: 'What you are trying to do'
-      },
-      operationType: {
-        type: 'string',
-        description: 'Operation type: rename/crud, business_logic, architecture, frozen_component, unknown'
-      },
-      filepaths: {
-        type: 'array',
-        items: { type: 'string' },
-        description: 'Specific files that will be modified'
-      }
-    },
-    required: ['scope', 'intent']
-  }
-};
-
-/**
- * matha_get_routing: Close the Dopamine Loop.
- * If operationType provided: returns specific recommendation.
- * If not provided: runs full delta analysis and returns DopamineAnalysis report.
- */
-export async function mathaGetRouting(
-  mathaDir: string,
-  operationType?: string
-): Promise<string> {
-  try {
-    if (operationType) {
-      const rec = await getRecommendation(mathaDir, operationType);
-      return JSON.stringify({
-        operation_type: operationType,
-        recommended_tier: rec.tier,
-        recommended_budget: rec.budget,
-        source: rec.source,
-        confidence: rec.confidence,
-        sample_size: rec.sample_size
-      });
-    } else {
-      // Full analysis trigger
-      const analysis = await analyseDeltas(mathaDir);
-      await persistAnalysis(mathaDir, analysis);
-      return JSON.stringify(analysis);
-    }
-  } catch (err: any) {
-    return JSON.stringify({ error: err.message });
-  }
-}
-
-// ──────────────────────────────────────────────────────────────────────
-// CORTEX TOOLS
-// ──────────────────────────────────────────────────────────────────────
-
-/**
- * matha_refresh_cortex: Triggers a git analysis refresh of the cortex.
- * repoPath assumption: process.cwd() is the project root.
- * Never throws to MCP caller.
- */
-export async function mathaRefreshCortex(
-  mathaDir: string,
-): Promise<string> {
-  try {
-    // Use mathaDir to derive repoPath (go up from .matha)
-    const repoPath = path.dirname(mathaDir);
-    const snapshot = await refreshFromGit(repoPath, mathaDir);
-
-    return JSON.stringify({
-      success: true,
-      commitCount: snapshot.commitCount,
-      fileCount: snapshot.fileCount,
-      summary: snapshot.summary,
-    });
-  } catch (err: any) {
-    return JSON.stringify({
-      success: false,
-      error: `Failed to refresh cortex: ${err.message}`,
-      commitCount: 0,
-      fileCount: 0,
-      summary: null,
-    });
-  }
+export async function mathaRefresh(engine: Engine): Promise<string> {
+  const repoPath = path.dirname(engine.mathaDir)
+  const snapshot = await refreshFromGit(repoPath, engine.mathaDir)
+  return withDiagnostics(engine, {
+    success: true,
+    commitCount: snapshot.commitCount,
+    fileCount: snapshot.fileCount,
+    summary: snapshot.summary,
+  })
 }

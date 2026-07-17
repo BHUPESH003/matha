@@ -43,10 +43,6 @@ describe('init command', () => {
       '.matha/cerebellum',
       '.matha/cerebellum/contracts',
       '.matha/cortex',
-      '.matha/dopamine',
-      '.matha/dopamine/predictions',
-      '.matha/dopamine/actuals',
-      '.matha/sessions',
     ]
 
     for (const dir of requiredDirs) {
@@ -206,15 +202,16 @@ describe('init command', () => {
 
     expect(mcpConfig.mcpServers).toBeDefined()
     expect(mcpConfig.mcpServers.matha).toBeDefined()
-    expect(mcpConfig.mcpServers.matha.command).toBe('node')
+    // Local install → node + entry path; otherwise npx fallback. Either way
+    // the config must pass the project root explicitly via --project.
+    expect(['node', 'npx']).toContain(mcpConfig.mcpServers.matha.command)
     expect(mcpConfig.mcpServers.matha.description).toBe('MATHA persistent cognitive layer')
-    expect(Array.isArray(mcpConfig.mcpServers.matha.args)).toBe(true)
-    expect(mcpConfig.mcpServers.matha.args).toHaveLength(2)
-    expect(mcpConfig.mcpServers.matha.args[1]).toBe('serve')
-
-    // Check that the path is absolute
-    const mcpPath = mcpConfig.mcpServers.matha.args[0]
-    expect(path.isAbsolute(mcpPath)).toBe(true)
+    const args = mcpConfig.mcpServers.matha.args
+    expect(Array.isArray(args)).toBe(true)
+    expect(args).toContain('serve')
+    const projectFlagIdx = args.indexOf('--project')
+    expect(projectFlagIdx).toBeGreaterThan(-1)
+    expect(path.isAbsolute(args[projectFlagIdx + 1])).toBe(true)
 
     // Check that log message was printed
     const allLogs = logs.join('\n')

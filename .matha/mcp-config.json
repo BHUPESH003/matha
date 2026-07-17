@@ -1,6 +1,14 @@
 {
-  "matha_dir": "/home/pelocal/Desktop/matha/.matha",
-  "cwd": "/home/pelocal/Desktop/matha",
-  "initialized": true,
-  "timestamp": "2026-03-09T06:01:39.425Z"
+  "mcpServers": {
+    "matha": {
+      "command": "node",
+      "args": [
+        "/home/pelocal/Desktop/Professional_Projects/personal-projects/matha/dist/index.js",
+        "serve",
+        "--project",
+        "/home/pelocal/Desktop/Professional_Projects/personal-projects/matha"
+      ],
+      "description": "MATHA persistent cognitive layer"
+    }
+  }
 }
