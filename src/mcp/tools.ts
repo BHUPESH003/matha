@@ -13,10 +13,12 @@ import { assembleBrief } from '@/retrieve/brief.js'
 import type { MatchContext } from '@/retrieve/match.js'
 
 /**
- * MCP tool implementations. Thin: every read goes through the Engine
- * (cached), every write through store/records with schema validation.
- * All results are JSON strings; every success carries `diagnostics` so a
- * wrong-brain failure is visible instead of silently empty.
+ * MCP tool implementations behind the consolidated surface:
+ * matha_brief / matha_match (reads), matha_record (the one write tool),
+ * matha_refresh (codemap). Thin: reads go through the Engine (cached),
+ * writes through store/records with schema validation. All results are
+ * JSON strings; every success carries `diagnostics` so a wrong-brain
+ * failure is visible instead of silently empty.
  */
 
 function generateId(): string {
@@ -27,31 +29,11 @@ function withDiagnostics(engine: Engine, payload: Record<string, unknown>): stri
   return JSON.stringify({ ...payload, diagnostics: { brainDir: engine.mathaDir } })
 }
 
+function rejected(reason: string): string {
+  return JSON.stringify({ success: false, error: `Rejected: ${reason}` })
+}
+
 // ── READ TOOLS ───────────────────────────────────────────────────────
-
-export async function mathaGetRules(engine: Engine): Promise<string> {
-  const rules = await engine.getRules()
-  return withDiagnostics(engine, { rules })
-}
-
-export async function mathaGetDangerZones(engine: Engine, context?: string): Promise<string> {
-  const zones = await engine.getDangerZones(context)
-  return withDiagnostics(engine, { zones })
-}
-
-export async function mathaGetDecisions(
-  engine: Engine,
-  component?: string,
-  limit?: number,
-): Promise<string> {
-  const decisions = await engine.getDecisions(component, limit ?? 20)
-  return withDiagnostics(engine, { decisions })
-}
-
-export async function mathaGetStability(engine: Engine, files: string[]): Promise<string> {
-  const stability = await engine.stabilityFor(files)
-  return withDiagnostics(engine, { stability })
-}
 
 export async function mathaBrief(
   engine: Engine,
@@ -85,72 +67,62 @@ export async function mathaMatch(
   })
 }
 
-// ── WRITE TOOLS ──────────────────────────────────────────────────────
+// ── THE ONE WRITE TOOL ───────────────────────────────────────────────
 
-export async function mathaRecordDecision(
-  engine: Engine,
-  component: string,
-  previousAssumption: string,
-  correction: string,
-  confidence: Confidence = 'probable',
-): Promise<string> {
-  const valid = validateDecisionInput({
-    component,
-    previous_assumption: previousAssumption,
-    correction,
-  })
-  if (!valid.ok) {
-    return JSON.stringify({ success: false, error: `Rejected: ${valid.reason}` })
-  }
+export type RecordType = 'decision' | 'danger' | 'contract'
 
-  const id = `${Date.now()}-${generateId()}`
-  await recordDecision(engine.mathaDir, {
-    id,
-    timestamp: new Date().toISOString(),
-    component,
-    previous_assumption: previousAssumption,
-    correction,
-    trigger: 'mcp-call',
-    confidence,
-    status: 'active',
-    supersedes: null,
-    session_id: id,
-  })
-  return withDiagnostics(engine, { success: true, id })
+export interface RecordArgs {
+  type?: RecordType
+  component?: string
+  previous_assumption?: string
+  correction?: string
+  description?: string
+  assertions?: string[]
+  confidence?: Confidence
 }
 
-export async function mathaRecordDanger(
-  engine: Engine,
-  component: string,
-  description: string,
-): Promise<string> {
-  const valid = validateDangerInput({ component, description })
-  if (!valid.ok) {
-    return JSON.stringify({ success: false, error: `Rejected: ${valid.reason}` })
+export async function mathaRecord(engine: Engine, args: RecordArgs): Promise<string> {
+  switch (args.type) {
+    case 'decision': {
+      const valid = validateDecisionInput(args)
+      if (!valid.ok) return rejected(valid.reason!)
+      const id = `${Date.now()}-${generateId()}`
+      await recordDecision(engine.mathaDir, {
+        id,
+        timestamp: new Date().toISOString(),
+        component: args.component!,
+        previous_assumption: args.previous_assumption!,
+        correction: args.correction!,
+        trigger: 'mcp-call',
+        confidence: args.confidence ?? 'probable',
+        status: 'active',
+        supersedes: null,
+        session_id: id,
+      })
+      return withDiagnostics(engine, { success: true, id })
+    }
+    case 'danger': {
+      const valid = validateDangerInput(args)
+      if (!valid.ok) return rejected(valid.reason!)
+      const id = `danger-${Date.now()}-${generateId()}`
+      await recordDangerZone(engine.mathaDir, {
+        id,
+        component: args.component!,
+        pattern: args.description!,
+        description: args.description!,
+        confidence: args.confidence ?? 'probable',
+      })
+      return withDiagnostics(engine, { success: true, id })
+    }
+    case 'contract': {
+      const valid = validateContractInput(args)
+      if (!valid.ok) return rejected(valid.reason!)
+      await recordContract(engine.mathaDir, args.component!, args.assertions!)
+      return withDiagnostics(engine, { success: true, component: args.component })
+    }
+    default:
+      return rejected(`type must be one of decision | danger | contract (got '${args.type}')`)
   }
-
-  const id = `danger-${Date.now()}-${generateId()}`
-  await recordDangerZone(engine.mathaDir, {
-    id,
-    component,
-    pattern: description,
-    description,
-  })
-  return withDiagnostics(engine, { success: true, id })
-}
-
-export async function mathaRecordContract(
-  engine: Engine,
-  component: string,
-  assertions: string[],
-): Promise<string> {
-  const valid = validateContractInput({ component, assertions })
-  if (!valid.ok) {
-    return JSON.stringify({ success: false, error: `Rejected: ${valid.reason}` })
-  }
-
-  await recordContract(engine.mathaDir, component, assertions)
-  return withDiagnostics(engine, { success: true, component })
 }
 
 // ── CODEMAP ──────────────────────────────────────────────────────────

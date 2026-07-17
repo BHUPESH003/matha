@@ -115,6 +115,7 @@ export async function runAfter(
         component,
         pattern: dangerPattern,
         description: dangerPattern,
+        confidence: 'confirmed', // human-entered
       });
       dangerZoneRecorded = true;
     }

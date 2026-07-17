@@ -1,6 +1,8 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import {
   CallToolRequestSchema,
+  GetPromptRequestSchema,
+  ListPromptsRequestSchema,
   ListToolsRequestSchema,
   Tool,
 } from '@modelcontextprotocol/sdk/types.js'
@@ -10,21 +12,14 @@ import { createRequire } from 'module'
 import { Engine } from '@/core/engine.js'
 import { resolveBrainDir, BrainNotFoundError } from '@/core/resolve.js'
 import { checkSchemaVersion, getSchemaMessage } from '@/utils/schema-version.js'
-import {
-  mathaBrief,
-  mathaGetDangerZones,
-  mathaGetDecisions,
-  mathaGetRules,
-  mathaGetStability,
-  mathaMatch,
-  mathaRecordContract,
-  mathaRecordDanger,
-  mathaRecordDecision,
-  mathaRefresh,
-} from './tools.js'
+import { assembleBrief } from '@/retrieve/brief.js'
+import { mathaBrief, mathaMatch, mathaRecord, mathaRefresh } from './tools.js'
 
 /**
- * MATHA MCP Server.
+ * MATHA MCP Server — consolidated surface (target-architecture Phase 2):
+ * two reads (matha_brief, matha_match), one write (matha_record), one
+ * maintenance tool (matha_refresh), plus the matha_context prompt that
+ * injects the brief and the standing record-what-you-learn instruction.
  *
  * Brain resolution order (see core/resolve.ts):
  *   1. explicit --project (authoritative: wrong path = startup error, loud)
@@ -45,8 +40,9 @@ const tools: Tool[] = [
   {
     name: 'matha_brief',
     description:
-      'Returns project context: why the project exists, business rules, recent decisions, ' +
-      'and matches against the given scope. Call this FIRST in any session, before touching code.',
+      'Returns project context under a token budget: why the project exists, business rules, ' +
+      'recent decisions, and scored matches against the given scope. Call this FIRST in any ' +
+      'session, before touching code.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -68,7 +64,8 @@ const tools: Tool[] = [
     name: 'matha_match',
     description:
       'Matches your planned change against known danger zones, contracts, frozen files, and ' +
-      'prior decisions. Call BEFORE modifying files. hasCritical:true means proceed with caution.',
+      'prior decisions, ranked by relevance score. Call BEFORE modifying files. ' +
+      'hasCritical:true means proceed with caution.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -87,106 +84,48 @@ const tools: Tool[] = [
     },
   },
   {
-    name: 'matha_get_rules',
-    description: 'Returns all non-negotiable business rules for the project.',
-    inputSchema: { type: 'object' as const, properties: {}, required: [] },
-  },
-  {
-    name: 'matha_get_danger_zones',
-    description: 'Returns known danger zones (patterns to avoid). Optionally filter by context.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        context: { type: 'string', description: 'Optional filter (e.g. component name)' },
-      },
-      required: [],
-    },
-  },
-  {
-    name: 'matha_get_decisions',
-    description: 'Returns past decisions (broken assumptions and their corrections).',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        component: { type: 'string', description: 'Optional component filter' },
-        limit: { type: 'number', description: 'Max results (default 20)' },
-      },
-      required: [],
-    },
-  },
-  {
-    name: 'matha_get_stability',
+    name: 'matha_record',
     description:
-      'Returns git-derived stability classification (frozen/stable/volatile/disposable) for files.',
+      'Records durable project knowledge — the ONE write tool. type=decision: a stated ' +
+      'assumption about this codebase that proved wrong, plus the correction (call when the ' +
+      'code behaves differently than documented or expected). type=danger: a pattern that ' +
+      'breaks something non-obvious (call when a change in one place caused unexpected ' +
+      'breakage elsewhere). type=contract: assertions that must remain true for a component ' +
+      '(overwrites the previous contract, version increments). Not for trivial observations — ' +
+      'for knowledge a future session must have.',
     inputSchema: {
       type: 'object' as const,
       properties: {
-        files: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'File paths to check (repo-relative)',
+        type: {
+          type: 'string',
+          enum: ['decision', 'danger', 'contract'],
+          description: 'What kind of knowledge this is',
         },
-      },
-      required: ['files'],
-    },
-  },
-  {
-    name: 'matha_record_decision',
-    description:
-      'Records a durable learning: a stated assumption about this codebase that proved wrong, ' +
-      'and the correction. Call when you discover the code behaves differently than documented ' +
-      'or expected. Not for trivial observations — for corrections a future session must know.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
         component: {
           type: 'string',
           description: 'File path(s) or component this applies to (prefer paths)',
         },
-        previous_assumption: { type: 'string', description: 'What was believed to be true' },
-        correction: { type: 'string', description: 'What is actually true' },
+        previous_assumption: {
+          type: 'string',
+          description: 'decision only: what was believed to be true',
+        },
+        correction: { type: 'string', description: 'decision only: what is actually true' },
+        description: {
+          type: 'string',
+          description: 'danger only: the pattern to watch for, specifically',
+        },
+        assertions: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'contract only: invariant assertions (must remain true)',
+        },
         confidence: {
           type: 'string',
           enum: ['confirmed', 'probable', 'uncertain'],
           description: 'Default: probable. Use confirmed only for human-verified facts.',
         },
       },
-      required: ['component', 'previous_assumption', 'correction'],
-    },
-  },
-  {
-    name: 'matha_record_danger',
-    description:
-      'Records a danger zone: a pattern that breaks something non-obvious. Call when a change ' +
-      'in one place caused unexpected breakage elsewhere, so future sessions get warned.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        component: {
-          type: 'string',
-          description: 'File path(s) or component where the danger lives (prefer paths)',
-        },
-        description: { type: 'string', description: 'The pattern to watch for, specifically' },
-      },
-      required: ['component', 'description'],
-    },
-  },
-  {
-    name: 'matha_record_contract',
-    description:
-      'Records the behaviour contract for a component: assertions that must remain true after ' +
-      'any change. Overwrites the existing contract for the same component (version increments).',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        component: { type: 'string', description: 'File path or component the contract covers' },
-        assertions: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'Invariant assertions (must remain true)',
-        },
-      },
-      required: ['component', 'assertions'],
+      required: ['type', 'component'],
     },
   },
   {
@@ -219,15 +158,15 @@ export async function startServer(explicitRoot?: string): Promise<void> {
     }
   }
 
-  const server = new Server({ name: 'matha', version }, { capabilities: { tools: {} } })
+  const server = new Server(
+    { name: 'matha', version },
+    { capabilities: { tools: {}, prompts: {} } },
+  )
 
   /** Per-call resolution fallback using the tool call's own filepaths. */
   async function getEngine(args: any): Promise<Engine | null> {
     if (engine) return engine
-    const filepaths: string[] = [
-      ...(Array.isArray(args?.filepaths) ? args.filepaths : []),
-      ...(Array.isArray(args?.files) ? args.files : []),
-    ]
+    const filepaths: string[] = Array.isArray(args?.filepaths) ? args.filepaths : []
     try {
       const resolved = await resolveBrainDir({ filepaths })
       engine = new Engine(resolved.mathaDir)
@@ -299,32 +238,8 @@ export async function startServer(explicitRoot?: string): Promise<void> {
         case 'matha_match':
           result = await mathaMatch(eng, args.scope, args.intent, args.filepaths)
           break
-        case 'matha_get_rules':
-          result = await mathaGetRules(eng)
-          break
-        case 'matha_get_danger_zones':
-          result = await mathaGetDangerZones(eng, args.context)
-          break
-        case 'matha_get_decisions':
-          result = await mathaGetDecisions(eng, args.component, args.limit)
-          break
-        case 'matha_get_stability':
-          result = await mathaGetStability(eng, args.files || [])
-          break
-        case 'matha_record_decision':
-          result = await mathaRecordDecision(
-            eng,
-            args.component,
-            args.previous_assumption,
-            args.correction,
-            args.confidence || 'probable',
-          )
-          break
-        case 'matha_record_danger':
-          result = await mathaRecordDanger(eng, args.component, args.description)
-          break
-        case 'matha_record_contract':
-          result = await mathaRecordContract(eng, args.component, args.assertions)
+        case 'matha_record':
+          result = await mathaRecord(eng, args)
           break
         case 'matha_refresh':
           result = await mathaRefresh(eng)
@@ -349,6 +264,49 @@ export async function startServer(explicitRoot?: string): Promise<void> {
         ],
         isError: true,
       }
+    }
+  })
+
+  // ── PROMPT: session-start brief + standing record instruction ──────
+
+  server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+    prompts: [
+      {
+        name: 'matha_context',
+        description:
+          'Project brief (intent, rules, recent decisions, scope matches) plus the standing ' +
+          'instruction to record what the session learns. Use at session start.',
+        arguments: [
+          { name: 'scope', description: 'Files or components to be worked on', required: false },
+          { name: 'intent', description: 'What this session is trying to do', required: false },
+        ],
+      },
+    ],
+  }))
+
+  server.setRequestHandler(GetPromptRequestSchema, async (request: any) => {
+    const args = request.params?.arguments ?? {}
+    const eng = await getEngine(args)
+    if (!eng) {
+      throw new Error(
+        `No .matha brain found (tried: ${triedPaths.join(', ')}). Run \`matha init\` or start with --project.`,
+      )
+    }
+    const brief = await assembleBrief(eng, { scope: args.scope, intent: args.intent })
+    const text = [
+      'PROJECT CONTEXT (from matha — persistent project memory):',
+      '```json',
+      JSON.stringify(brief, null, 2),
+      '```',
+      '',
+      'Standing instructions for this session:',
+      '- Treat the rules above as non-negotiable; hasCritical:true matches must be reviewed before changing those areas.',
+      '- Before modifying files not covered above, call matha_match with the files and your intent.',
+      '- When an assumption about this codebase proves wrong, or a change breaks something non-obvious, record it with matha_record before ending the session.',
+    ].join('\n')
+    return {
+      description: 'matha project brief',
+      messages: [{ role: 'user', content: { type: 'text', text } }],
     }
   })
 

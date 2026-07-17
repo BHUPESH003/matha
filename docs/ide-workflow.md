@@ -31,7 +31,7 @@ The brief is plain text designed to copy-paste directly into any agent — Claud
 
 ### Way 2 — MCP Workflow (automatic, always-on)
 
-Connect MATHA as an MCP server. Your AI agent calls `matha_brief()` automatically as its first action and receives full project context before writing a line. When it discovers something new — a broken assumption, a new danger zone — it calls `matha_record_decision()` before the session ends.
+Connect MATHA as an MCP server. Your AI agent calls `matha_brief()` automatically as its first action and receives full project context before writing a line. When it discovers something new — a broken assumption, a new danger zone — it calls `matha_record()` before the session ends.
 
 **Best for:** Day-to-day development. Smaller, frequent changes. Teams where enforcing manual CLI discipline across every developer is impractical.
 
@@ -112,8 +112,8 @@ Before writing any code, call matha_brief() to retrieve the project
 context. Review all danger zones, prior decisions, and the behaviour 
 contract before proceeding.
 
-If you discover a new business rule or a prior assumption was wrong, 
-call matha_record_decision() before the session ends.
+If you discover a new business rule or a prior assumption was wrong,
+call matha_record() before the session ends.
 
 If you touch a file classified as frozen or stable, explain why before 
 proceeding.
@@ -129,17 +129,12 @@ This is deliberately low-friction. It works with any MCP-compatible agent, today
 
 | Tool | When to call it | What it returns |
 |------|-----------------|-----------------|
-| `matha_brief(scope?, directory?)` | Start of every session | Full context: rules, danger zones, decisions, stability, behaviour contract, match results |
-| `matha_get_rules()` | When you need business rules only | Array of non-negotiable rules from `matha init` |
-| `matha_get_danger_zones(context?)` | Before touching a specific area | Known failure patterns, filtered by context string if provided |
-| `matha_get_decisions(component?, limit?)` | Before modifying a component | Decision history — what assumptions broke here and what the corrections were |
-| `matha_get_stability(files[])` | Before modifying specific files | Stability classification per file: frozen, stable, volatile, or disposable |
-| `matha_match(scope, intent, operationType?)` | Before starting any write operation | Full cerebellum match — contracts, danger zones, and decisions relevant to this exact operation |
-| `matha_record_decision(component, prevAssumption, correction)` | When you discover a prior assumption was wrong | Writes the correction to the brain so the next session inherits it |
-| `matha_record_danger(component, description)` | When you find a new failure pattern | Writes a danger zone so future sessions are warned automatically |
-| `matha_record_contract(component, assertions[])` | When establishing a behaviour contract for a component | Stores assertions that will be matched against future operations on this component |
-| `matha_refresh_cortex()` | After significant commits | Re-runs git analysis and rebuilds the stability map from current history |
-| `matha_get_routing(operationType?)` | When planning a session's model and token budget | Returns learned routing recommendation, or full dopamine analysis if no type specified |
+| `matha_brief(scope?, intent?, filepaths?)` | Start of every session | Token-budgeted context: why, rules, recent decisions, and scored matches for the scope |
+| `matha_match(scope, intent, filepaths?)` | Before modifying files | Scored matches — danger zones, contracts, frozen files, prior decisions — with `hasCritical` |
+| `matha_record(type, component, ...)` | When the session learns something durable | The one write tool. `type=decision` (broken assumption + correction), `type=danger` (non-obvious failure pattern), `type=contract` (assertions that must stay true) |
+| `matha_refresh()` | After significant commits | Re-runs git analysis and rebuilds the stability map and co-change graph |
+
+IDEs that support MCP **prompts** can also pull `matha_context(scope?, intent?)` — the brief plus the standing record-what-you-learn instruction, injected as a single message.
 
 ---
 
@@ -148,12 +143,12 @@ This is deliberately low-friction. It works with any MCP-compatible agent, today
 To confirm MATHA is connected and responding, call the simplest read tool from your agent:
 
 ```
-Call matha_get_rules()
+Call matha_brief()
 ```
 
-**If it returns rules** — MATHA is connected. The rules shown were captured at `matha init`.
+**If it returns rules and a why** — MATHA is connected. They were captured at `matha init`.
 
-**If it returns an empty array** — MATHA is connected but the project has not been initialised. Run `matha init` in your project root first.
+**If it returns an error naming tried paths** — MATHA is connected but no brain was found. Run `matha init` in your project root, or check `--project` in your MCP config. `matha doctor` shows exactly which brain would be served.
 
 **If it returns an error about the path** — the path in your MCP config is wrong. Check that the path in `args` is absolute, not relative. The correct path is in `.matha/mcp-config.json`.
 

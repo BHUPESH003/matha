@@ -36,7 +36,7 @@ Every session writes back what it learned. Every session starts warmer than the 
 
 ## How It Works
 
-MCP is the primary surface: the agent calls `matha_brief` before touching code and `matha_record_*` when it learns something. The CLI is for setup, diagnostics, and agents without MCP support:
+MCP is the primary surface: the agent calls `matha_brief` before touching code and `matha_record` when it learns something. The CLI is for setup, diagnostics, and agents without MCP support:
 
 ```bash
 # Once per project — seeds the brain from your project's intent and git history
@@ -121,22 +121,18 @@ Retrieval is hierarchical: a danger zone recorded against `src/payments/` fires 
 
 ## MCP Tools
 
-AI agents connected via MCP have access to:
+AI agents connected via MCP have access to a deliberately small surface:
 
 ```
-matha_brief(scope?, intent?, filepaths?)   Project context + matches for a scope
+matha_brief(scope?, intent?, filepaths?)   Token-budgeted project context + scored matches
 matha_match(scope, intent, filepaths?)     What does the brain know about this change?
-matha_get_rules()                          Non-negotiable business rules
-matha_get_danger_zones(context?)           Known failure patterns
-matha_get_decisions(component?, limit?)    Decision history
-matha_get_stability(files[])               Stability classification per file
-matha_record_decision(...)                 Write a decision back to the brain
-matha_record_danger(...)                   Flag a new danger zone
-matha_record_contract(...)                 Store a behaviour contract
+matha_record(type, component, ...)         The one write tool: decision | danger | contract
 matha_refresh()                            Rebuild the codemap from git history
 ```
 
-Every response includes `diagnostics.brainDir` — you always know which brain answered.
+There is also an MCP **prompt**, `matha_context`, which injects the brief plus the standing "record what you learn" instruction — IDEs that support MCP prompts can pull it at session start with zero configuration.
+
+Retrieval is scored (structural path match × lexical relevance × confidence × recency) and the brief stays under a ~1,500-token budget — criticals are ranked first, so they are never the part that gets truncated. Every response includes `diagnostics.brainDir` — you always know which brain answered.
 
 ---
 
@@ -240,7 +236,7 @@ Paste this rule:
 > At the start of every conversation, call matha_brief() before
 > writing any code. Review all rules, danger zones, and prior
 > decisions. Flag any hasCritical:true results before proceeding.
-> After completing work, call matha_record_decision() for any
+> After completing work, call matha_record() for any
 > assumption that changed during the session.
 
 One rule. Every session starts warm.

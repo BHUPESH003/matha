@@ -8,6 +8,7 @@ import {
   type IntentRecord,
 } from '@/core/schema.js'
 import type { StabilityRecord } from '@/codemap/index.js'
+import type { CoChangeRecord } from '@/codemap/git-analyser.js'
 import { matchAll, type BrainData, type MatchContext, type MatchResult } from '@/retrieve/match.js'
 
 /**
@@ -161,8 +162,8 @@ export class Engine {
     return result
   }
 
-  async getCoChanges(): Promise<unknown[]> {
-    const pairs = await this.cachedJson<unknown[]>(
+  async getCoChanges(): Promise<CoChangeRecord[]> {
+    const pairs = await this.cachedJson<CoChangeRecord[]>(
       path.join(this.mathaDir, 'cortex', 'co-changes.json'),
     )
     return Array.isArray(pairs) ? pairs : []
@@ -171,13 +172,14 @@ export class Engine {
   // ── RETRIEVAL ────────────────────────────────────────────────────
 
   async loadBrain(): Promise<BrainData> {
-    const [dangerZones, contracts, stability, decisions] = await Promise.all([
+    const [dangerZones, contracts, stability, decisions, coChanges] = await Promise.all([
       this.getDangerZones(),
       this.getContracts(),
       this.getStabilityRecords(),
       this.getDecisions(),
+      this.getCoChanges(),
     ])
-    return { dangerZones, contracts, stability, decisions }
+    return { dangerZones, contracts, stability, decisions, coChanges }
   }
 
   async match(context: MatchContext): Promise<{ results: MatchResult[]; diagnostics: Diagnostics }> {

@@ -37,6 +37,7 @@ export interface DangerZone {
   pattern: string
   description: string
   status?: RecordStatus
+  confidence?: Confidence
 }
 
 export interface ContractAssertion {

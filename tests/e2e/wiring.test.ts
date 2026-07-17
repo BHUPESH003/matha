@@ -89,15 +89,13 @@ describe('e2e wiring (spawned MCP server)', () => {
     try {
       const tools = await client.listTools()
       const names = tools.tools.map((t) => t.name)
-      expect(names).toContain('matha_brief')
-      expect(names).toContain('matha_match')
-      expect(names).toContain('matha_refresh')
-      expect(names).not.toContain('matha_get_routing') // dead tool stays dead
+      // The consolidated Phase 2 surface — nothing more
+      expect(names.sort()).toEqual(['matha_brief', 'matha_match', 'matha_record', 'matha_refresh'])
 
       // Static knowledge comes from the fixture project, not the cwd
-      const rules = text(await client.callTool({ name: 'matha_get_rules', arguments: {} }))
-      expect(rules.rules).toEqual(['all writes must be atomic'])
-      expect(rules.diagnostics.brainDir).toBe(path.join(projectDir, '.matha'))
+      const staticBrief = text(await client.callTool({ name: 'matha_brief', arguments: {} }))
+      expect(staticBrief.rules).toEqual(['all writes must be atomic'])
+      expect(staticBrief.diagnostics.brainDir).toBe(path.join(projectDir, '.matha'))
 
       // Retrieval: dir-scoped danger zone fires for a file inside it
       const brief = text(
@@ -109,12 +107,14 @@ describe('e2e wiring (spawned MCP server)', () => {
       expect(brief.why).toBe('e2e fixture project')
       expect(brief.hasCritical).toBe(true)
       expect(brief.matchResults[0].title).toContain('src/payments/')
+      expect(brief.tokenEstimate).toBeGreaterThan(0)
 
-      // Write → read round-trip across the protocol
+      // Write → read round-trip across the protocol, via the ONE write tool
       const write = text(
         await client.callTool({
-          name: 'matha_record_decision',
+          name: 'matha_record',
           arguments: {
+            type: 'decision',
             component: 'src/payments/retry.ts',
             previous_assumption: 'assumed the gateway is idempotent',
             correction: 'gateway double-charges on retry',
@@ -123,19 +123,29 @@ describe('e2e wiring (spawned MCP server)', () => {
       )
       expect(write.success).toBe(true)
 
-      const decisions = text(
-        await client.callTool({ name: 'matha_get_decisions', arguments: {} }),
-      )
-      expect(decisions.decisions).toHaveLength(1)
+      const afterWrite = text(await client.callTool({ name: 'matha_brief', arguments: {} }))
+      expect(afterWrite.recentDecisions).toHaveLength(1)
 
       // Garbage is rejected at the protocol boundary too
       const garbage = text(
         await client.callTool({
-          name: 'matha_record_decision',
-          arguments: { component: 'src/x.ts', previous_assumption: 'y', correction: 'y' },
+          name: 'matha_record',
+          arguments: { type: 'decision', component: 'src/x.ts', previous_assumption: 'y', correction: 'y' },
         }),
       )
       expect(garbage.success).toBe(false)
+
+      // The matha_context prompt injects the brief + standing record instruction
+      const prompts = await client.listPrompts()
+      expect(prompts.prompts.map((p) => p.name)).toContain('matha_context')
+      const prompt = await client.getPrompt({
+        name: 'matha_context',
+        arguments: { scope: 'src/payments/retry.ts', intent: 'change retry logic' },
+      })
+      const promptText = (prompt.messages[0].content as any).text as string
+      expect(promptText).toContain('PROJECT CONTEXT')
+      expect(promptText).toContain('all writes must be atomic')
+      expect(promptText).toContain('matha_record')
     } finally {
       await client.close()
     }
@@ -146,7 +156,7 @@ describe('e2e wiring (spawned MCP server)', () => {
     try {
       // No brain resolvable from cwd → explicit error with tried paths,
       // NOT a silently-created empty brain (the 0.1.x failure mode)
-      const noBrain = text(await client.callTool({ name: 'matha_get_rules', arguments: {} }))
+      const noBrain = text(await client.callTool({ name: 'matha_brief', arguments: {} }))
       expect(noBrain.error).toContain('matha init')
       expect(Array.isArray(noBrain.triedPaths)).toBe(true)
       await expect(fs.access(path.join(unrelatedCwd, '.matha'))).rejects.toThrow()
