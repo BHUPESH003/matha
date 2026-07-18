@@ -103,6 +103,16 @@ program
   });
 
 program
+  .command("catchup")
+  .description("List commits since the last recorded knowledge that no record covers (unaccounted work)")
+  .option("--project <path>", "Project root path (default: current directory)")
+  .action(async (options) => {
+    const { runCatchup } = await import("./commands/catchup.js");
+    const result = await runCatchup(options.project || process.cwd());
+    process.exit(result.exitCode);
+  });
+
+program
   .command("serve")
   .description("Start MCP server on stdio for IDE integration")
   .option("--project <path>", "Project root path (default: resolve from client roots / cwd)")

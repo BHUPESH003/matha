@@ -75,7 +75,8 @@ export async function runBefore(
   if (brief.recentDecisions.length > 0) {
     log('RECENT DECISIONS (corrections a past session learned):');
     for (const d of brief.recentDecisions) {
-      log(`  · [${d.component}] assumed: ${d.previous_assumption} → actually: ${d.correction}`);
+      const stale = d.possiblyStale ? ' (possibly stale — code changed since recorded)' : '';
+      log(`  · [${d.component}]${stale} assumed: ${d.previous_assumption} → actually: ${d.correction}`);
     }
     log('');
   }
@@ -83,7 +84,8 @@ export async function runBefore(
   log('MATCHES FOR THIS SCOPE:');
   if (brief.matchResults.length > 0) {
     for (const res of brief.matchResults) {
-      log(`  · [${res.severity.toUpperCase()}] ${res.title}`);
+      const stale = res.possiblyStale ? ' (possibly stale)' : '';
+      log(`  · [${res.severity.toUpperCase()}]${stale} ${res.title}`);
       log(`    ${res.description}`);
     }
   } else {

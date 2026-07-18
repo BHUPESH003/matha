@@ -7,7 +7,7 @@ import {
   type DecisionEntry,
   type IntentRecord,
 } from '@/core/schema.js'
-import type { StabilityRecord } from '@/codemap/index.js'
+import { refreshFromGit, type AnalysisState, type StabilityRecord } from '@/codemap/index.js'
 import type { CoChangeRecord } from '@/codemap/git-analyser.js'
 import { matchAll, type BrainData, type MatchContext, type MatchResult } from '@/retrieve/match.js'
 
@@ -50,6 +50,7 @@ export interface Diagnostics {
 
 export class Engine {
   private cache = new Map<string, CacheEntry>()
+  private refreshing: Promise<void> | null = null
 
   constructor(readonly mathaDir: string) {}
 
@@ -74,6 +75,28 @@ export class Engine {
       data = JSON.parse(await fs.readFile(absPath, 'utf-8')) as T
     } catch {
       data = null // malformed JSON is treated as missing, never fatal to retrieval
+    }
+    this.cache.set(absPath, { mtimeMs: stat.mtimeMs, size: stat.size, data })
+    return data
+  }
+
+  private async cachedText(absPath: string): Promise<string | null> {
+    let stat
+    try {
+      stat = await fs.stat(absPath)
+    } catch {
+      this.cache.delete(absPath)
+      return null
+    }
+    const hit = this.cache.get(absPath)
+    if (hit && hit.mtimeMs === stat.mtimeMs && hit.size === stat.size) {
+      return hit.data as string | null
+    }
+    let data: string | null
+    try {
+      data = await fs.readFile(absPath, 'utf-8')
+    } catch {
+      data = null
     }
     this.cache.set(absPath, { mtimeMs: stat.mtimeMs, size: stat.size, data })
     return data
@@ -169,17 +192,81 @@ export class Engine {
     return Array.isArray(pairs) ? pairs : []
   }
 
+  // ── CODEMAP AUTO-REFRESH ─────────────────────────────────────────
+
+  /**
+   * Current git HEAD hash via plain file reads (.git/HEAD → ref file →
+   * packed-refs). No subprocess, mtime-cached — cheap enough for every
+   * retrieval call. Returns null when there is no readable .git dir
+   * (including worktrees, where .git is a file — auto-refresh just skips).
+   */
+  private async currentHeadHash(): Promise<string | null> {
+    const gitDir = path.join(path.dirname(this.mathaDir), '.git')
+    const head = (await this.cachedText(path.join(gitDir, 'HEAD')))?.trim()
+    if (!head) return null
+    if (!head.startsWith('ref: ')) return head // detached HEAD
+
+    const ref = head.slice(5).trim()
+    const direct = (await this.cachedText(path.join(gitDir, ...ref.split('/'))))?.trim()
+    if (direct) return direct
+
+    const packed = await this.cachedText(path.join(gitDir, 'packed-refs'))
+    if (packed) {
+      for (const line of packed.split('\n')) {
+        if (line.endsWith(` ${ref}`)) return line.split(' ')[0]
+      }
+    }
+    return null
+  }
+
+  /**
+   * Keep the codemap current on read: if git HEAD moved past the analysis
+   * cursor (or no analysis exists yet), run the incremental refresh before
+   * serving retrieval. Refreshes are serialized and never throw — the
+   * "work done outside matha" answer for the git-derived layer (§5.1):
+   * the codemap catches up by itself, no human ceremony.
+   */
+  private async maybeRefreshCodemap(): Promise<void> {
+    if (this.refreshing) return this.refreshing
+    const head = await this.currentHeadHash()
+    if (!head) return // not a git repo (or unreadable) — nothing to derive from
+
+    const state = await this.cachedJson<AnalysisState>(
+      path.join(this.mathaDir, 'cortex', 'analysis.json'),
+    )
+    if (state?.newestHash === head) return // current — two stats, no git spawn
+
+    this.refreshing = refreshFromGit(path.dirname(this.mathaDir), this.mathaDir)
+      .then(() => undefined)
+      .catch(() => undefined)
+      .finally(() => {
+        this.refreshing = null
+      })
+    return this.refreshing
+  }
+
   // ── RETRIEVAL ────────────────────────────────────────────────────
 
   async loadBrain(): Promise<BrainData> {
-    const [dangerZones, contracts, stability, decisions, coChanges] = await Promise.all([
+    await this.maybeRefreshCodemap()
+    const [dangerZones, contracts, stability, decisions, coChanges, analysis] = await Promise.all([
       this.getDangerZones(),
       this.getContracts(),
       this.getStabilityRecords(),
       this.getDecisions(),
       this.getCoChanges(),
+      this.cachedJson<AnalysisState>(path.join(this.mathaDir, 'cortex', 'analysis.json')),
     ])
-    return { dangerZones, contracts, stability, decisions, coChanges }
+
+    let fileLastChanged: Record<string, string> | undefined
+    if (analysis?.files) {
+      fileLastChanged = {}
+      for (const [file, data] of Object.entries(analysis.files)) {
+        fileLastChanged[file] = data.lastChanged
+      }
+    }
+
+    return { dangerZones, contracts, stability, decisions, coChanges, fileLastChanged }
   }
 
   async match(context: MatchContext): Promise<{ results: MatchResult[]; diagnostics: Diagnostics }> {

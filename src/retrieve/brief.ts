@@ -1,6 +1,7 @@
 import type { Engine, Diagnostics } from '@/core/engine.js'
 import type { DecisionEntry } from '@/core/schema.js'
-import { matchAll, type MatchContext, type MatchResult } from '@/retrieve/match.js'
+import { changedSince, matchAll, type MatchContext, type MatchResult } from '@/retrieve/match.js'
+import { splitComponent } from '@/core/schema.js'
 
 /**
  * Brief assembly — the single implementation behind both `matha before`
@@ -31,6 +32,8 @@ export interface BriefDecision {
   previous_assumption: string
   correction: string
   timestamp: string
+  /** Code under this decision's paths changed after it was recorded. */
+  possiblyStale?: boolean
 }
 
 export interface Brief {
@@ -83,12 +86,14 @@ export async function assembleBrief(engine: Engine, opts: BriefOptions = {}): Pr
     .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
   for (const d of recentCandidates) {
     if (recentDecisions.length >= MAX_RECENT_DECISIONS) break
+    const stale = changedSince(splitComponent(d.component).paths, d.timestamp, data.fileLastChanged)
     const entry: BriefDecision = {
       id: d.id,
       component: d.component,
       previous_assumption: d.previous_assumption,
       correction: d.correction,
       timestamp: d.timestamp,
+      ...(stale ? { possiblyStale: true } : {}),
     }
     const cost = estimateTokens(entry)
     if (spent + cost > budget) {

@@ -3,61 +3,97 @@
     "filepath": "package.json",
     "stability": "stable",
     "confidence": "high",
-    "reason": "Moderate churn (4.25 changes/month)",
+    "reason": "Moderate churn (4.44 changes/month)",
     "classificationSource": "derived",
-    "changeCount": 19,
-    "coChangeCount": 4,
-    "ageInDays": 134,
+    "changeCount": 20,
+    "coChangeCount": 5,
+    "ageInDays": 135,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "package-lock.json",
     "stability": "stable",
     "confidence": "high",
-    "reason": "Moderate churn (3.58 changes/month)",
+    "reason": "Moderate churn (3.56 changes/month)",
     "classificationSource": "derived",
     "changeCount": 16,
     "coChangeCount": 2,
-    "ageInDays": 134,
+    "ageInDays": 135,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+  },
+  {
+    "filepath": "src/mcp/server.ts",
+    "stability": "frozen",
+    "confidence": "high",
+    "reason": "Low churn (1.82 changes/month), high connectivity (4 co-changed files), aged 132 days",
+    "classificationSource": "derived",
+    "changeCount": 8,
+    "coChangeCount": 4,
+    "ageInDays": 132,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+  },
+  {
+    "filepath": "src/mcp/tools.ts",
+    "stability": "frozen",
+    "confidence": "high",
+    "reason": "Low churn (1.82 changes/month), high connectivity (4 co-changed files), aged 132 days",
+    "classificationSource": "derived",
+    "changeCount": 8,
+    "coChangeCount": 4,
+    "ageInDays": 132,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+  },
+  {
+    "filepath": "tests/mcp/tools.test.ts",
+    "stability": "frozen",
+    "confidence": "high",
+    "reason": "Low churn (1.82 changes/month), high connectivity (4 co-changed files), aged 132 days",
+    "classificationSource": "derived",
+    "changeCount": 8,
+    "coChangeCount": 4,
+    "ageInDays": 132,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+  },
+  {
+    "filepath": "README.md",
+    "stability": "stable",
+    "confidence": "high",
+    "reason": "Moderate churn (1.59 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 7,
+    "coChangeCount": 2,
+    "ageInDays": 132,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "src/commands/init.ts",
     "stability": "stable",
     "confidence": "high",
-    "reason": "Moderate churn (1.57 changes/month)",
+    "reason": "Moderate churn (1.56 changes/month)",
     "classificationSource": "derived",
     "changeCount": 7,
     "coChangeCount": 2,
-    "ageInDays": 134,
+    "ageInDays": 135,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "README.md",
-    "stability": "disposable",
-    "confidence": "high",
-    "reason": "Low churn (1.37 changes/month), low connectivity, aged 131 days",
-    "classificationSource": "derived",
-    "changeCount": 6,
-    "coChangeCount": 0,
-    "ageInDays": 131,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "src/commands/before.ts",
     "stability": "frozen",
     "confidence": "high",
-    "reason": "Low churn (1.34 changes/month), high connectivity (4 co-changed files), aged 134 days",
+    "reason": "Low churn (1.33 changes/month), high connectivity (3 co-changed files), aged 135 days",
     "classificationSource": "derived",
     "changeCount": 6,
-    "coChangeCount": 4,
-    "ageInDays": 134,
+    "coChangeCount": 3,
+    "ageInDays": 135,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "src/index.ts",
@@ -69,142 +105,154 @@
     "coChangeCount": 1,
     "ageInDays": 132,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "src/mcp/server.ts",
-    "stability": "disposable",
-    "confidence": "high",
-    "reason": "Low churn (1.36 changes/month), low connectivity, aged 132 days",
-    "classificationSource": "derived",
-    "changeCount": 6,
-    "coChangeCount": 0,
-    "ageInDays": 132,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "src/mcp/tools.ts",
-    "stability": "frozen",
-    "confidence": "high",
-    "reason": "Low churn (1.36 changes/month), high connectivity (3 co-changed files), aged 132 days",
-    "classificationSource": "derived",
-    "changeCount": 6,
-    "coChangeCount": 3,
-    "ageInDays": 132,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "tests/mcp/tools.test.ts",
-    "stability": "frozen",
-    "confidence": "high",
-    "reason": "Low churn (1.36 changes/month), high connectivity (3 co-changed files), aged 132 days",
-    "classificationSource": "derived",
-    "changeCount": 6,
-    "coChangeCount": 3,
-    "ageInDays": 132,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "src/commands/after.ts",
     "stability": "disposable",
-    "confidence": "medium",
-    "reason": "Low churn (0.9 changes/month), low connectivity, aged 134 days",
+    "confidence": "high",
+    "reason": "Low churn (1.11 changes/month), low connectivity, aged 135 days",
     "classificationSource": "derived",
-    "changeCount": 4,
+    "changeCount": 5,
     "coChangeCount": 1,
-    "ageInDays": 134,
+    "ageInDays": 135,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "tests/commands/before.test.ts",
-    "stability": "frozen",
-    "confidence": "medium",
-    "reason": "Low churn (0.9 changes/month), high connectivity (3 co-changed files), aged 134 days",
-    "classificationSource": "derived",
-    "changeCount": 4,
-    "coChangeCount": 3,
-    "ageInDays": 134,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "tests/commands/init.test.ts",
     "stability": "disposable",
     "confidence": "medium",
-    "reason": "Low churn (0.9 changes/month), low connectivity, aged 134 days",
+    "reason": "Low churn (0.89 changes/month), low connectivity, aged 135 days",
     "classificationSource": "derived",
     "changeCount": 4,
     "coChangeCount": 1,
-    "ageInDays": 134,
+    "ageInDays": 135,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "src/brain/dopamine.ts",
-    "stability": "disposable",
-    "confidence": "medium",
-    "reason": "Low churn (0.69 changes/month), low connectivity, aged 131 days",
-    "classificationSource": "derived",
-    "changeCount": 3,
-    "coChangeCount": 0,
-    "ageInDays": 131,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "tests/commands/after.test.ts",
-    "stability": "disposable",
-    "confidence": "medium",
-    "reason": "Low churn (0.67 changes/month), low connectivity, aged 134 days",
-    "classificationSource": "derived",
-    "changeCount": 3,
-    "coChangeCount": 1,
-    "ageInDays": 134,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "tsconfig.json",
     "stability": "frozen",
     "confidence": "medium",
-    "reason": "Low churn (0.67 changes/month), high connectivity (5 co-changed files), aged 134 days",
+    "reason": "Low churn (0.67 changes/month), high connectivity (5 co-changed files), aged 135 days",
     "classificationSource": "derived",
     "changeCount": 3,
     "coChangeCount": 5,
-    "ageInDays": 134,
-    "daysSinceLastChange": 134,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "ageInDays": 135,
+    "daysSinceLastChange": 135,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
-    "filepath": ".matha-test-matcher/hippocampus/danger-zones.json",
+    "filepath": "docs/analysis/03-target-architecture.md",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (60 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 2,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+  },
+  {
+    "filepath": "docs/ide-workflow.md",
     "stability": "disposable",
     "confidence": "medium",
     "reason": "Low churn (0.45 changes/month), low connectivity, aged 132 days",
     "classificationSource": "derived",
     "changeCount": 2,
-    "coChangeCount": 0,
+    "coChangeCount": 1,
     "ageInDays": 132,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+  },
+  {
+    "filepath": "src/core/engine.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (60 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 2,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+  },
+  {
+    "filepath": "src/core/schema.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (60 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 2,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+  },
+  {
+    "filepath": "src/retrieve/brief.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (60 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 2,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+  },
+  {
+    "filepath": "src/retrieve/match.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (60 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 2,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+  },
+  {
+    "filepath": "tests/e2e/wiring.test.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (60 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 2,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+  },
+  {
+    "filepath": "tests/retrieve/match.test.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (60 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 2,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "MATHA_ROADMAP.md",
     "stability": "disposable",
     "confidence": "medium",
-    "reason": "Low churn (0.45 changes/month), low connectivity, aged 134 days",
+    "reason": "Low churn (0.44 changes/month), low connectivity, aged 135 days",
     "classificationSource": "derived",
     "changeCount": 2,
     "coChangeCount": 0,
-    "ageInDays": 134,
+    "ageInDays": 135,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
-    "filepath": "src/analysis/contract-matcher.ts",
+    "filepath": "src/commands/migrate.ts",
     "stability": "disposable",
     "confidence": "medium",
     "reason": "Low churn (0.45 changes/month), low connectivity, aged 132 days",
@@ -213,43 +261,7 @@
     "coChangeCount": 0,
     "ageInDays": 132,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "src/brain/frontal-lobe.ts",
-    "stability": "disposable",
-    "confidence": "medium",
-    "reason": "Low churn (0.45 changes/month), low connectivity, aged 134 days",
-    "classificationSource": "derived",
-    "changeCount": 2,
-    "coChangeCount": 0,
-    "ageInDays": 134,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "src/brain/hippocampus.ts",
-    "stability": "disposable",
-    "confidence": "medium",
-    "reason": "Low churn (0.45 changes/month), low connectivity, aged 134 days",
-    "classificationSource": "derived",
-    "changeCount": 2,
-    "coChangeCount": 0,
-    "ageInDays": 134,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "src/commands/migrate.ts",
-    "stability": "disposable",
-    "confidence": "medium",
-    "reason": "Low churn (0.46 changes/month), low connectivity, aged 131 days",
-    "classificationSource": "derived",
-    "changeCount": 2,
-    "coChangeCount": 0,
-    "ageInDays": 131,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "src/utils/schema-version.ts",
@@ -261,10 +273,10 @@
     "coChangeCount": 0,
     "ageInDays": 132,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
-    "filepath": "tests/analysis/contract-matcher.test.ts",
+    "filepath": "tests/commands/migrate.test.ts",
     "stability": "disposable",
     "confidence": "medium",
     "reason": "Low churn (0.45 changes/month), low connectivity, aged 132 days",
@@ -273,43 +285,7 @@
     "coChangeCount": 0,
     "ageInDays": 132,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "tests/brain/dopamine.test.ts",
-    "stability": "disposable",
-    "confidence": "medium",
-    "reason": "Low churn (0.46 changes/month), low connectivity, aged 131 days",
-    "classificationSource": "derived",
-    "changeCount": 2,
-    "coChangeCount": 0,
-    "ageInDays": 131,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "tests/brain/frontal-lobe.test.ts",
-    "stability": "disposable",
-    "confidence": "medium",
-    "reason": "Low churn (0.45 changes/month), low connectivity, aged 134 days",
-    "classificationSource": "derived",
-    "changeCount": 2,
-    "coChangeCount": 0,
-    "ageInDays": 134,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "tests/commands/migrate.test.ts",
-    "stability": "disposable",
-    "confidence": "medium",
-    "reason": "Low churn (0.46 changes/month), low connectivity, aged 131 days",
-    "classificationSource": "derived",
-    "changeCount": 2,
-    "coChangeCount": 0,
-    "ageInDays": 131,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "tests/utils/schema-version.test.ts",
@@ -321,55 +297,139 @@
     "coChangeCount": 0,
     "ageInDays": 132,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": ".gitignore",
     "stability": "disposable",
     "confidence": "medium",
-    "reason": "Low churn (0.45 changes/month), low connectivity, aged 134 days",
+    "reason": "Low churn (0.44 changes/month), low connectivity, aged 135 days",
     "classificationSource": "derived",
     "changeCount": 2,
     "coChangeCount": 1,
-    "ageInDays": 134,
-    "daysSinceLastChange": 131,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "ageInDays": 135,
+    "daysSinceLastChange": 132,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "tests/storage/reader.test.ts",
     "stability": "frozen",
     "confidence": "medium",
-    "reason": "Low churn (0.45 changes/month), high connectivity (3 co-changed files), aged 134 days",
+    "reason": "Low churn (0.44 changes/month), high connectivity (3 co-changed files), aged 135 days",
     "classificationSource": "derived",
     "changeCount": 2,
     "coChangeCount": 3,
-    "ageInDays": 134,
-    "daysSinceLastChange": 134,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "ageInDays": 135,
+    "daysSinceLastChange": 135,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "tests/storage/writer.test.ts",
     "stability": "frozen",
     "confidence": "medium",
-    "reason": "Low churn (0.45 changes/month), high connectivity (3 co-changed files), aged 134 days",
+    "reason": "Low churn (0.44 changes/month), high connectivity (3 co-changed files), aged 135 days",
     "classificationSource": "derived",
     "changeCount": 2,
     "coChangeCount": 3,
-    "ageInDays": 134,
-    "daysSinceLastChange": 134,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "ageInDays": 135,
+    "daysSinceLastChange": 135,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "vitest.config.ts",
     "stability": "frozen",
     "confidence": "medium",
-    "reason": "Low churn (0.45 changes/month), high connectivity (3 co-changed files), aged 134 days",
+    "reason": "Low churn (0.44 changes/month), high connectivity (3 co-changed files), aged 135 days",
     "classificationSource": "derived",
     "changeCount": 2,
     "coChangeCount": 3,
-    "ageInDays": 134,
-    "daysSinceLastChange": 134,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "ageInDays": 135,
+    "daysSinceLastChange": 135,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+  },
+  {
+    "filepath": ".mcp.json",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (30 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 1,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+  },
+  {
+    "filepath": "CLAUDE.md",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (30 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 1,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+  },
+  {
+    "filepath": "scripts/field-test.sh",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (30 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 1,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+  },
+  {
+    "filepath": "tests/eval/fixture.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (30 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 1,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+  },
+  {
+    "filepath": "tests/eval/golden.test.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (30 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 1,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+  },
+  {
+    "filepath": "tests/eval/harness.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (30 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 1,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+  },
+  {
+    "filepath": "tests/retrieve/brief.test.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (30 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 1,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "docs/analysis/01-current-state.md",
@@ -381,7 +441,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "docs/analysis/02-supermemory-comparison.md",
@@ -393,19 +453,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "docs/analysis/03-target-architecture.md",
-    "stability": "volatile",
-    "confidence": "low",
-    "reason": "High churn (30 changes/month)",
-    "classificationSource": "derived",
-    "changeCount": 1,
-    "coChangeCount": 0,
-    "ageInDays": 1,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "src/codemap/git-analyser.ts",
@@ -417,7 +465,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "src/codemap/index.ts",
@@ -429,7 +477,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "src/codemap/stability-classifier.ts",
@@ -441,7 +489,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "src/commands/doctor.ts",
@@ -453,19 +501,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "src/core/engine.ts",
-    "stability": "volatile",
-    "confidence": "low",
-    "reason": "High churn (30 changes/month)",
-    "classificationSource": "derived",
-    "changeCount": 1,
-    "coChangeCount": 0,
-    "ageInDays": 1,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "src/core/resolve.ts",
@@ -477,43 +513,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "src/core/schema.ts",
-    "stability": "volatile",
-    "confidence": "low",
-    "reason": "High churn (30 changes/month)",
-    "classificationSource": "derived",
-    "changeCount": 1,
-    "coChangeCount": 0,
-    "ageInDays": 1,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "src/retrieve/brief.ts",
-    "stability": "volatile",
-    "confidence": "low",
-    "reason": "High churn (30 changes/month)",
-    "classificationSource": "derived",
-    "changeCount": 1,
-    "coChangeCount": 0,
-    "ageInDays": 1,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "src/retrieve/match.ts",
-    "stability": "volatile",
-    "confidence": "low",
-    "reason": "High churn (30 changes/month)",
-    "classificationSource": "derived",
-    "changeCount": 1,
-    "coChangeCount": 0,
-    "ageInDays": 1,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "src/store/records.ts",
@@ -525,7 +525,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "tests/codemap/codemap.test.ts",
@@ -537,7 +537,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "tests/codemap/git-analyser.test.ts",
@@ -549,7 +549,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "tests/codemap/stability-classifier.test.ts",
@@ -561,7 +561,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "tests/commands/before-after.test.ts",
@@ -573,7 +573,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "tests/core/engine.test.ts",
@@ -585,7 +585,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "tests/core/resolve.test.ts",
@@ -597,31 +597,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "tests/e2e/wiring.test.ts",
-    "stability": "volatile",
-    "confidence": "low",
-    "reason": "High churn (30 changes/month)",
-    "classificationSource": "derived",
-    "changeCount": 1,
-    "coChangeCount": 0,
-    "ageInDays": 1,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "tests/retrieve/match.test.ts",
-    "stability": "volatile",
-    "confidence": "low",
-    "reason": "High churn (30 changes/month)",
-    "classificationSource": "derived",
-    "changeCount": 1,
-    "coChangeCount": 0,
-    "ageInDays": 1,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "tests/store/records.test.ts",
@@ -633,151 +609,67 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "docs/matha_evaluation_report.md",
     "stability": "disposable",
     "confidence": "low",
-    "reason": "Low churn (0.23 changes/month), low connectivity, aged 129 days",
+    "reason": "Low churn (0.23 changes/month), low connectivity, aged 130 days",
     "classificationSource": "derived",
     "changeCount": 1,
     "coChangeCount": 0,
-    "ageInDays": 129,
-    "daysSinceLastChange": 129,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "ageInDays": 130,
+    "daysSinceLastChange": 130,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": ".npmignore",
     "stability": "disposable",
     "confidence": "low",
-    "reason": "Low churn (0.23 changes/month), low connectivity, aged 131 days",
+    "reason": "Low churn (0.23 changes/month), low connectivity, aged 132 days",
     "classificationSource": "derived",
     "changeCount": 1,
     "coChangeCount": 0,
-    "ageInDays": 131,
-    "daysSinceLastChange": 131,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "ageInDays": 132,
+    "daysSinceLastChange": 132,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "LICENSE",
     "stability": "disposable",
     "confidence": "low",
-    "reason": "Low churn (0.23 changes/month), low connectivity, aged 131 days",
+    "reason": "Low churn (0.23 changes/month), low connectivity, aged 132 days",
     "classificationSource": "derived",
     "changeCount": 1,
     "coChangeCount": 0,
-    "ageInDays": 131,
-    "daysSinceLastChange": 131,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "ageInDays": 132,
+    "daysSinceLastChange": 132,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "CONTRIBUTING.md",
     "stability": "disposable",
     "confidence": "low",
-    "reason": "Low churn (0.23 changes/month), low connectivity, aged 131 days",
+    "reason": "Low churn (0.23 changes/month), low connectivity, aged 132 days",
     "classificationSource": "derived",
     "changeCount": 1,
     "coChangeCount": 0,
-    "ageInDays": 131,
-    "daysSinceLastChange": 131,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "docs/ide-workflow.md",
-    "stability": "disposable",
-    "confidence": "low",
-    "reason": "Low churn (0.23 changes/month), low connectivity, aged 131 days",
-    "classificationSource": "derived",
-    "changeCount": 1,
-    "coChangeCount": 0,
-    "ageInDays": 131,
-    "daysSinceLastChange": 131,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "ageInDays": 132,
+    "daysSinceLastChange": 132,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "docs/pamm-case-study.md",
     "stability": "disposable",
     "confidence": "low",
-    "reason": "Low churn (0.23 changes/month), low connectivity, aged 131 days",
-    "classificationSource": "derived",
-    "changeCount": 1,
-    "coChangeCount": 0,
-    "ageInDays": 131,
-    "daysSinceLastChange": 131,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "src/brain/cortex.ts",
-    "stability": "disposable",
-    "confidence": "low",
     "reason": "Low churn (0.23 changes/month), low connectivity, aged 132 days",
     "classificationSource": "derived",
     "changeCount": 1,
     "coChangeCount": 0,
     "ageInDays": 132,
     "daysSinceLastChange": 132,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "tests/brain/cortex.test.ts",
-    "stability": "disposable",
-    "confidence": "low",
-    "reason": "Low churn (0.23 changes/month), low connectivity, aged 132 days",
-    "classificationSource": "derived",
-    "changeCount": 1,
-    "coChangeCount": 0,
-    "ageInDays": 132,
-    "daysSinceLastChange": 132,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "src/analysis/stability-classifier.ts",
-    "stability": "disposable",
-    "confidence": "low",
-    "reason": "Low churn (0.23 changes/month), low connectivity, aged 132 days",
-    "classificationSource": "derived",
-    "changeCount": 1,
-    "coChangeCount": 0,
-    "ageInDays": 132,
-    "daysSinceLastChange": 132,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "tests/analysis/stability-classifier.test.ts",
-    "stability": "disposable",
-    "confidence": "low",
-    "reason": "Low churn (0.23 changes/month), low connectivity, aged 132 days",
-    "classificationSource": "derived",
-    "changeCount": 1,
-    "coChangeCount": 0,
-    "ageInDays": 132,
-    "daysSinceLastChange": 132,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "src/analysis/git-analyser.ts",
-    "stability": "disposable",
-    "confidence": "low",
-    "reason": "Low churn (0.23 changes/month), low connectivity, aged 132 days",
-    "classificationSource": "derived",
-    "changeCount": 1,
-    "coChangeCount": 0,
-    "ageInDays": 132,
-    "daysSinceLastChange": 132,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "tests/analysis/git-analyser.test.ts",
-    "stability": "disposable",
-    "confidence": "low",
-    "reason": "Low churn (0.23 changes/month), low connectivity, aged 132 days",
-    "classificationSource": "derived",
-    "changeCount": 1,
-    "coChangeCount": 0,
-    "ageInDays": 132,
-    "daysSinceLastChange": 132,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "src/utils/markdown-parser.ts",
@@ -789,7 +681,7 @@
     "coChangeCount": 0,
     "ageInDays": 132,
     "daysSinceLastChange": 132,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "tests/fixtures/sample-brd.md",
@@ -801,7 +693,7 @@
     "coChangeCount": 0,
     "ageInDays": 132,
     "daysSinceLastChange": 132,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "tests/utils/markdown-parser.test.ts",
@@ -813,78 +705,54 @@
     "coChangeCount": 0,
     "ageInDays": 132,
     "daysSinceLastChange": 132,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": ".vscode/settings.json",
     "stability": "disposable",
     "confidence": "low",
-    "reason": "Low churn (0.22 changes/month), low connectivity, aged 134 days",
+    "reason": "Low churn (0.22 changes/month), low connectivity, aged 135 days",
     "classificationSource": "derived",
     "changeCount": 1,
     "coChangeCount": 0,
-    "ageInDays": 134,
-    "daysSinceLastChange": 134,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "tests/brain/hippocampus.test.ts",
-    "stability": "disposable",
-    "confidence": "low",
-    "reason": "Low churn (0.22 changes/month), low connectivity, aged 134 days",
-    "classificationSource": "derived",
-    "changeCount": 1,
-    "coChangeCount": 0,
-    "ageInDays": 134,
-    "daysSinceLastChange": 134,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "ageInDays": 135,
+    "daysSinceLastChange": 135,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "tests/tsconfig.json",
     "stability": "disposable",
     "confidence": "low",
-    "reason": "Low churn (0.22 changes/month), low connectivity, aged 134 days",
+    "reason": "Low churn (0.22 changes/month), low connectivity, aged 135 days",
     "classificationSource": "derived",
     "changeCount": 1,
     "coChangeCount": 0,
-    "ageInDays": 134,
-    "daysSinceLastChange": 134,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "ageInDays": 135,
+    "daysSinceLastChange": 135,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "src/storage/reader.ts",
     "stability": "disposable",
     "confidence": "low",
-    "reason": "Low churn (0.22 changes/month), low connectivity, aged 134 days",
+    "reason": "Low churn (0.22 changes/month), low connectivity, aged 135 days",
     "classificationSource": "derived",
     "changeCount": 1,
     "coChangeCount": 0,
-    "ageInDays": 134,
-    "daysSinceLastChange": 134,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "ageInDays": 135,
+    "daysSinceLastChange": 135,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   },
   {
     "filepath": "src/storage/writer.ts",
     "stability": "disposable",
     "confidence": "low",
-    "reason": "Low churn (0.22 changes/month), low connectivity, aged 134 days",
+    "reason": "Low churn (0.22 changes/month), low connectivity, aged 135 days",
     "classificationSource": "derived",
     "changeCount": 1,
     "coChangeCount": 0,
-    "ageInDays": 134,
-    "daysSinceLastChange": 134,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
-  },
-  {
-    "filepath": "MERIDIAN_ROADMAP.md",
-    "stability": "disposable",
-    "confidence": "low",
-    "reason": "Low churn (0.22 changes/month), low connectivity, aged 134 days",
-    "classificationSource": "derived",
-    "changeCount": 1,
-    "coChangeCount": 0,
-    "ageInDays": 134,
-    "daysSinceLastChange": 134,
-    "lastDerivedAt": "2026-07-17T13:19:07.336Z"
+    "ageInDays": 135,
+    "daysSinceLastChange": 135,
+    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
   }
 ]

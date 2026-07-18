@@ -1,7 +1,8 @@
 import * as crypto from 'crypto';
 import { resolveBrainDir, BrainNotFoundError } from '@/core/resolve.js';
 import { recordDecision, recordDangerZone } from '@/store/records.js';
-import { validateDecisionInput, validateDangerInput } from '@/core/schema.js';
+import { findNearDuplicate, validateDecisionInput, validateDangerInput } from '@/core/schema.js';
+import { Engine } from '@/core/engine.js';
 import { checkSchemaVersion, getSchemaMessage } from '@/utils/schema-version.js';
 
 interface AfterDeps {
@@ -75,8 +76,17 @@ export async function runAfter(
       previous_assumption: assumption,
       correction,
     });
+    const dup = valid.ok
+      ? findNearDuplicate(
+          `${assumption} ${correction}`,
+          (await new Engine(mathaDir).getDecisions()).filter((d) => d.status === 'active'),
+          (d) => `${d.previous_assumption} ${d.correction}`,
+        )
+      : null;
     if (!valid.ok) {
       log(`✗ Decision not recorded: ${valid.reason}`);
+    } else if (dup) {
+      log(`✗ Decision not recorded: near-duplicate of '${dup.id}' on '${dup.component}'`);
     } else {
       await recordDecision(mathaDir, {
         id: `${sessionId}-decision`,

@@ -7,7 +7,17 @@
   {
     "fileA": "src/mcp/tools.ts",
     "fileB": "tests/mcp/tools.test.ts",
-    "coChangeCount": 4
+    "coChangeCount": 6
+  },
+  {
+    "fileA": "src/mcp/server.ts",
+    "fileB": "src/mcp/tools.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "src/mcp/server.ts",
+    "fileB": "tests/mcp/tools.test.ts",
+    "coChangeCount": 3
   },
   {
     "fileA": "src/commands/init.ts",
@@ -21,13 +31,38 @@
   },
   {
     "fileA": "src/commands/before.ts",
-    "fileB": "tests/commands/before.test.ts",
+    "fileB": "tests/mcp/tools.test.ts",
     "coChangeCount": 3
   },
   {
-    "fileA": "src/commands/before.ts",
+    "fileA": "README.md",
+    "fileB": "docs/ide-workflow.md",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "README.md",
+    "fileB": "package.json",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "package.json",
+    "fileB": "src/mcp/server.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "package.json",
+    "fileB": "src/mcp/tools.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "package.json",
     "fileB": "tests/mcp/tools.test.ts",
-    "coChangeCount": 3
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "src/commands/after.ts",
+    "fileB": "src/mcp/server.ts",
+    "coChangeCount": 2
   },
   {
     "fileA": ".gitignore",
@@ -37,21 +72,6 @@
   {
     "fileA": "package.json",
     "fileB": "src/index.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/mcp/tools.ts",
-    "fileB": "tests/commands/before.test.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "tests/commands/before.test.ts",
-    "fileB": "tests/mcp/tools.test.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/commands/after.ts",
-    "fileB": "tests/commands/after.test.ts",
     "coChangeCount": 2
   },
   {

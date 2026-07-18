@@ -90,6 +90,53 @@ describe('MCP tools (consolidated surface)', () => {
     expect(zones.zones[0].confidence).toBe('uncertain')
   })
 
+  it('near-duplicate writes are rejected, pointing at the existing record', async () => {
+    const first = JSON.parse(
+      await mathaRecord(engine, {
+        type: 'decision', component: 'src/payments/retry.ts',
+        previous_assumption: 'the gateway retries are idempotent',
+        correction: 'the gateway double-charges on retry without an idempotency key',
+      }),
+    )
+    expect(first.success).toBe(true)
+
+    // Same learning, lightly reworded — an echo, not new knowledge
+    const echo = JSON.parse(
+      await mathaRecord(engine, {
+        type: 'decision', component: 'src/payments/',
+        previous_assumption: 'gateway retries are idempotent',
+        correction: 'gateway double-charges on retry without idempotency key',
+      }),
+    )
+    expect(echo.success).toBe(false)
+    expect(echo.error).toContain('near-duplicate')
+    expect(echo.error).toContain(first.id)
+
+    // Genuinely different knowledge is accepted
+    const different = JSON.parse(
+      await mathaRecord(engine, {
+        type: 'decision', component: 'src/auth/session.ts',
+        previous_assumption: 'session TTL is fixed at 24 hours',
+        correction: 'TTL is 30 minutes sliding, extended per request',
+      }),
+    )
+    expect(different.success).toBe(true)
+
+    // Same for danger zones
+    await mathaRecord(engine, {
+      type: 'danger', component: 'db/migrations/',
+      description: 'non-idempotent migrations corrupt staging on parallel deploy',
+    })
+    const dupZone = JSON.parse(
+      await mathaRecord(engine, {
+        type: 'danger', component: 'db/',
+        description: 'non-idempotent migrations corrupt staging on parallel deploys',
+      }),
+    )
+    expect(dupZone.success).toBe(false)
+    expect(dupZone.error).toContain('near-duplicate')
+  })
+
   it('record rejects an unknown type with a readable reason', async () => {
     const bad = JSON.parse(await mathaRecord(engine, { type: 'note' as any, component: 'src/x.ts' }))
     expect(bad.success).toBe(false)

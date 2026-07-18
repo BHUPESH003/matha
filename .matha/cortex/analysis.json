@@ -1,0 +1,775 @@
+{
+  "stateVersion": 1,
+  "analysedAt": "2026-07-18T04:43:25.226Z",
+  "commitCount": 57,
+  "newestHash": "c27564c67727a2e39ef04bca4c60ea475fdcb00e",
+  "oldestDate": "2026-03-04T15:17:48.000Z",
+  "newestDate": "2026-07-18T04:30:12.000Z",
+  "files": {
+    ".mcp.json": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-18T04:30:12.000Z",
+      "firstSeen": "2026-07-18T04:30:12.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "CLAUDE.md": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-18T04:30:12.000Z",
+      "firstSeen": "2026-07-18T04:30:12.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/mcp/server.ts": {
+      "changeCount": 8,
+      "lastChanged": "2026-07-18T04:30:12.000Z",
+      "firstSeen": "2026-03-07T10:24:15.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/mcp/tools.ts": {
+      "changeCount": 8,
+      "lastChanged": "2026-07-18T04:30:12.000Z",
+      "firstSeen": "2026-03-07T10:24:15.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/mcp/tools.test.ts": {
+      "changeCount": 8,
+      "lastChanged": "2026-07-18T04:30:12.000Z",
+      "firstSeen": "2026-03-07T10:24:15.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "scripts/field-test.sh": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T14:10:15.000Z",
+      "firstSeen": "2026-07-17T14:10:15.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "README.md": {
+      "changeCount": 7,
+      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "firstSeen": "2026-03-07T17:10:27.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "docs/analysis/03-target-architecture.md": {
+      "changeCount": 2,
+      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "docs/ide-workflow.md": {
+      "changeCount": 2,
+      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "firstSeen": "2026-03-07T17:45:20.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "package.json": {
+      "changeCount": 20,
+      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "firstSeen": "2026-03-04T15:22:29.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/commands/after.ts": {
+      "changeCount": 5,
+      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "firstSeen": "2026-03-04T17:08:25.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/core/engine.ts": {
+      "changeCount": 2,
+      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/core/schema.ts": {
+      "changeCount": 2,
+      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/retrieve/brief.ts": {
+      "changeCount": 2,
+      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/retrieve/match.ts": {
+      "changeCount": 2,
+      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/e2e/wiring.test.ts": {
+      "changeCount": 2,
+      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/eval/fixture.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "firstSeen": "2026-07-17T13:40:52.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/eval/golden.test.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "firstSeen": "2026-07-17T13:40:52.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/eval/harness.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "firstSeen": "2026-07-17T13:40:52.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/retrieve/brief.test.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "firstSeen": "2026-07-17T13:40:52.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/retrieve/match.test.ts": {
+      "changeCount": 2,
+      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "MATHA_ROADMAP.md": {
+      "changeCount": 2,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-03-04T16:05:29.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "docs/analysis/01-current-state.md": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "docs/analysis/02-supermemory-comparison.md": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "package-lock.json": {
+      "changeCount": 16,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-03-04T15:22:29.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/codemap/git-analyser.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/codemap/index.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/codemap/stability-classifier.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/commands/before.ts": {
+      "changeCount": 6,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-03-04T16:52:57.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/commands/doctor.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/commands/init.ts": {
+      "changeCount": 7,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-03-04T16:29:40.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/commands/migrate.ts": {
+      "changeCount": 2,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-03-07T17:21:51.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/core/resolve.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/index.ts": {
+      "changeCount": 6,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-03-07T10:24:15.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/store/records.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/utils/schema-version.ts": {
+      "changeCount": 2,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-03-07T10:38:46.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/codemap/codemap.test.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/codemap/git-analyser.test.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/codemap/stability-classifier.test.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/commands/before-after.test.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/commands/init.test.ts": {
+      "changeCount": 4,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-03-04T16:29:40.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/commands/migrate.test.ts": {
+      "changeCount": 2,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-03-07T17:21:51.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/core/engine.test.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/core/resolve.test.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/store/records.test.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-07-17T11:43:18.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/utils/schema-version.test.ts": {
+      "changeCount": 2,
+      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "firstSeen": "2026-03-07T10:38:46.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "docs/matha_evaluation_report.md": {
+      "changeCount": 1,
+      "lastChanged": "2026-03-09T18:02:58.000Z",
+      "firstSeen": "2026-03-09T18:02:58.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    ".gitignore": {
+      "changeCount": 2,
+      "lastChanged": "2026-03-07T17:54:57.000Z",
+      "firstSeen": "2026-03-04T15:22:29.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    ".npmignore": {
+      "changeCount": 1,
+      "lastChanged": "2026-03-07T17:54:57.000Z",
+      "firstSeen": "2026-03-07T17:54:57.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "LICENSE": {
+      "changeCount": 1,
+      "lastChanged": "2026-03-07T17:54:57.000Z",
+      "firstSeen": "2026-03-07T17:54:57.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "CONTRIBUTING.md": {
+      "changeCount": 1,
+      "lastChanged": "2026-03-07T17:45:20.000Z",
+      "firstSeen": "2026-03-07T17:45:20.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "docs/pamm-case-study.md": {
+      "changeCount": 1,
+      "lastChanged": "2026-03-07T17:45:20.000Z",
+      "firstSeen": "2026-03-07T17:45:20.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/utils/markdown-parser.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-03-07T11:13:05.000Z",
+      "firstSeen": "2026-03-07T11:13:05.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/fixtures/sample-brd.md": {
+      "changeCount": 1,
+      "lastChanged": "2026-03-07T11:13:05.000Z",
+      "firstSeen": "2026-03-07T11:13:05.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/utils/markdown-parser.test.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-03-07T11:13:05.000Z",
+      "firstSeen": "2026-03-07T11:13:05.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    ".vscode/settings.json": {
+      "changeCount": 1,
+      "lastChanged": "2026-03-04T16:52:57.000Z",
+      "firstSeen": "2026-03-04T16:52:57.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/storage/reader.test.ts": {
+      "changeCount": 2,
+      "lastChanged": "2026-03-04T16:05:29.000Z",
+      "firstSeen": "2026-03-04T15:48:05.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/storage/writer.test.ts": {
+      "changeCount": 2,
+      "lastChanged": "2026-03-04T16:05:29.000Z",
+      "firstSeen": "2026-03-04T15:48:05.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/tsconfig.json": {
+      "changeCount": 1,
+      "lastChanged": "2026-03-04T16:05:29.000Z",
+      "firstSeen": "2026-03-04T16:05:29.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tsconfig.json": {
+      "changeCount": 3,
+      "lastChanged": "2026-03-04T16:05:29.000Z",
+      "firstSeen": "2026-03-04T15:22:29.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "vitest.config.ts": {
+      "changeCount": 2,
+      "lastChanged": "2026-03-04T16:05:29.000Z",
+      "firstSeen": "2026-03-04T15:48:05.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/storage/reader.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-03-04T15:48:05.000Z",
+      "firstSeen": "2026-03-04T15:48:05.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/storage/writer.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-03-04T15:48:05.000Z",
+      "firstSeen": "2026-03-04T15:48:05.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    }
+  },
+  "coChangeCounts": {
+    ".mcp.json|CLAUDE.md": 1,
+    ".mcp.json|src/mcp/server.ts": 1,
+    ".mcp.json|src/mcp/tools.ts": 1,
+    ".mcp.json|tests/mcp/tools.test.ts": 1,
+    "CLAUDE.md|src/mcp/server.ts": 1,
+    "CLAUDE.md|src/mcp/tools.ts": 1,
+    "CLAUDE.md|tests/mcp/tools.test.ts": 1,
+    "src/mcp/server.ts|src/mcp/tools.ts": 3,
+    "src/mcp/server.ts|tests/mcp/tools.test.ts": 3,
+    "src/mcp/tools.ts|tests/mcp/tools.test.ts": 6,
+    "README.md|docs/analysis/03-target-architecture.md": 1,
+    "README.md|docs/ide-workflow.md": 2,
+    "README.md|package.json": 2,
+    "README.md|src/commands/after.ts": 1,
+    "README.md|src/core/engine.ts": 1,
+    "README.md|src/core/schema.ts": 1,
+    "README.md|src/mcp/server.ts": 1,
+    "README.md|src/mcp/tools.ts": 1,
+    "README.md|src/retrieve/brief.ts": 1,
+    "README.md|src/retrieve/match.ts": 1,
+    "README.md|tests/e2e/wiring.test.ts": 1,
+    "README.md|tests/eval/fixture.ts": 1,
+    "README.md|tests/eval/golden.test.ts": 1,
+    "README.md|tests/eval/harness.ts": 1,
+    "README.md|tests/mcp/tools.test.ts": 1,
+    "README.md|tests/retrieve/brief.test.ts": 1,
+    "README.md|tests/retrieve/match.test.ts": 1,
+    "docs/analysis/03-target-architecture.md|docs/ide-workflow.md": 1,
+    "docs/analysis/03-target-architecture.md|package.json": 1,
+    "docs/analysis/03-target-architecture.md|src/commands/after.ts": 1,
+    "docs/analysis/03-target-architecture.md|src/core/engine.ts": 1,
+    "docs/analysis/03-target-architecture.md|src/core/schema.ts": 1,
+    "docs/analysis/03-target-architecture.md|src/mcp/server.ts": 1,
+    "docs/analysis/03-target-architecture.md|src/mcp/tools.ts": 1,
+    "docs/analysis/03-target-architecture.md|src/retrieve/brief.ts": 1,
+    "docs/analysis/03-target-architecture.md|src/retrieve/match.ts": 1,
+    "docs/analysis/03-target-architecture.md|tests/e2e/wiring.test.ts": 1,
+    "docs/analysis/03-target-architecture.md|tests/eval/fixture.ts": 1,
+    "docs/analysis/03-target-architecture.md|tests/eval/golden.test.ts": 1,
+    "docs/analysis/03-target-architecture.md|tests/eval/harness.ts": 1,
+    "docs/analysis/03-target-architecture.md|tests/mcp/tools.test.ts": 1,
+    "docs/analysis/03-target-architecture.md|tests/retrieve/brief.test.ts": 1,
+    "docs/analysis/03-target-architecture.md|tests/retrieve/match.test.ts": 1,
+    "docs/ide-workflow.md|package.json": 1,
+    "docs/ide-workflow.md|src/commands/after.ts": 1,
+    "docs/ide-workflow.md|src/core/engine.ts": 1,
+    "docs/ide-workflow.md|src/core/schema.ts": 1,
+    "docs/ide-workflow.md|src/mcp/server.ts": 1,
+    "docs/ide-workflow.md|src/mcp/tools.ts": 1,
+    "docs/ide-workflow.md|src/retrieve/brief.ts": 1,
+    "docs/ide-workflow.md|src/retrieve/match.ts": 1,
+    "docs/ide-workflow.md|tests/e2e/wiring.test.ts": 1,
+    "docs/ide-workflow.md|tests/eval/fixture.ts": 1,
+    "docs/ide-workflow.md|tests/eval/golden.test.ts": 1,
+    "docs/ide-workflow.md|tests/eval/harness.ts": 1,
+    "docs/ide-workflow.md|tests/mcp/tools.test.ts": 1,
+    "docs/ide-workflow.md|tests/retrieve/brief.test.ts": 1,
+    "docs/ide-workflow.md|tests/retrieve/match.test.ts": 1,
+    "package.json|src/commands/after.ts": 1,
+    "package.json|src/core/engine.ts": 1,
+    "package.json|src/core/schema.ts": 1,
+    "package.json|src/mcp/server.ts": 2,
+    "package.json|src/mcp/tools.ts": 2,
+    "package.json|src/retrieve/brief.ts": 1,
+    "package.json|src/retrieve/match.ts": 1,
+    "package.json|tests/e2e/wiring.test.ts": 1,
+    "package.json|tests/eval/fixture.ts": 1,
+    "package.json|tests/eval/golden.test.ts": 1,
+    "package.json|tests/eval/harness.ts": 1,
+    "package.json|tests/mcp/tools.test.ts": 2,
+    "package.json|tests/retrieve/brief.test.ts": 1,
+    "package.json|tests/retrieve/match.test.ts": 1,
+    "src/commands/after.ts|src/core/engine.ts": 1,
+    "src/commands/after.ts|src/core/schema.ts": 1,
+    "src/commands/after.ts|src/mcp/server.ts": 2,
+    "src/commands/after.ts|src/mcp/tools.ts": 1,
+    "src/commands/after.ts|src/retrieve/brief.ts": 1,
+    "src/commands/after.ts|src/retrieve/match.ts": 1,
+    "src/commands/after.ts|tests/e2e/wiring.test.ts": 1,
+    "src/commands/after.ts|tests/eval/fixture.ts": 1,
+    "src/commands/after.ts|tests/eval/golden.test.ts": 1,
+    "src/commands/after.ts|tests/eval/harness.ts": 1,
+    "src/commands/after.ts|tests/mcp/tools.test.ts": 1,
+    "src/commands/after.ts|tests/retrieve/brief.test.ts": 1,
+    "src/commands/after.ts|tests/retrieve/match.test.ts": 1,
+    "src/core/engine.ts|src/core/schema.ts": 1,
+    "src/core/engine.ts|src/mcp/server.ts": 1,
+    "src/core/engine.ts|src/mcp/tools.ts": 1,
+    "src/core/engine.ts|src/retrieve/brief.ts": 1,
+    "src/core/engine.ts|src/retrieve/match.ts": 1,
+    "src/core/engine.ts|tests/e2e/wiring.test.ts": 1,
+    "src/core/engine.ts|tests/eval/fixture.ts": 1,
+    "src/core/engine.ts|tests/eval/golden.test.ts": 1,
+    "src/core/engine.ts|tests/eval/harness.ts": 1,
+    "src/core/engine.ts|tests/mcp/tools.test.ts": 1,
+    "src/core/engine.ts|tests/retrieve/brief.test.ts": 1,
+    "src/core/engine.ts|tests/retrieve/match.test.ts": 1,
+    "src/core/schema.ts|src/mcp/server.ts": 1,
+    "src/core/schema.ts|src/mcp/tools.ts": 1,
+    "src/core/schema.ts|src/retrieve/brief.ts": 1,
+    "src/core/schema.ts|src/retrieve/match.ts": 1,
+    "src/core/schema.ts|tests/e2e/wiring.test.ts": 1,
+    "src/core/schema.ts|tests/eval/fixture.ts": 1,
+    "src/core/schema.ts|tests/eval/golden.test.ts": 1,
+    "src/core/schema.ts|tests/eval/harness.ts": 1,
+    "src/core/schema.ts|tests/mcp/tools.test.ts": 1,
+    "src/core/schema.ts|tests/retrieve/brief.test.ts": 1,
+    "src/core/schema.ts|tests/retrieve/match.test.ts": 1,
+    "src/mcp/server.ts|src/retrieve/brief.ts": 1,
+    "src/mcp/server.ts|src/retrieve/match.ts": 1,
+    "src/mcp/server.ts|tests/e2e/wiring.test.ts": 1,
+    "src/mcp/server.ts|tests/eval/fixture.ts": 1,
+    "src/mcp/server.ts|tests/eval/golden.test.ts": 1,
+    "src/mcp/server.ts|tests/eval/harness.ts": 1,
+    "src/mcp/server.ts|tests/retrieve/brief.test.ts": 1,
+    "src/mcp/server.ts|tests/retrieve/match.test.ts": 1,
+    "src/mcp/tools.ts|src/retrieve/brief.ts": 1,
+    "src/mcp/tools.ts|src/retrieve/match.ts": 1,
+    "src/mcp/tools.ts|tests/e2e/wiring.test.ts": 1,
+    "src/mcp/tools.ts|tests/eval/fixture.ts": 1,
+    "src/mcp/tools.ts|tests/eval/golden.test.ts": 1,
+    "src/mcp/tools.ts|tests/eval/harness.ts": 1,
+    "src/mcp/tools.ts|tests/retrieve/brief.test.ts": 1,
+    "src/mcp/tools.ts|tests/retrieve/match.test.ts": 1,
+    "src/retrieve/brief.ts|src/retrieve/match.ts": 1,
+    "src/retrieve/brief.ts|tests/e2e/wiring.test.ts": 1,
+    "src/retrieve/brief.ts|tests/eval/fixture.ts": 1,
+    "src/retrieve/brief.ts|tests/eval/golden.test.ts": 1,
+    "src/retrieve/brief.ts|tests/eval/harness.ts": 1,
+    "src/retrieve/brief.ts|tests/mcp/tools.test.ts": 1,
+    "src/retrieve/brief.ts|tests/retrieve/brief.test.ts": 1,
+    "src/retrieve/brief.ts|tests/retrieve/match.test.ts": 1,
+    "src/retrieve/match.ts|tests/e2e/wiring.test.ts": 1,
+    "src/retrieve/match.ts|tests/eval/fixture.ts": 1,
+    "src/retrieve/match.ts|tests/eval/golden.test.ts": 1,
+    "src/retrieve/match.ts|tests/eval/harness.ts": 1,
+    "src/retrieve/match.ts|tests/mcp/tools.test.ts": 1,
+    "src/retrieve/match.ts|tests/retrieve/brief.test.ts": 1,
+    "src/retrieve/match.ts|tests/retrieve/match.test.ts": 1,
+    "tests/e2e/wiring.test.ts|tests/eval/fixture.ts": 1,
+    "tests/e2e/wiring.test.ts|tests/eval/golden.test.ts": 1,
+    "tests/e2e/wiring.test.ts|tests/eval/harness.ts": 1,
+    "tests/e2e/wiring.test.ts|tests/mcp/tools.test.ts": 1,
+    "tests/e2e/wiring.test.ts|tests/retrieve/brief.test.ts": 1,
+    "tests/e2e/wiring.test.ts|tests/retrieve/match.test.ts": 1,
+    "tests/eval/fixture.ts|tests/eval/golden.test.ts": 1,
+    "tests/eval/fixture.ts|tests/eval/harness.ts": 1,
+    "tests/eval/fixture.ts|tests/mcp/tools.test.ts": 1,
+    "tests/eval/fixture.ts|tests/retrieve/brief.test.ts": 1,
+    "tests/eval/fixture.ts|tests/retrieve/match.test.ts": 1,
+    "tests/eval/golden.test.ts|tests/eval/harness.ts": 1,
+    "tests/eval/golden.test.ts|tests/mcp/tools.test.ts": 1,
+    "tests/eval/golden.test.ts|tests/retrieve/brief.test.ts": 1,
+    "tests/eval/golden.test.ts|tests/retrieve/match.test.ts": 1,
+    "tests/eval/harness.ts|tests/mcp/tools.test.ts": 1,
+    "tests/eval/harness.ts|tests/retrieve/brief.test.ts": 1,
+    "tests/eval/harness.ts|tests/retrieve/match.test.ts": 1,
+    "tests/mcp/tools.test.ts|tests/retrieve/brief.test.ts": 1,
+    "tests/mcp/tools.test.ts|tests/retrieve/match.test.ts": 1,
+    "tests/retrieve/brief.test.ts|tests/retrieve/match.test.ts": 1,
+    "package-lock.json|package.json": 15,
+    "docs/matha_evaluation_report.md|src/mcp/tools.ts": 1,
+    "src/commands/init.ts|tests/commands/init.test.ts": 3,
+    ".gitignore|.npmignore": 1,
+    ".gitignore|LICENSE": 1,
+    ".gitignore|package.json": 2,
+    ".gitignore|src/index.ts": 1,
+    ".npmignore|LICENSE": 1,
+    ".npmignore|package.json": 1,
+    ".npmignore|src/index.ts": 1,
+    "LICENSE|package.json": 1,
+    "LICENSE|src/index.ts": 1,
+    "package.json|src/index.ts": 2,
+    "CONTRIBUTING.md|README.md": 1,
+    "CONTRIBUTING.md|docs/ide-workflow.md": 1,
+    "CONTRIBUTING.md|docs/pamm-case-study.md": 1,
+    "README.md|docs/pamm-case-study.md": 1,
+    "docs/ide-workflow.md|docs/pamm-case-study.md": 1,
+    "src/commands/migrate.ts|src/index.ts": 1,
+    "src/commands/migrate.ts|tests/commands/migrate.test.ts": 1,
+    "src/index.ts|tests/commands/migrate.test.ts": 1,
+    "src/commands/before.ts|src/mcp/tools.ts": 3,
+    "src/commands/before.ts|tests/mcp/tools.test.ts": 3,
+    "src/commands/before.ts|src/commands/init.ts": 2,
+    "src/commands/init.ts|src/mcp/tools.ts": 1,
+    "src/commands/init.ts|tests/mcp/tools.test.ts": 1,
+    "src/commands/init.ts|src/index.ts": 1,
+    "src/commands/init.ts|src/utils/markdown-parser.ts": 1,
+    "src/commands/init.ts|tests/fixtures/sample-brd.md": 1,
+    "src/commands/init.ts|tests/utils/markdown-parser.test.ts": 1,
+    "src/index.ts|src/utils/markdown-parser.ts": 1,
+    "src/index.ts|tests/commands/init.test.ts": 1,
+    "src/index.ts|tests/fixtures/sample-brd.md": 1,
+    "src/index.ts|tests/utils/markdown-parser.test.ts": 1,
+    "src/utils/markdown-parser.ts|tests/commands/init.test.ts": 1,
+    "src/utils/markdown-parser.ts|tests/fixtures/sample-brd.md": 1,
+    "src/utils/markdown-parser.ts|tests/utils/markdown-parser.test.ts": 1,
+    "tests/commands/init.test.ts|tests/fixtures/sample-brd.md": 1,
+    "tests/commands/init.test.ts|tests/utils/markdown-parser.test.ts": 1,
+    "tests/fixtures/sample-brd.md|tests/utils/markdown-parser.test.ts": 1,
+    "src/commands/after.ts|src/commands/before.ts": 1,
+    "src/commands/after.ts|src/commands/init.ts": 1,
+    "src/commands/after.ts|src/utils/schema-version.ts": 1,
+    "src/commands/after.ts|tests/utils/schema-version.test.ts": 1,
+    "src/commands/before.ts|src/mcp/server.ts": 1,
+    "src/commands/before.ts|src/utils/schema-version.ts": 1,
+    "src/commands/before.ts|tests/utils/schema-version.test.ts": 1,
+    "src/commands/init.ts|src/mcp/server.ts": 1,
+    "src/commands/init.ts|src/utils/schema-version.ts": 1,
+    "src/commands/init.ts|tests/utils/schema-version.test.ts": 1,
+    "src/mcp/server.ts|src/utils/schema-version.ts": 1,
+    "src/mcp/server.ts|tests/utils/schema-version.test.ts": 1,
+    "src/utils/schema-version.ts|tests/utils/schema-version.test.ts": 1,
+    "package-lock.json|src/index.ts": 1,
+    "package-lock.json|src/mcp/server.ts": 1,
+    "package-lock.json|src/mcp/tools.ts": 1,
+    "package-lock.json|tests/mcp/tools.test.ts": 1,
+    "src/index.ts|src/mcp/server.ts": 1,
+    "src/index.ts|src/mcp/tools.ts": 1,
+    "src/index.ts|tests/mcp/tools.test.ts": 1,
+    ".vscode/settings.json|src/commands/before.ts": 1,
+    "MATHA_ROADMAP.md|tests/storage/reader.test.ts": 1,
+    "MATHA_ROADMAP.md|tests/storage/writer.test.ts": 1,
+    "MATHA_ROADMAP.md|tests/tsconfig.json": 1,
+    "MATHA_ROADMAP.md|tsconfig.json": 1,
+    "MATHA_ROADMAP.md|vitest.config.ts": 1,
+    "tests/storage/reader.test.ts|tests/storage/writer.test.ts": 2,
+    "tests/storage/reader.test.ts|tests/tsconfig.json": 1,
+    "tests/storage/reader.test.ts|tsconfig.json": 2,
+    "tests/storage/reader.test.ts|vitest.config.ts": 2,
+    "tests/storage/writer.test.ts|tests/tsconfig.json": 1,
+    "tests/storage/writer.test.ts|tsconfig.json": 2,
+    "tests/storage/writer.test.ts|vitest.config.ts": 2,
+    "tests/tsconfig.json|tsconfig.json": 1,
+    "tests/tsconfig.json|vitest.config.ts": 1,
+    "tsconfig.json|vitest.config.ts": 2,
+    "package-lock.json|src/storage/reader.ts": 1,
+    "package-lock.json|src/storage/writer.ts": 1,
+    "package-lock.json|tests/storage/reader.test.ts": 1,
+    "package-lock.json|tests/storage/writer.test.ts": 1,
+    "package-lock.json|tsconfig.json": 2,
+    "package-lock.json|vitest.config.ts": 1,
+    "package.json|src/storage/reader.ts": 1,
+    "package.json|src/storage/writer.ts": 1,
+    "package.json|tests/storage/reader.test.ts": 1,
+    "package.json|tests/storage/writer.test.ts": 1,
+    "package.json|tsconfig.json": 2,
+    "package.json|vitest.config.ts": 1,
+    "src/storage/reader.ts|src/storage/writer.ts": 1,
+    "src/storage/reader.ts|tests/storage/reader.test.ts": 1,
+    "src/storage/reader.ts|tests/storage/writer.test.ts": 1,
+    "src/storage/reader.ts|tsconfig.json": 1,
+    "src/storage/reader.ts|vitest.config.ts": 1,
+    "src/storage/writer.ts|tests/storage/reader.test.ts": 1,
+    "src/storage/writer.ts|tests/storage/writer.test.ts": 1,
+    "src/storage/writer.ts|tsconfig.json": 1,
+    "src/storage/writer.ts|vitest.config.ts": 1,
+    ".gitignore|package-lock.json": 1,
+    ".gitignore|tsconfig.json": 1
+  }
+}

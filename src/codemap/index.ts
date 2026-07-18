@@ -1,7 +1,15 @@
 import * as path from 'path'
 import { readJsonOrNull } from '@/storage/reader.js'
 import { writeAtomic } from '@/storage/writer.js'
-import { analyseRepository, type CoChangeRecord, type AnalysisOptions } from '@/codemap/git-analyser.js'
+import {
+  buildAnalysisResult,
+  listTrackedFiles,
+  mergeScans,
+  scanCommits,
+  type CoChangeRecord,
+  type AnalysisOptions,
+  type RawScan,
+} from '@/codemap/git-analyser.js'
 import { classifyStability, type ClassificationOptions } from '@/codemap/stability-classifier.js'
 
 // ──────────────────────────────────────────────────────────────
@@ -26,8 +34,11 @@ export interface StabilityRecord {
 export interface CortexSnapshot {
   updatedAt: string
   repoPath: string
+  /** Cumulative commits analysed since the first run (not just this refresh). */
   commitCount: number
   fileCount: number
+  /** Commits scanned by THIS refresh — 0 means the codemap was already current. */
+  newCommits: number
   stability: StabilityRecord[]
   coChanges: CoChangeRecord[]
   summary: {
@@ -37,6 +48,16 @@ export interface CortexSnapshot {
     disposable: number
     declared: number
   }
+}
+
+/**
+ * Persisted incremental-analysis state (cortex/analysis.json): raw merged
+ * counts plus the commit cursor. Every refresh scans only cursor..HEAD and
+ * merges — a 100k-commit repo pays for its history exactly once, bounded.
+ */
+export interface AnalysisState extends RawScan {
+  stateVersion: 1
+  analysedAt: string
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -50,6 +71,16 @@ function stabilityPath(mathaDir: string): string {
 function coChangesPath(mathaDir: string): string {
   return path.join(mathaDir, 'cortex', 'co-changes.json')
 }
+
+function analysisPath(mathaDir: string): string {
+  return path.join(mathaDir, 'cortex', 'analysis.json')
+}
+
+// Bounded first run (target-architecture §5.2): recency-weighted by default —
+// five-year-old churn says little about today's stability, and it makes the
+// first refresh on a huge repo cheap. Callers can override via options.
+const FIRST_RUN_MAX_COMMITS = 10_000
+const FIRST_RUN_MONTHS = 18
 
 // ──────────────────────────────────────────────────────────────
 // HELPERS
@@ -79,6 +110,12 @@ function buildSummary(records: StabilityRecord[]) {
  * Run git analysis + stability classification and persist results.
  * Preserves any existing `declared` records (declared-wins invariant).
  *
+ * INCREMENTAL: raw counts + a commit cursor persist in cortex/analysis.json.
+ * With a cursor, only cursor..HEAD is scanned and merged; without one, the
+ * first run is bounded (last ~18 months or ~10k commits, whichever smaller).
+ * A cursor invalidated by rebase/force-push falls back to a full bounded
+ * rescan. Files no longer tracked by git are pruned on every refresh.
+ *
  * **Never throws** — empty repo produces empty cortex.
  */
 export async function refreshFromGit(
@@ -89,8 +126,65 @@ export async function refreshFromGit(
   try {
     const now = new Date().toISOString()
 
-    // Run analysis pipeline
-    const analysis = await analyseRepository(repoPath, options)
+    // 1. Incremental path: scan only what the cursor hasn't seen.
+    const prior = await readJsonOrNull<AnalysisState>(analysisPath(mathaDir))
+    let state: RawScan | null = null
+    let newCommits = 0
+
+    if (prior && prior.stateVersion === 1 && prior.newestHash) {
+      const delta = await scanCommits(repoPath, {
+        fromExclusive: prior.newestHash,
+        maxCommits: options?.maxCommits ?? FIRST_RUN_MAX_COMMITS,
+        excludePaths: options?.excludePaths,
+      })
+      if (delta) {
+        if (delta.commitCount === 0) {
+          // Already current — serve the persisted outputs, rewrite nothing.
+          const current = await getSnapshot(mathaDir)
+          if (current) return { ...current, commitCount: prior.commitCount, newCommits: 0 }
+        }
+        newCommits = delta.commitCount
+        state = mergeScans(prior, delta)
+      }
+      // delta === null → cursor no longer exists (rebase) → full rescan below
+    }
+
+    // 2. First run (or cursor invalidated): bounded, recency-weighted scan.
+    if (!state) {
+      const horizon = new Date()
+      horizon.setMonth(horizon.getMonth() - FIRST_RUN_MONTHS)
+      state = (await scanCommits(repoPath, {
+        since: options?.since ?? horizon.toISOString(),
+        maxCommits: options?.maxCommits ?? FIRST_RUN_MAX_COMMITS,
+        excludePaths: options?.excludePaths,
+      })) ?? {
+        // not a git repo / empty repo — keep the old write-empty behaviour
+        commitCount: 0, newestHash: '', oldestDate: '', newestDate: '', files: {}, coChangeCounts: {},
+      }
+      newCommits = state.commitCount
+    }
+
+    // 3. Prune files that left the repo (deletes/renames) so state and
+    //    stability don't grow without bound.
+    const tracked = await listTrackedFiles(repoPath)
+    if (tracked) {
+      for (const filepath of Object.keys(state.files)) {
+        if (!tracked.has(filepath)) delete state.files[filepath]
+      }
+      for (const key of Object.keys(state.coChangeCounts)) {
+        const [a, b] = key.split('|')
+        if (!tracked.has(a) || !tracked.has(b)) delete state.coChangeCounts[key]
+      }
+    }
+
+    // 4. Persist the cursor + merged raw counts.
+    if (state.newestHash) {
+      const nextState: AnalysisState = { stateVersion: 1, analysedAt: now, ...state }
+      await writeAtomic(analysisPath(mathaDir), nextState, { overwrite: true })
+    }
+
+    // 5. Derive the outputs from the merged counts.
+    const analysis = buildAnalysisResult(state, options?.maxCoChangePairs)
     const classification = classifyStability(analysis)
 
     // Load existing stability records (to preserve declared)
@@ -154,6 +248,7 @@ export async function refreshFromGit(
       repoPath,
       commitCount: analysis.commitCount,
       fileCount: records.length,
+      newCommits,
       stability: records,
       coChanges: analysis.coChanges,
       summary: buildSummary(records),
@@ -166,6 +261,7 @@ export async function refreshFromGit(
       repoPath,
       commitCount: 0,
       fileCount: 0,
+      newCommits: 0,
       stability: [],
       coChanges: [],
       summary: { frozen: 0, stable: 0, volatile: 0, disposable: 0, declared: 0 },
@@ -314,12 +410,14 @@ export async function getSnapshot(
 
     const pairs = await readJsonOrNull<CoChangeRecord[]>(coChangesPath(mathaDir))
     const coChanges = pairs && Array.isArray(pairs) ? pairs : []
+    const state = await readJsonOrNull<AnalysisState>(analysisPath(mathaDir))
 
     return {
-      updatedAt: new Date().toISOString(),
+      updatedAt: state?.analysedAt ?? new Date().toISOString(),
       repoPath: path.dirname(mathaDir),
-      commitCount: 0, // Not stored in stability.json — would need separate metadata
+      commitCount: state?.commitCount ?? 0,
       fileCount: records.length,
+      newCommits: 0,
       stability: records,
       coChanges,
       summary: buildSummary(records),

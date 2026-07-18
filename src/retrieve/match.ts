@@ -49,6 +49,12 @@ export interface MatchResult {
   recordId: string
   /** Final S×L×C×R score, for ranking and eval. */
   score: number
+  /**
+   * The record's paths changed in git AFTER the record was written — the
+   * code may have moved on (work done outside matha, §5.1). Rank-penalized
+   * but still surfaced: less rich, never silently wrong.
+   */
+  possiblyStale?: boolean
 }
 
 export interface MatchContext {
@@ -65,6 +71,8 @@ export interface BrainData {
   stability: StabilityRecord[]
   decisions: DecisionEntry[]
   coChanges: CoChangeRecord[]
+  /** Per-file last-commit date from the codemap — powers possiblyStale. */
+  fileLastChanged?: Record<string, string>
 }
 
 // ── TUNING CONSTANTS (validated by tests/eval golden set) ────────────
@@ -79,6 +87,11 @@ const CONFIDENCE_WEIGHT: Record<Confidence, number> = {
 }
 const DECAY_HALF_LIFE_DAYS = 180
 const DECAY_FLOOR = 0.3
+// possiblyStale: code under the record's paths changed after it was written.
+// Grace period keeps the session that wrote the record from flagging itself;
+// the penalty demotes but never hides — degradation must stay visible.
+const STALE_GRACE_MS = 3 * 24 * 60 * 60 * 1000
+const STALE_PENALTY = 0.75
 
 // ── STRUCTURAL PATH SCORING ──────────────────────────────────────────
 
@@ -207,6 +220,36 @@ function lexicalMultiplier(bm25: number): number {
   return 0.5 + bm25 / (bm25 + 2)
 }
 
+// ── STALENESS ────────────────────────────────────────────────────────
+
+/**
+ * Did any file at/under the record's paths change after `writtenAt` (+grace)?
+ * ponytail: linear over the codemap file list per matched record — matched
+ * records are few (≤ ~50 post-threshold), so this stays cheap; index the
+ * file list by path prefix if a monorepo ever makes it hot.
+ */
+export function changedSince(
+  recordPaths: string[],
+  writtenAt: string,
+  fileLastChanged: Record<string, string> | undefined,
+): boolean {
+  if (!fileLastChanged || recordPaths.length === 0) return false
+  const writtenMs = Date.parse(writtenAt)
+  if (!Number.isFinite(writtenMs)) return false
+  const threshold = writtenMs + STALE_GRACE_MS
+
+  for (const [file, lastChanged] of Object.entries(fileLastChanged)) {
+    const changedMs = Date.parse(lastChanged)
+    if (!Number.isFinite(changedMs) || changedMs <= threshold) continue
+    for (const r of recordPaths) {
+      const nr = normalisePath(r)
+      const nf = normalisePath(file)
+      if (nf === nr || nf.startsWith(nr + '/')) return true
+    }
+  }
+  return false
+}
+
 // ── RECENCY ──────────────────────────────────────────────────────────
 
 function recencyWeight(timestamp: string, now: number): number {
@@ -229,7 +272,10 @@ interface Candidate {
   source: string
   recommendation: string
   confidence?: Confidence
+  /** Drives recency decay (decisions only). */
   timestamp?: string
+  /** Drives possiblyStale (anything with a written-at date). */
+  writtenAt?: string
   /** Minimum structural score for this candidate to appear at all. */
   minStructural?: number
   severityFor: (structural: number) => MatchSeverity
@@ -274,6 +320,7 @@ function buildCandidates(data: BrainData): Candidate[] {
           : 'Contract is currently clean.',
       source: 'contracts',
       recommendation: `Verify all ${assertions.length} contract assertions pass after changes.`,
+      writtenAt: contract.last_updated,
       severityFor: (s) =>
         violations.length > 0 ? (s >= CRITICAL_STRUCTURAL ? 'critical' : 'warning') : 'info',
     })
@@ -312,6 +359,7 @@ function buildCandidates(data: BrainData): Candidate[] {
       recommendation: 'Be aware of this prior correction when working in this area.',
       confidence: decision.confidence,
       timestamp: decision.timestamp,
+      writtenAt: decision.timestamp,
       severityFor: () => 'warning',
     })
   }
@@ -351,7 +399,10 @@ export function matchAll(context: MatchContext, data: BrainData): MatchResult[] 
     const L = lexicalMultiplier(bm25(queryTokens, i))
     const C = CONFIDENCE_WEIGHT[candidate.confidence ?? 'probable']
     const R = candidate.timestamp ? recencyWeight(candidate.timestamp, now) : 1
-    const score = S * L * C * R
+    const possiblyStale =
+      candidate.writtenAt !== undefined &&
+      changedSince(candidate.paths, candidate.writtenAt, data.fileLastChanged)
+    const score = S * L * C * R * (possiblyStale ? STALE_PENALTY : 1)
     if (score < MIN_SCORE) return
 
     results.push({
@@ -364,6 +415,7 @@ export function matchAll(context: MatchContext, data: BrainData): MatchResult[] 
       recommendation: candidate.recommendation,
       recordId: candidate.recordId,
       score: Math.round(score * 1000) / 1000,
+      ...(possiblyStale ? { possiblyStale: true } : {}),
     })
   })
 

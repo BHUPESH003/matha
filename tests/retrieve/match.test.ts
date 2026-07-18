@@ -195,6 +195,52 @@ describe('scoring pipeline — confidence (C) and recency (R)', () => {
   })
 })
 
+describe('possiblyStale (work done outside matha)', () => {
+  it('a decision whose file changed after it was recorded is flagged and demoted', () => {
+    const data = brain({
+      decisions: [
+        decision('src/api/a.ts', 'd-stale', '2026-05-01T00:00:00Z'),
+        decision('src/api/b.ts', 'd-fresh', '2026-05-01T00:00:00Z'),
+      ],
+      fileLastChanged: {
+        'src/api/a.ts': '2026-06-15T00:00:00Z', // changed 6 weeks after recording
+        'src/api/b.ts': '2026-04-01T00:00:00Z', // unchanged since
+      },
+    })
+    const results = matchAll(ctx({ scope: 'src/api' }), data)
+    const stale = results.find((r) => r.recordId === 'd-stale')!
+    const fresh = results.find((r) => r.recordId === 'd-fresh')!
+    expect(stale.possiblyStale).toBe(true)
+    expect(fresh.possiblyStale).toBeUndefined()
+    expect(stale.score).toBeLessThan(fresh.score) // demoted, still surfaced
+  })
+
+  it('a change within the grace window does not flag the record that captured it', () => {
+    const data = brain({
+      decisions: [decision('src/api/a.ts', 'd1', '2026-05-01T00:00:00Z')],
+      fileLastChanged: { 'src/api/a.ts': '2026-05-02T00:00:00Z' }, // next day
+    })
+    const results = matchAll(ctx({ scope: 'src/api/a.ts' }), data)
+    expect(results[0].possiblyStale).toBeUndefined()
+  })
+
+  it('a dir-scoped decision is flagged when a file under the dir changes', () => {
+    const data = brain({
+      decisions: [decision('src/payments/', 'd-dir', '2026-05-01T00:00:00Z')],
+      fileLastChanged: { 'src/payments/retry.ts': '2026-06-20T00:00:00Z' },
+    })
+    const results = matchAll(ctx({ scope: 'src/payments/' }), data)
+    expect(results[0].possiblyStale).toBe(true)
+  })
+
+  it('no codemap data → no flags, no crash', () => {
+    const data = brain({ decisions: [decision('src/api/a.ts')] })
+    const results = matchAll(ctx({ scope: 'src/api/a.ts' }), data)
+    expect(results).toHaveLength(1)
+    expect(results[0].possiblyStale).toBeUndefined()
+  })
+})
+
 describe('frozen files', () => {
   it('frozen file matched by exact path or containing dir', () => {
     const records = [stabilityRecord('src/core/ledger.ts')]

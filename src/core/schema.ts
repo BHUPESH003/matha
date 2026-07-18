@@ -135,6 +135,45 @@ export function validateContractInput(input: {
   return { ok: true }
 }
 
+// ── NEAR-DUPLICATE DETECTION (write-time) ────────────────────────────
+
+function wordSet(text: string): Set<string> {
+  return new Set(
+    text
+      .toLowerCase()
+      .replace(/[^\w\s]/g, ' ')
+      .split(/\s+/)
+      .filter((w) => w.length > 2),
+  )
+}
+
+/**
+ * Lexical near-duplicate check for writes: Jaccard word overlap ≥ 0.7.
+ * Agents re-record the same learning in slightly different words; the brain
+ * should say "already known" instead of accumulating echoes. Strict on
+ * purpose — a false rejection loses one record, a lax check pollutes ranking.
+ */
+export function isNearDuplicate(a: string, b: string): boolean {
+  const setA = wordSet(a)
+  const setB = wordSet(b)
+  if (setA.size === 0 || setB.size === 0) return false
+  let intersection = 0
+  for (const w of setA) if (setB.has(w)) intersection++
+  return intersection / (setA.size + setB.size - intersection) >= 0.7
+}
+
+/** First active record whose text near-duplicates the candidate, or null. */
+export function findNearDuplicate<T>(
+  candidateText: string,
+  existing: T[],
+  textOf: (record: T) => string,
+): T | null {
+  for (const record of existing) {
+    if (isNearDuplicate(candidateText, textOf(record))) return record
+  }
+  return null
+}
+
 // ── PATH NORMALISATION (shared by matcher and engine) ────────────────
 
 /** Normalise a path for comparison: forward slashes, no leading ./ or /, lowercase. */

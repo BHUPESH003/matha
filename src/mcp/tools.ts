@@ -2,6 +2,7 @@ import * as path from 'path'
 import * as crypto from 'crypto'
 import type { Engine } from '@/core/engine.js'
 import {
+  findNearDuplicate,
   validateContractInput,
   validateDangerInput,
   validateDecisionInput,
@@ -96,6 +97,16 @@ export async function mathaRecord(engine: Engine, args: RecordArgs): Promise<str
     case 'decision': {
       const valid = validateDecisionInput(args)
       if (!valid.ok) return rejected(valid.reason!)
+      const dup = findNearDuplicate(
+        `${args.previous_assumption} ${args.correction}`,
+        (await engine.getDecisions()).filter((d) => d.status === 'active'),
+        (d) => `${d.previous_assumption} ${d.correction}`,
+      )
+      if (dup) {
+        return rejected(
+          `near-duplicate of existing decision '${dup.id}' on '${dup.component}' — already known; record only genuinely new corrections`,
+        )
+      }
       const id = `${Date.now()}-${generateId()}`
       await recordDecision(engine.mathaDir, {
         id,
@@ -114,6 +125,16 @@ export async function mathaRecord(engine: Engine, args: RecordArgs): Promise<str
     case 'danger': {
       const valid = validateDangerInput(args)
       if (!valid.ok) return rejected(valid.reason!)
+      const dup = findNearDuplicate(
+        args.description!,
+        (await engine.getDangerZones()).filter((z) => !z.status || z.status === 'active'),
+        (z) => z.description,
+      )
+      if (dup) {
+        return rejected(
+          `near-duplicate of existing danger zone '${dup.id}' on '${dup.component}' — already known`,
+        )
+      }
       const id = `danger-${Date.now()}-${generateId()}`
       await recordDangerZone(engine.mathaDir, {
         id,
