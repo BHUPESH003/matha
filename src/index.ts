@@ -103,6 +103,103 @@ program
   });
 
 program
+  .command("review")
+  .description("Review unconfirmed and possibly-stale records: confirm, retire, or skip")
+  .option("--project <path>", "Project root path (default: current directory)")
+  .action(async (options) => {
+    const { runReview } = await import("./commands/review.js");
+    const result = await runReview(options.project || process.cwd());
+    process.exit(result.exitCode);
+  });
+
+const boundary = program
+  .command("boundary")
+  .description("Admin-declared boundaries: pinned records, always CRITICAL on path match");
+boundary
+  .command("add")
+  .description("Declare a boundary (stored in .matha/, PR-reviewed like any other change)")
+  .requiredOption("--paths <paths>", "File or directory paths the boundary covers (comma-separated)")
+  .requiredOption("--rule <rule>", "The rule — what must not happen here without sign-off")
+  .option("--by <name>", "Who declares it (default: git user.name)")
+  .option("--project <path>", "Project root path (default: current directory)")
+  .action(async (options) => {
+    const { runBoundaryAdd } = await import("./commands/boundary.js");
+    const result = await runBoundaryAdd(options.project || process.cwd(), {
+      paths: options.paths,
+      rule: options.rule,
+      by: options.by,
+    });
+    process.exit(result.exitCode);
+  });
+boundary
+  .command("list")
+  .description("List declared boundaries")
+  .option("--project <path>", "Project root path (default: current directory)")
+  .action(async (options) => {
+    const { runBoundaryList } = await import("./commands/boundary.js");
+    const result = await runBoundaryList(options.project || process.cwd());
+    process.exit(result.exitCode);
+  });
+
+program
+  .command("check")
+  .description("Match changed files against the brain (advisory; --strict fails on criticals)")
+  .option("--project <path>", "Project root path (default: current directory)")
+  .option("--diff <base>", "Git base ref to diff against (default: working tree vs HEAD)")
+  .option("--strict", "Exit 1 when a CRITICAL record matches the change")
+  .action(async (options) => {
+    const { runCheck } = await import("./commands/check.js");
+    const result = await runCheck(options.project || process.cwd(), {
+      diff: options.diff,
+      strict: options.strict,
+    });
+    process.exit(result.exitCode);
+  });
+
+program
+  .command("export")
+  .description("Export a human-readable, PR-diffable markdown summary of the brain")
+  .option("--project <path>", "Project root path (default: current directory)")
+  .option("--md", "Markdown output (the only format, default)")
+  .option("--out <path>", "Write to a file instead of stdout")
+  .action(async (options) => {
+    const { runExport } = await import("./commands/export.js");
+    const result = await runExport(options.project || process.cwd(), { out: options.out });
+    process.exit(result.exitCode);
+  });
+
+program
+  .command("ui")
+  .description("Generate a self-contained HTML brain report at .matha/report.html")
+  .option("--project <path>", "Project root path (default: current directory)")
+  .action(async (options) => {
+    const { runUi } = await import("./commands/ui.js");
+    const result = await runUi(options.project || process.cwd());
+    process.exit(result.exitCode);
+  });
+
+program
+  .command("onboard")
+  .description("Print an agent prompt that seeds the brain from your project docs")
+  .option("--project <path>", "Project root path (default: current directory)")
+  .action(async (options) => {
+    const { runOnboard } = await import("./commands/onboard.js");
+    const result = await runOnboard(options.project || process.cwd());
+    process.exit(result.exitCode);
+  });
+
+program
+  .command("hooks")
+  .description("Print (or --install) the Claude Code SessionStart hook that injects the brief")
+  .option("--project <path>", "Project root path (default: current directory)")
+  .option("--install", "Merge the hook into <project>/.claude/settings.json")
+  .action(async (options) => {
+    const { runHooks } = await import("./commands/hooks.js");
+    const result = await runHooks(options.project || process.cwd(), { install: options.install });
+    process.exit(result.exitCode);
+  });
+
+program
   .command("catchup")
   .description("List commits since the last recorded knowledge that no record covers (unaccounted work)")
   .option("--project <path>", "Project root path (default: current directory)")

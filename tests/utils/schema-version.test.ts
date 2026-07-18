@@ -84,21 +84,21 @@ describe('schema-version', () => {
   it('config.json with newer minor version → returns newer', async () => {
     await fs.writeFile(
       path.join(mathaDir, 'config.json'),
-      JSON.stringify({ schema_version: '0.9.0' }),
+      JSON.stringify({ schema_version: '1.9.0' }),
     )
     const result = await checkSchemaVersion(mathaDir)
     expect(result.status).toBe('newer')
-    expect(result.version).toBe('0.9.0')
+    expect(result.version).toBe('1.9.0')
   })
 
   it('config.json with newer patch version → returns newer', async () => {
     await fs.writeFile(
       path.join(mathaDir, 'config.json'),
-      JSON.stringify({ schema_version: '0.2.1' }),
+      JSON.stringify({ schema_version: '1.0.1' }),
     )
     const result = await checkSchemaVersion(mathaDir)
     expect(result.status).toBe('newer')
-    expect(result.version).toBe('0.2.1')
+    expect(result.version).toBe('1.0.1')
   })
 
   // ──────────────────────────────────────────────────────────────

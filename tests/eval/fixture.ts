@@ -112,6 +112,16 @@ const DANGER_ZONES = [
   },
 ]
 
+const BOUNDARIES = [
+  {
+    id: 'b-ledger-schema',
+    component: 'db/schema/',
+    rule: 'Ledger schema changes require DBA sign-off — never edit generated schema files by hand',
+    declaredBy: 'admin',
+    created: '2024-01-01T00:00:00Z', // old on purpose: boundaries never decay
+  },
+]
+
 const CONTRACTS = [
   {
     component: 'src/payments/retry.ts',
@@ -194,6 +204,7 @@ export async function writeFixtureBrain(projectDir: string): Promise<string> {
     ],
   })
   await write(path.join('hippocampus', 'danger-zones.json'), { zones: DANGER_ZONES })
+  await write(path.join('hippocampus', 'boundaries.json'), { boundaries: BOUNDARIES })
   for (const d of DECISIONS) {
     await write(path.join('hippocampus', 'decisions', `${d.id}.json`), d)
   }
@@ -382,6 +393,20 @@ export const GOLDEN_QUERIES: GoldenQuery[] = [
     intent: 'add a stripe provider',
     expect: ['z-payments'],
     expectCritical: ['z-payments'],
+  },
+  {
+    name: 'declared boundary fires critical on a file under its dir, despite age',
+    scope: 'db/schema/ledger.sql',
+    intent: 'add a column to the ledger table',
+    expect: ['b-ledger-schema'],
+    expectCritical: ['b-ledger-schema'],
+  },
+  {
+    name: 'boundary wording in the intent alone never fires the boundary',
+    scope: 'src/api/routes.ts',
+    intent: 'does the ledger schema need DBA sign-off?',
+    expect: ['d-routes-auth', 'contract:src/api/routes.ts'],
+    expectCritical: [],
   },
   {
     name: 'retired decision never surfaces',

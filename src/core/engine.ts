@@ -2,6 +2,7 @@ import * as fs from 'fs/promises'
 import * as path from 'path'
 import {
   normalisePath,
+  type BoundaryRecord,
   type Contract,
   type DangerZone,
   type DecisionEntry,
@@ -146,6 +147,13 @@ export class Engine {
     )
   }
 
+  async getBoundaries(): Promise<BoundaryRecord[]> {
+    const data = await this.cachedJson<{ boundaries?: BoundaryRecord[] }>(
+      path.join(this.mathaDir, 'hippocampus', 'boundaries.json'),
+    )
+    return data?.boundaries ?? []
+  }
+
   async getDecisions(component?: string, limit?: number): Promise<DecisionEntry[]> {
     const all = await this.cachedDirJson<DecisionEntry>(
       path.join(this.mathaDir, 'hippocampus', 'decisions'),
@@ -249,14 +257,16 @@ export class Engine {
 
   async loadBrain(): Promise<BrainData> {
     await this.maybeRefreshCodemap()
-    const [dangerZones, contracts, stability, decisions, coChanges, analysis] = await Promise.all([
-      this.getDangerZones(),
-      this.getContracts(),
-      this.getStabilityRecords(),
-      this.getDecisions(),
-      this.getCoChanges(),
-      this.cachedJson<AnalysisState>(path.join(this.mathaDir, 'cortex', 'analysis.json')),
-    ])
+    const [dangerZones, contracts, stability, decisions, coChanges, boundaries, analysis] =
+      await Promise.all([
+        this.getDangerZones(),
+        this.getContracts(),
+        this.getStabilityRecords(),
+        this.getDecisions(),
+        this.getCoChanges(),
+        this.getBoundaries(),
+        this.cachedJson<AnalysisState>(path.join(this.mathaDir, 'cortex', 'analysis.json')),
+      ])
 
     let fileLastChanged: Record<string, string> | undefined
     if (analysis?.files) {
@@ -266,7 +276,7 @@ export class Engine {
       }
     }
 
-    return { dangerZones, contracts, stability, decisions, coChanges, fileLastChanged }
+    return { dangerZones, contracts, stability, decisions, coChanges, boundaries, fileLastChanged }
   }
 
   async match(context: MatchContext): Promise<{ results: MatchResult[]; diagnostics: Diagnostics }> {
@@ -280,7 +290,8 @@ export class Engine {
           data.dangerZones.length +
           data.contracts.length +
           data.stability.length +
-          data.decisions.length,
+          data.decisions.length +
+          (data.boundaries?.length ?? 0),
       },
     }
   }

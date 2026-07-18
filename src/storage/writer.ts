@@ -68,6 +68,27 @@ export async function writeAtomic(
 }
 
 /**
+ * Atomically writes a plain-text file (markdown, HTML) — same temp+rename
+ * pattern as writeAtomic, without the JSON serialization. Always overwrites:
+ * text outputs (export, report) are regenerated artifacts, not records.
+ */
+export async function writeTextAtomic(filePath: string, text: string): Promise<void> {
+  await fs.mkdir(path.dirname(filePath), { recursive: true })
+  const tmpPath = `${filePath}.${process.pid}.${crypto.randomBytes(4).toString('hex')}.tmp`
+  try {
+    await fs.writeFile(tmpPath, text, 'utf-8')
+    await fs.rename(tmpPath, filePath)
+  } catch (err) {
+    try {
+      await fs.unlink(tmpPath)
+    } catch {
+      /* ignore cleanup errors */
+    }
+    throw err
+  }
+}
+
+/**
  * Appends an item to a JSON array file.
  *
  * - Creates the file with `[item]` if it does not yet exist.

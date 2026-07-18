@@ -91,14 +91,18 @@ const tools: Tool[] = [
       'code behaves differently than documented or expected). type=danger: a pattern that ' +
       'breaks something non-obvious (call when a change in one place caused unexpected ' +
       'breakage elsewhere). type=contract: assertions that must remain true for a component ' +
-      '(overwrites the previous contract, version increments). Not for trivial observations — ' +
-      'for knowledge a future session must have.',
+      '(overwrites the previous contract, version increments). type=violation: log that a ' +
+      'contract assertion was observed broken (pass the exact assertion text). ' +
+      'type=supersede: replace an active decision that proved wrong with a corrected one ' +
+      '(pass supersedes=<old id>). type=retire: mark a decision or danger zone as no longer ' +
+      'applicable, with a reason. Not for trivial observations — for knowledge a future ' +
+      'session must have.',
     inputSchema: {
       type: 'object' as const,
       properties: {
         type: {
           type: 'string',
-          enum: ['decision', 'danger', 'contract'],
+          enum: ['decision', 'danger', 'contract', 'violation', 'retire', 'supersede'],
           description: 'What kind of knowledge this is',
         },
         component: {
@@ -126,8 +130,24 @@ const tools: Tool[] = [
             'Default: probable. Use uncertain for unverified suspicions. (confirmed is ' +
             'reserved for human review and cannot be set over MCP.)',
         },
+        assertion: {
+          type: 'string',
+          description: 'violation only: the exact text of the assertion that was violated',
+        },
+        id: {
+          type: 'string',
+          description: 'retire only: id of the decision or danger zone to retire',
+        },
+        reason: {
+          type: 'string',
+          description: 'retire only: why this record no longer holds',
+        },
+        supersedes: {
+          type: 'string',
+          description: 'supersede only: id of the active decision being replaced',
+        },
       },
-      required: ['type', 'component'],
+      required: ['type'],
     },
   },
   {

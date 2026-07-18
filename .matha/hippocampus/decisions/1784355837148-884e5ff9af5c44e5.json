@@ -1,0 +1,12 @@
+{
+  "id": "1784355837148-884e5ff9af5c44e5",
+  "timestamp": "2026-07-18T06:23:57.149Z",
+  "component": "src/store/records.ts",
+  "previous_assumption": "The append-only rule meant decision files could never be rewritten after creation, blocking lifecycle operations",
+  "correction": "Append-only binds the CONTENT fields (assumption, correction, component, timestamp). Lifecycle metadata — status, retired_reason, superseded_by, last_confirmed — is amendable in place via updateDecisionLifecycle; that is the designed exception, not a rule violation",
+  "trigger": "mcp-call",
+  "confidence": "probable",
+  "status": "active",
+  "supersedes": null,
+  "session_id": "1784355837148-884e5ff9af5c44e5"
+}

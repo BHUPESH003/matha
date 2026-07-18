@@ -98,6 +98,11 @@ export async function runBefore(
   }
   log(`(brain: ${path.relative(projectRoot, brief.diagnostics.brainDir) || brief.diagnostics.brainDir}, ` +
       `${brief.diagnostics.recordsConsidered} records considered)`);
+  log('');
+  // Standing capture instruction — hook-injected sessions get it for free.
+  log('STANDING INSTRUCTION: when an assumption about this codebase proves wrong, or a change');
+  log('breaks something non-obvious, record it before ending the session — matha_record (MCP)');
+  log('or `matha after` (CLI).');
   log('════════════════════════════════════════');
 
   return { exitCode: 0, brief };

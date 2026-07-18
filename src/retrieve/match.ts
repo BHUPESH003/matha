@@ -1,6 +1,7 @@
 import {
   normalisePath,
   splitComponent,
+  type BoundaryRecord,
   type Confidence,
   type Contract,
   type DangerZone,
@@ -34,7 +35,7 @@ import type { CoChangeRecord } from '@/codemap/git-analyser.js'
  * there, with data, not here by taste.
  */
 
-export type MatchType = 'danger_zone' | 'contract' | 'frozen_file' | 'decision_pattern'
+export type MatchType = 'danger_zone' | 'contract' | 'frozen_file' | 'decision_pattern' | 'boundary'
 export type MatchSeverity = 'critical' | 'warning' | 'info'
 
 export interface MatchResult {
@@ -71,6 +72,8 @@ export interface BrainData {
   stability: StabilityRecord[]
   decisions: DecisionEntry[]
   coChanges: CoChangeRecord[]
+  /** Admin-declared boundaries (§5.5) — pinned, confirmed, non-decaying. */
+  boundaries?: BoundaryRecord[]
   /** Per-file last-commit date from the codemap — powers possiblyStale. */
   fileLastChanged?: Record<string, string>
 }
@@ -284,6 +287,27 @@ interface Candidate {
 function buildCandidates(data: BrainData): Candidate[] {
   const candidates: Candidate[] = []
 
+  // Boundaries first: pinned admin rules — confirmed, no decay, no staleness
+  // penalty, and CRITICAL only on a direct structural hit (never lexically).
+  for (const boundary of data.boundaries ?? []) {
+    if (boundary.status && boundary.status !== 'active') continue
+    const { paths, texts } = splitComponent(boundary.component)
+    candidates.push({
+      matchType: 'boundary',
+      recordId: boundary.id,
+      component: boundary.component,
+      paths,
+      text: [...texts, boundary.rule].filter(Boolean).join(' '),
+      title: `Boundary: ${boundary.component}`,
+      description: boundary.rule,
+      source: 'hippocampus/boundaries.json',
+      recommendation: `Declared boundary (by ${boundary.declaredBy}). Do not cross it without the owner's sign-off.`,
+      confidence: 'confirmed',
+      minStructural: CRITICAL_STRUCTURAL,
+      severityFor: () => 'critical',
+    })
+  }
+
   for (const zone of data.dangerZones) {
     if (zone.status && zone.status !== 'active') continue
     const { paths, texts } = splitComponent(zone.component)
@@ -359,7 +383,8 @@ function buildCandidates(data: BrainData): Candidate[] {
       recommendation: 'Be aware of this prior correction when working in this area.',
       confidence: decision.confidence,
       timestamp: decision.timestamp,
-      writtenAt: decision.timestamp,
+      // A review-confirm resets the staleness clock without touching content.
+      writtenAt: decision.last_confirmed ?? decision.timestamp,
       severityFor: () => 'warning',
     })
   }

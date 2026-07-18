@@ -4,10 +4,13 @@ import { readJsonOrNull } from '@/storage/reader.js'
 import { writeAtomic } from '@/storage/writer.js'
 import {
   componentToFilename,
+  type BoundaryRecord,
+  type Confidence,
   type Contract,
   type DangerZone,
   type DecisionEntry,
   type IntentRecord,
+  type RecordStatus,
 } from '@/core/schema.js'
 
 /**
@@ -78,6 +81,67 @@ export async function getDecisions(
   filtered.sort((a, b) => b.timestamp.localeCompare(a.timestamp))
   if (limit !== undefined && limit > 0) filtered = filtered.slice(0, limit)
   return filtered
+}
+
+// ── LIFECYCLE (Phase 4) ──────────────────────────────────────────────
+//
+// Decision history is append-only in CONTENT: assumption, correction,
+// component and timestamps are never rewritten. Lifecycle is metadata —
+// status, confidence, retire reason, supersede links — and amending it in
+// place is the designed exception (RecordStatus existed from day one).
+
+export interface LifecyclePatch {
+  status?: RecordStatus
+  confidence?: Confidence
+  retired_reason?: string
+  superseded_by?: string | null
+  last_confirmed?: string
+}
+
+/** Applies a lifecycle patch to a decision. Returns false if the id is unknown. */
+export async function updateDecisionLifecycle(
+  mathaDir: string,
+  id: string,
+  patch: LifecyclePatch,
+): Promise<boolean> {
+  const decisionPath = path.join(mathaDir, 'hippocampus', 'decisions', `${id}.json`)
+  const entry = await readJsonOrNull<DecisionEntry>(decisionPath)
+  if (!entry) return false
+  await writeAtomic(decisionPath, { ...entry, ...patch }, { overwrite: true })
+  return true
+}
+
+/** Applies a lifecycle patch to a danger zone. Returns false if the id is unknown. */
+export async function updateDangerZoneLifecycle(
+  mathaDir: string,
+  id: string,
+  patch: LifecyclePatch,
+): Promise<boolean> {
+  const dangerZonesPath = path.join(mathaDir, 'hippocampus', 'danger-zones.json')
+  const existing = await readJsonOrNull<{ zones: DangerZone[] }>(dangerZonesPath)
+  const zones = existing?.zones ?? []
+  const zone = zones.find((z) => z.id === id)
+  if (!zone) return false
+  Object.assign(zone, patch)
+  await writeAtomic(dangerZonesPath, { zones }, { overwrite: true })
+  return true
+}
+
+// ── BOUNDARIES (admin-declared, §5.5) ────────────────────────────────
+
+export async function getBoundaries(mathaDir: string): Promise<BoundaryRecord[]> {
+  const data = await readJsonOrNull<{ boundaries?: BoundaryRecord[] }>(
+    path.join(mathaDir, 'hippocampus', 'boundaries.json'),
+  )
+  return data?.boundaries ?? []
+}
+
+export async function recordBoundary(mathaDir: string, boundary: BoundaryRecord): Promise<void> {
+  const boundariesPath = path.join(mathaDir, 'hippocampus', 'boundaries.json')
+  const existing = await readJsonOrNull<{ boundaries: BoundaryRecord[] }>(boundariesPath)
+  const boundaries = existing?.boundaries ?? []
+  boundaries.push(boundary)
+  await writeAtomic(boundariesPath, { boundaries }, { overwrite: true })
 }
 
 // ── DANGER ZONES ─────────────────────────────────────────────────────

@@ -57,6 +57,36 @@ matha migrate
 
 The write-back means a correction never has to be made twice.
 
+### Keeping the brain trustworthy
+
+A memory that silently rots is worse than no memory. matha treats staleness and drift as first-class:
+
+```bash
+# Triage queue: confirm, retire, or skip unconfirmed and possibly-stale records
+matha review
+
+# Commits since the last recorded knowledge that no record covers (backfill list)
+matha catchup
+
+# Match a git diff against the brain — advisory in CI, --strict to fail on criticals
+matha check --diff origin/main
+
+# Declare an admin boundary: pinned, confirmed, always CRITICAL on a path match
+matha boundary add --paths db/schema/ --rule "Schema changes require DBA sign-off"
+
+# Human-readable, PR-diffable brain summary / self-contained HTML report
+matha export --md --out BRAIN.md
+matha ui
+
+# Seed an existing codebase: agent proposes records from your docs, you confirm
+matha onboard
+
+# Wire the Claude Code SessionStart hook that injects the brief automatically
+matha hooks --install
+```
+
+Records whose code changed after they were written are flagged `possiblyStale` and rank-penalized — surfaced, never silently wrong. Agent writes land as `probable`; only a human (`matha after`, `matha review`) can mark knowledge `confirmed`. The codemap refreshes itself incrementally on read (a persisted commit cursor means even a huge history is analysed once, then only new commits).
+
 ---
 
 ## Installation
@@ -126,9 +156,13 @@ AI agents connected via MCP have access to a deliberately small surface:
 ```
 matha_brief(scope?, intent?, filepaths?)   Token-budgeted project context + scored matches
 matha_match(scope, intent, filepaths?)     What does the brain know about this change?
-matha_record(type, component, ...)         The one write tool: decision | danger | contract
+matha_record(type, ...)                    The one write tool:
+                                             decision | danger | contract   (new knowledge)
+                                             violation | supersede | retire (lifecycle)
 matha_refresh()                            Rebuild the codemap from git history
 ```
+
+Agents can create knowledge and maintain it — log a contract violation, supersede a decision that proved wrong, retire one that no longer applies. What they cannot do is self-promote: everything an agent writes is at most `probable`, and declared boundaries are CLI-only.
 
 There is also an MCP **prompt**, `matha_context`, which injects the brief plus the standing "record what you learn" instruction — IDEs that support MCP prompts can pull it at session start with zero configuration.
 

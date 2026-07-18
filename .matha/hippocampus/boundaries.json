@@ -1,0 +1,11 @@
+{
+  "boundaries": [
+    {
+      "id": "boundary-a26d4593",
+      "component": "src/retrieve/match.ts",
+      "rule": "Scoring constants are tuned against tests/eval — never change them without updating the golden set in the same PR",
+      "declaredBy": "bhupesh",
+      "created": "2026-07-18T05:46:21.060Z"
+    }
+  ]
+}

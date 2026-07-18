@@ -4,7 +4,7 @@
  * store module must import these from here — never redefine locally.
  */
 
-export const CURRENT_SCHEMA_VERSION = '0.2.0'
+export const CURRENT_SCHEMA_VERSION = '1.0.0'
 
 // ── RECORD TYPES ─────────────────────────────────────────────────────
 
@@ -29,6 +29,11 @@ export interface DecisionEntry {
   status: RecordStatus
   supersedes: string | null
   session_id: string
+  /** Lifecycle metadata (Phase 4) — content fields above stay immutable. */
+  superseded_by?: string | null
+  retired_reason?: string
+  /** Set by `matha review` confirm — resets the possiblyStale clock. */
+  last_confirmed?: string
 }
 
 export interface DangerZone {
@@ -38,6 +43,21 @@ export interface DangerZone {
   description: string
   status?: RecordStatus
   confidence?: Confidence
+  retired_reason?: string
+}
+
+/**
+ * Admin-declared boundary (§5.5): pinned, confirmed, non-decaying, always
+ * CRITICAL on a direct path match. Authored via `matha boundary add` (never
+ * over MCP) and stored in the repo so boundary changes are PR-reviewed.
+ */
+export interface BoundaryRecord {
+  id: string
+  component: string
+  rule: string
+  declaredBy: string
+  created: string
+  status?: RecordStatus
 }
 
 export interface ContractAssertion {
@@ -112,6 +132,20 @@ export function validateDangerInput(input: {
   for (const [field, value] of Object.entries({
     component: input.component,
     description: input.description,
+  })) {
+    const r = meaningful(value, field)
+    if (!r.ok) return r
+  }
+  return { ok: true }
+}
+
+export function validateBoundaryInput(input: {
+  component?: unknown
+  rule?: unknown
+}): ValidationResult {
+  for (const [field, value] of Object.entries({
+    component: input.component,
+    rule: input.rule,
   })) {
     const r = meaningful(value, field)
     if (!r.ok) return r

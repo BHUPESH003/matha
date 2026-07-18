@@ -86,7 +86,11 @@ export async function assembleBrief(engine: Engine, opts: BriefOptions = {}): Pr
     .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
   for (const d of recentCandidates) {
     if (recentDecisions.length >= MAX_RECENT_DECISIONS) break
-    const stale = changedSince(splitComponent(d.component).paths, d.timestamp, data.fileLastChanged)
+    const stale = changedSince(
+      splitComponent(d.component).paths,
+      d.last_confirmed ?? d.timestamp,
+      data.fileLastChanged,
+    )
     const entry: BriefDecision = {
       id: d.id,
       component: d.component,
@@ -132,7 +136,11 @@ export async function assembleBrief(engine: Engine, opts: BriefOptions = {}): Pr
     diagnostics: {
       brainDir: engine.mathaDir,
       recordsConsidered:
-        data.dangerZones.length + data.contracts.length + data.stability.length + data.decisions.length,
+        data.dangerZones.length +
+        data.contracts.length +
+        data.stability.length +
+        data.decisions.length +
+        (data.boundaries?.length ?? 0),
     },
   }
 }

@@ -8,7 +8,14 @@ import {
   validateDecisionInput,
   type Confidence,
 } from '@/core/schema.js'
-import { recordContract, recordDangerZone, recordDecision } from '@/store/records.js'
+import {
+  recordContract,
+  recordContractViolation,
+  recordDangerZone,
+  recordDecision,
+  updateDangerZoneLifecycle,
+  updateDecisionLifecycle,
+} from '@/store/records.js'
 import { refreshFromGit } from '@/codemap/index.js'
 import { assembleBrief } from '@/retrieve/brief.js'
 import type { MatchContext } from '@/retrieve/match.js'
@@ -70,7 +77,13 @@ export async function mathaMatch(
 
 // ── THE ONE WRITE TOOL ───────────────────────────────────────────────
 
-export type RecordType = 'decision' | 'danger' | 'contract'
+export type RecordType =
+  | 'decision'
+  | 'danger'
+  | 'contract'
+  | 'violation'
+  | 'retire'
+  | 'supersede'
 
 export interface RecordArgs {
   type?: RecordType
@@ -80,6 +93,14 @@ export interface RecordArgs {
   description?: string
   assertions?: string[]
   confidence?: Confidence
+  /** violation only: the exact assertion text that was violated. */
+  assertion?: string
+  /** retire only: id of the decision or danger zone to retire. */
+  id?: string
+  /** retire only: why the record no longer holds. */
+  reason?: string
+  /** supersede only: id of the active decision this one replaces. */
+  supersedes?: string
 }
 
 /**
@@ -151,8 +172,72 @@ export async function mathaRecord(engine: Engine, args: RecordArgs): Promise<str
       await recordContract(engine.mathaDir, args.component!, args.assertions!)
       return withDiagnostics(engine, { success: true, component: args.component })
     }
+    case 'violation': {
+      if (!args.component || !args.assertion) {
+        return rejected('violation requires component and assertion (the exact assertion text)')
+      }
+      const found = await recordContractViolation(
+        engine.mathaDir,
+        args.component,
+        args.assertion,
+        new Date().toISOString(),
+      )
+      if (!found) {
+        return rejected(
+          `no assertion matching '${args.assertion}' on contract '${args.component}' — check matha_match output for the exact wording`,
+        )
+      }
+      return withDiagnostics(engine, {
+        success: true,
+        component: args.component,
+        note: 'Violation logged — repeated violations escalate this contract in future matches.',
+      })
+    }
+    case 'retire': {
+      if (!args.id) return rejected('retire requires id (the decision or danger zone id)')
+      const reason = (args.reason ?? '').trim()
+      if (reason.length < 3) return rejected('retire requires a meaningful reason')
+      const patch = { status: 'retired' as const, retired_reason: reason }
+      if (await updateDecisionLifecycle(engine.mathaDir, args.id, patch)) {
+        return withDiagnostics(engine, { success: true, id: args.id, retired: 'decision' })
+      }
+      if (await updateDangerZoneLifecycle(engine.mathaDir, args.id, patch)) {
+        return withDiagnostics(engine, { success: true, id: args.id, retired: 'danger' })
+      }
+      return rejected(`no decision or danger zone with id '${args.id}'`)
+    }
+    case 'supersede': {
+      if (!args.supersedes) return rejected('supersede requires supersedes (the old decision id)')
+      const valid = validateDecisionInput(args)
+      if (!valid.ok) return rejected(valid.reason!)
+      const old = (await engine.getDecisions()).find((d) => d.id === args.supersedes)
+      if (!old) return rejected(`no decision with id '${args.supersedes}'`)
+      if (old.status !== 'active') {
+        return rejected(`decision '${args.supersedes}' is already ${old.status}`)
+      }
+      const id = `${Date.now()}-${generateId()}`
+      await recordDecision(engine.mathaDir, {
+        id,
+        timestamp: new Date().toISOString(),
+        component: args.component!,
+        previous_assumption: args.previous_assumption!,
+        correction: args.correction!,
+        trigger: 'mcp-call',
+        confidence: capConfidence(args.confidence),
+        status: 'active',
+        supersedes: args.supersedes,
+        session_id: id,
+      })
+      await updateDecisionLifecycle(engine.mathaDir, args.supersedes, {
+        status: 'superseded',
+        superseded_by: id,
+      })
+      return withDiagnostics(engine, { success: true, id, superseded: args.supersedes })
+    }
     default:
-      return rejected(`type must be one of decision | danger | contract (got '${args.type}')`)
+      return rejected(
+        `type must be one of decision | danger | contract | violation | retire | supersede (got '${args.type}')`,
+      )
   }
 }
 

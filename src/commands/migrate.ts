@@ -15,6 +15,11 @@ export interface MigrateResult {
  * are tolerant of 0.1.x record shapes, so no data rewriting is needed;
  * abandoned 0.1.x artifacts (dopamine/, sessions/) are left in place —
  * harmless, and deleting user data is not migrate's job.
+ *
+ * 0.2.0 → 1.0.0: additive only — lifecycle metadata on decisions/zones
+ * (retired_reason, superseded_by, last_confirmed), hippocampus/boundaries.json,
+ * cortex/analysis.json. Old brains read fine without them; stamping the
+ * version is the whole migration.
  */
 export async function runMigrate(
   projectRoot: string = process.cwd(),

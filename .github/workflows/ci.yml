@@ -1,0 +1,34 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # matha check and codemap tests need history
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx vitest run
+
+      # Dogfood: match this change against matha's own brain (advisory —
+      # findings inform review; blocking is a repo-admin choice, not matha's).
+      - name: matha check
+        if: matrix.os == 'ubuntu-latest' && github.event_name == 'pull_request'
+        run: node dist/index.js check --diff origin/${{ github.base_ref }}
+      - name: matha check (push)
+        if: matrix.os == 'ubuntu-latest' && github.event_name == 'push'
+        run: node dist/index.js check --diff HEAD~1

@@ -9,7 +9,7 @@
     "coChangeCount": 5,
     "ageInDays": 135,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "package-lock.json",
@@ -21,7 +21,31 @@
     "coChangeCount": 2,
     "ageInDays": 135,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
+  },
+  {
+    "filepath": "src/mcp/tools.ts",
+    "stability": "stable",
+    "confidence": "high",
+    "reason": "Moderate churn (2.05 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 9,
+    "coChangeCount": 5,
+    "ageInDays": 132,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
+  },
+  {
+    "filepath": "tests/mcp/tools.test.ts",
+    "stability": "stable",
+    "confidence": "high",
+    "reason": "Moderate churn (2.05 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 9,
+    "coChangeCount": 5,
+    "ageInDays": 132,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "src/mcp/server.ts",
@@ -33,31 +57,7 @@
     "coChangeCount": 4,
     "ageInDays": 132,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
-  },
-  {
-    "filepath": "src/mcp/tools.ts",
-    "stability": "frozen",
-    "confidence": "high",
-    "reason": "Low churn (1.82 changes/month), high connectivity (4 co-changed files), aged 132 days",
-    "classificationSource": "derived",
-    "changeCount": 8,
-    "coChangeCount": 4,
-    "ageInDays": 132,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
-  },
-  {
-    "filepath": "tests/mcp/tools.test.ts",
-    "stability": "frozen",
-    "confidence": "high",
-    "reason": "Low churn (1.82 changes/month), high connectivity (4 co-changed files), aged 132 days",
-    "classificationSource": "derived",
-    "changeCount": 8,
-    "coChangeCount": 4,
-    "ageInDays": 132,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "README.md",
@@ -69,7 +69,19 @@
     "coChangeCount": 2,
     "ageInDays": 132,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
+  },
+  {
+    "filepath": "src/commands/before.ts",
+    "stability": "frozen",
+    "confidence": "high",
+    "reason": "Low churn (1.56 changes/month), high connectivity (4 co-changed files), aged 135 days",
+    "classificationSource": "derived",
+    "changeCount": 7,
+    "coChangeCount": 4,
+    "ageInDays": 135,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "src/commands/init.ts",
@@ -81,43 +93,31 @@
     "coChangeCount": 2,
     "ageInDays": 135,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
-  },
-  {
-    "filepath": "src/commands/before.ts",
-    "stability": "frozen",
-    "confidence": "high",
-    "reason": "Low churn (1.33 changes/month), high connectivity (3 co-changed files), aged 135 days",
-    "classificationSource": "derived",
-    "changeCount": 6,
-    "coChangeCount": 3,
-    "ageInDays": 135,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "src/index.ts",
-    "stability": "disposable",
+    "stability": "frozen",
     "confidence": "high",
-    "reason": "Low churn (1.36 changes/month), low connectivity, aged 132 days",
+    "reason": "Low churn (1.59 changes/month), high connectivity (3 co-changed files), aged 132 days",
     "classificationSource": "derived",
-    "changeCount": 6,
-    "coChangeCount": 1,
+    "changeCount": 7,
+    "coChangeCount": 3,
     "ageInDays": 132,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "src/commands/after.ts",
-    "stability": "disposable",
+    "stability": "frozen",
     "confidence": "high",
-    "reason": "Low churn (1.11 changes/month), low connectivity, aged 135 days",
+    "reason": "Low churn (1.33 changes/month), high connectivity (5 co-changed files), aged 135 days",
     "classificationSource": "derived",
-    "changeCount": 5,
-    "coChangeCount": 1,
+    "changeCount": 6,
+    "coChangeCount": 5,
     "ageInDays": 135,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/commands/init.test.ts",
@@ -129,7 +129,79 @@
     "coChangeCount": 1,
     "ageInDays": 135,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
+  },
+  {
+    "filepath": "docs/analysis/03-target-architecture.md",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (90 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 3,
+    "coChangeCount": 5,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
+  },
+  {
+    "filepath": "src/core/engine.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (90 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 3,
+    "coChangeCount": 5,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
+  },
+  {
+    "filepath": "src/core/schema.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (90 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 3,
+    "coChangeCount": 5,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
+  },
+  {
+    "filepath": "src/retrieve/brief.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (90 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 3,
+    "coChangeCount": 5,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
+  },
+  {
+    "filepath": "src/retrieve/match.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (90 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 3,
+    "coChangeCount": 5,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
+  },
+  {
+    "filepath": "tests/retrieve/match.test.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (90 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 3,
+    "coChangeCount": 5,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tsconfig.json",
@@ -141,19 +213,7 @@
     "coChangeCount": 5,
     "ageInDays": 135,
     "daysSinceLastChange": 135,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
-  },
-  {
-    "filepath": "docs/analysis/03-target-architecture.md",
-    "stability": "volatile",
-    "confidence": "low",
-    "reason": "High churn (60 changes/month)",
-    "classificationSource": "derived",
-    "changeCount": 2,
-    "coChangeCount": 0,
-    "ageInDays": 1,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "docs/ide-workflow.md",
@@ -165,55 +225,7 @@
     "coChangeCount": 1,
     "ageInDays": 132,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
-  },
-  {
-    "filepath": "src/core/engine.ts",
-    "stability": "volatile",
-    "confidence": "low",
-    "reason": "High churn (60 changes/month)",
-    "classificationSource": "derived",
-    "changeCount": 2,
-    "coChangeCount": 0,
-    "ageInDays": 1,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
-  },
-  {
-    "filepath": "src/core/schema.ts",
-    "stability": "volatile",
-    "confidence": "low",
-    "reason": "High churn (60 changes/month)",
-    "classificationSource": "derived",
-    "changeCount": 2,
-    "coChangeCount": 0,
-    "ageInDays": 1,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
-  },
-  {
-    "filepath": "src/retrieve/brief.ts",
-    "stability": "volatile",
-    "confidence": "low",
-    "reason": "High churn (60 changes/month)",
-    "classificationSource": "derived",
-    "changeCount": 2,
-    "coChangeCount": 0,
-    "ageInDays": 1,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
-  },
-  {
-    "filepath": "src/retrieve/match.ts",
-    "stability": "volatile",
-    "confidence": "low",
-    "reason": "High churn (60 changes/month)",
-    "classificationSource": "derived",
-    "changeCount": 2,
-    "coChangeCount": 0,
-    "ageInDays": 1,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/e2e/wiring.test.ts",
@@ -225,19 +237,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
-  },
-  {
-    "filepath": "tests/retrieve/match.test.ts",
-    "stability": "volatile",
-    "confidence": "low",
-    "reason": "High churn (60 changes/month)",
-    "classificationSource": "derived",
-    "changeCount": 2,
-    "coChangeCount": 0,
-    "ageInDays": 1,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "MATHA_ROADMAP.md",
@@ -249,7 +249,31 @@
     "coChangeCount": 0,
     "ageInDays": 135,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
+  },
+  {
+    "filepath": "src/codemap/git-analyser.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (60 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 2,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
+  },
+  {
+    "filepath": "src/codemap/index.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (60 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 2,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "src/commands/migrate.ts",
@@ -261,7 +285,7 @@
     "coChangeCount": 0,
     "ageInDays": 132,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "src/utils/schema-version.ts",
@@ -273,7 +297,7 @@
     "coChangeCount": 0,
     "ageInDays": 132,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/commands/migrate.test.ts",
@@ -285,7 +309,7 @@
     "coChangeCount": 0,
     "ageInDays": 132,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/utils/schema-version.test.ts",
@@ -297,7 +321,7 @@
     "coChangeCount": 0,
     "ageInDays": 132,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": ".gitignore",
@@ -309,7 +333,7 @@
     "coChangeCount": 1,
     "ageInDays": 135,
     "daysSinceLastChange": 132,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/storage/reader.test.ts",
@@ -321,7 +345,7 @@
     "coChangeCount": 3,
     "ageInDays": 135,
     "daysSinceLastChange": 135,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/storage/writer.test.ts",
@@ -333,7 +357,7 @@
     "coChangeCount": 3,
     "ageInDays": 135,
     "daysSinceLastChange": 135,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "vitest.config.ts",
@@ -345,7 +369,7 @@
     "coChangeCount": 3,
     "ageInDays": 135,
     "daysSinceLastChange": 135,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": ".mcp.json",
@@ -357,7 +381,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "CLAUDE.md",
@@ -369,7 +393,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "scripts/field-test.sh",
@@ -381,7 +405,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/eval/fixture.ts",
@@ -393,7 +417,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/eval/golden.test.ts",
@@ -405,7 +429,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/eval/harness.ts",
@@ -417,7 +441,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/retrieve/brief.test.ts",
@@ -429,7 +453,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "docs/analysis/01-current-state.md",
@@ -441,7 +465,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "docs/analysis/02-supermemory-comparison.md",
@@ -453,31 +477,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
-  },
-  {
-    "filepath": "src/codemap/git-analyser.ts",
-    "stability": "volatile",
-    "confidence": "low",
-    "reason": "High churn (30 changes/month)",
-    "classificationSource": "derived",
-    "changeCount": 1,
-    "coChangeCount": 0,
-    "ageInDays": 1,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
-  },
-  {
-    "filepath": "src/codemap/index.ts",
-    "stability": "volatile",
-    "confidence": "low",
-    "reason": "High churn (30 changes/month)",
-    "classificationSource": "derived",
-    "changeCount": 1,
-    "coChangeCount": 0,
-    "ageInDays": 1,
-    "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "src/codemap/stability-classifier.ts",
@@ -489,7 +489,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "src/commands/doctor.ts",
@@ -501,7 +501,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "src/core/resolve.ts",
@@ -513,7 +513,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "src/store/records.ts",
@@ -525,7 +525,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/codemap/codemap.test.ts",
@@ -537,7 +537,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/codemap/git-analyser.test.ts",
@@ -549,7 +549,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/codemap/stability-classifier.test.ts",
@@ -561,7 +561,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/commands/before-after.test.ts",
@@ -573,7 +573,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/core/engine.test.ts",
@@ -585,7 +585,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/core/resolve.test.ts",
@@ -597,7 +597,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/store/records.test.ts",
@@ -609,7 +609,7 @@
     "coChangeCount": 0,
     "ageInDays": 1,
     "daysSinceLastChange": 0,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "docs/matha_evaluation_report.md",
@@ -621,7 +621,7 @@
     "coChangeCount": 0,
     "ageInDays": 130,
     "daysSinceLastChange": 130,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": ".npmignore",
@@ -633,7 +633,7 @@
     "coChangeCount": 0,
     "ageInDays": 132,
     "daysSinceLastChange": 132,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "LICENSE",
@@ -645,7 +645,7 @@
     "coChangeCount": 0,
     "ageInDays": 132,
     "daysSinceLastChange": 132,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "CONTRIBUTING.md",
@@ -657,7 +657,7 @@
     "coChangeCount": 0,
     "ageInDays": 132,
     "daysSinceLastChange": 132,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "docs/pamm-case-study.md",
@@ -669,7 +669,7 @@
     "coChangeCount": 0,
     "ageInDays": 132,
     "daysSinceLastChange": 132,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "src/utils/markdown-parser.ts",
@@ -681,7 +681,7 @@
     "coChangeCount": 0,
     "ageInDays": 132,
     "daysSinceLastChange": 132,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/fixtures/sample-brd.md",
@@ -693,7 +693,7 @@
     "coChangeCount": 0,
     "ageInDays": 132,
     "daysSinceLastChange": 132,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/utils/markdown-parser.test.ts",
@@ -705,7 +705,7 @@
     "coChangeCount": 0,
     "ageInDays": 132,
     "daysSinceLastChange": 132,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": ".vscode/settings.json",
@@ -717,7 +717,7 @@
     "coChangeCount": 0,
     "ageInDays": 135,
     "daysSinceLastChange": 135,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "tests/tsconfig.json",
@@ -729,7 +729,7 @@
     "coChangeCount": 0,
     "ageInDays": 135,
     "daysSinceLastChange": 135,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "src/storage/reader.ts",
@@ -741,7 +741,7 @@
     "coChangeCount": 0,
     "ageInDays": 135,
     "daysSinceLastChange": 135,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   },
   {
     "filepath": "src/storage/writer.ts",
@@ -753,6 +753,54 @@
     "coChangeCount": 0,
     "ageInDays": 135,
     "daysSinceLastChange": 135,
-    "lastDerivedAt": "2026-07-18T04:43:25.226Z"
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
+  },
+  {
+    "filepath": "src/commands/catchup.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (30 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 1,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
+  },
+  {
+    "filepath": "tests/codemap/incremental.test.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (30 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 1,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
+  },
+  {
+    "filepath": "tests/commands/catchup.test.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (30 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 1,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
+  },
+  {
+    "filepath": "tests/core/engine-autorefresh.test.ts",
+    "stability": "volatile",
+    "confidence": "low",
+    "reason": "High churn (30 changes/month)",
+    "classificationSource": "derived",
+    "changeCount": 1,
+    "coChangeCount": 0,
+    "ageInDays": 1,
+    "daysSinceLastChange": 0,
+    "lastDerivedAt": "2026-07-18T05:57:34.317Z"
   }
 ]
