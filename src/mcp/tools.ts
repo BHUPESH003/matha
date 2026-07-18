@@ -81,6 +81,16 @@ export interface RecordArgs {
   confidence?: Confidence
 }
 
+/**
+ * Agent-recorded knowledge is at most 'probable' — 'confirmed' is reserved
+ * for human surfaces (CLI `matha after`, future `matha review`). Retrieval
+ * weights confirmed 1.0 vs probable 0.7, so letting agents self-promote
+ * would bypass the human review loop (seen in the field on day one).
+ */
+function capConfidence(requested: Confidence | undefined): Confidence {
+  return requested === 'uncertain' ? 'uncertain' : 'probable'
+}
+
 export async function mathaRecord(engine: Engine, args: RecordArgs): Promise<string> {
   switch (args.type) {
     case 'decision': {
@@ -94,7 +104,7 @@ export async function mathaRecord(engine: Engine, args: RecordArgs): Promise<str
         previous_assumption: args.previous_assumption!,
         correction: args.correction!,
         trigger: 'mcp-call',
-        confidence: args.confidence ?? 'probable',
+        confidence: capConfidence(args.confidence),
         status: 'active',
         supersedes: null,
         session_id: id,
@@ -110,7 +120,7 @@ export async function mathaRecord(engine: Engine, args: RecordArgs): Promise<str
         component: args.component!,
         pattern: args.description!,
         description: args.description!,
-        confidence: args.confidence ?? 'probable',
+        confidence: capConfidence(args.confidence),
       })
       return withDiagnostics(engine, { success: true, id })
     }

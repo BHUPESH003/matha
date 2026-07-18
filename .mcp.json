@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "matha": {
+      "command": "node",
+      "args": ["dist/index.js", "serve"],
+      "description": "matha dogfooding its own brain (run `npm run build` first)"
+    }
+  }
+}

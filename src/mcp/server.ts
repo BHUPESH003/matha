@@ -121,8 +121,10 @@ const tools: Tool[] = [
         },
         confidence: {
           type: 'string',
-          enum: ['confirmed', 'probable', 'uncertain'],
-          description: 'Default: probable. Use confirmed only for human-verified facts.',
+          enum: ['probable', 'uncertain'],
+          description:
+            'Default: probable. Use uncertain for unverified suspicions. (confirmed is ' +
+            'reserved for human review and cannot be set over MCP.)',
         },
       },
       required: ['type', 'component'],

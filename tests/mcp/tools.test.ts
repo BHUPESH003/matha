@@ -57,6 +57,39 @@ describe('MCP tools (consolidated surface)', () => {
     expect(bad.success).toBe(false)
   })
 
+  it('MCP writes are capped at probable — agents cannot self-promote to confirmed', async () => {
+    const result = JSON.parse(
+      await mathaRecord(engine, {
+        type: 'decision', component: 'src/x.ts',
+        previous_assumption: 'assumed the cache is shared',
+        correction: 'each pod has its own cache',
+        confidence: 'confirmed', // agent tries to self-promote
+      }),
+    )
+    expect(result.success).toBe(true)
+    const stored = JSON.parse(
+      await fs.readFile(
+        path.join(mathaDir, 'hippocampus', 'decisions', `${result.id}.json`),
+        'utf-8',
+      ),
+    )
+    expect(stored.confidence).toBe('probable')
+
+    // uncertain is still allowed — it's a demotion, not a promotion
+    const unsure = JSON.parse(
+      await mathaRecord(engine, {
+        type: 'danger', component: 'src/y.ts',
+        description: 'suspicion: writes may race under load',
+        confidence: 'uncertain',
+      }),
+    )
+    expect(unsure.success).toBe(true)
+    const zones = JSON.parse(
+      await fs.readFile(path.join(mathaDir, 'hippocampus', 'danger-zones.json'), 'utf-8'),
+    )
+    expect(zones.zones[0].confidence).toBe('uncertain')
+  })
+
   it('record rejects an unknown type with a readable reason', async () => {
     const bad = JSON.parse(await mathaRecord(engine, { type: 'note' as any, component: 'src/x.ts' }))
     expect(bad.success).toBe(false)
