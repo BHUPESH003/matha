@@ -180,7 +180,11 @@ function firstNonEmptyLine(lines: string[]): string | null {
 }
 
 function parseContent(content: string): ParsedBrainSeed {
-  const sections = splitSections(content)
+  // Normalize CRLF/CR to LF before anything else. Without this, a line's
+  // trailing \r survives content.split('\n') — and JS regex `.` treats \r as
+  // a line terminator, so it never matches, silently failing every heading
+  // and bullet pattern below on Windows-checked-out (CRLF) files.
+  const sections = splitSections(content.replace(/\r\n?/g, '\n'))
 
   // WHY: look for matching heading, fall back to first paragraph of document
   let why: string | null = null

@@ -310,4 +310,34 @@ Details here.
     const result = await parseMarkdownFile(mdFile)
     expect(result.why).toContain('first paragraph describing')
   })
+
+  // ──────────────────────────────────────────────────────────────
+  // CRLF (Windows checkout / Windows-authored files)
+  // ──────────────────────────────────────────────────────────────
+
+  it('CRLF line endings parse identically to LF (Windows CI regression)', async () => {
+    // JS regex `.` treats \r as a line terminator — a trailing \r left over
+    // from a naive split('\n') makes every heading/bullet pattern silently
+    // fail to match. This is exactly what happened on Windows CI: git
+    // checked the fixture out with CRLF and every field came back empty.
+    const mdFile = path.join(tmpDir, 'crlf.md')
+    const lfContent =
+      '# PAMM Trading Platform\n\n' +
+      'A trading platform that tracks P&L.\n\n' +
+      '## Business Rules\n' +
+      '- HWM: profit calculated above previous peak only\n' +
+      '- Deposits never trigger profit cycles\n\n' +
+      '## Out of Scope\n' +
+      '- Tax calculation or liability reporting\n\n' +
+      '## Owner\n' +
+      'Platform Team\n'
+    await fs.writeFile(mdFile, lfContent.replace(/\n/g, '\r\n'))
+
+    const result = await parseMarkdownFile(mdFile)
+    expect(result.why).toContain('P&L')
+    expect(result.rules).toContain('HWM: profit calculated above previous peak only')
+    expect(result.rules).toContain('Deposits never trigger profit cycles')
+    expect(result.boundaries).toContain('Tax calculation or liability reporting')
+    expect(result.owner).toBe('Platform Team')
+  })
 })
