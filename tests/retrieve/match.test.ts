@@ -263,6 +263,19 @@ describe('frozen files', () => {
       matchAll(ctx({ filepaths: ['src/core/ledger.ts'] }), brain({ stability: records })),
     ).toHaveLength(0)
   })
+
+  it('frozenFileSeverity config downgrades the match without hiding it', () => {
+    // Field finding: on a repo where a large share of files classify frozen,
+    // every CRITICAL match makes `matha check --strict` unusable. Default
+    // stays 'critical' (unchanged eval behavior); config.json can opt down.
+    const records = [stabilityRecord('src/core/ledger.ts')]
+    const results = matchAll(
+      ctx({ filepaths: ['src/core/ledger.ts'] }),
+      brain({ stability: records, frozenFileSeverity: 'warning' }),
+    )
+    expect(results).toHaveLength(1)
+    expect(results[0].severity).toBe('warning')
+  })
 })
 
 describe('matchAll combined', () => {

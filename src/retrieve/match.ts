@@ -76,6 +76,13 @@ export interface BrainData {
   boundaries?: BoundaryRecord[]
   /** Per-file last-commit date from the codemap — powers possiblyStale. */
   fileLastChanged?: Record<string, string>
+  /**
+   * Severity for a frozen-file structural hit — default 'critical'. On a
+   * repo where a large fraction of files classify frozen, every ordinary
+   * diff can trip `matha check --strict`; set to 'warning' in config.json
+   * (frozenFileSeverity) to keep the signal without that blocking cost.
+   */
+  frozenFileSeverity?: MatchSeverity
 }
 
 // ── TUNING CONSTANTS (validated by tests/eval golden set) ────────────
@@ -364,7 +371,7 @@ function buildCandidates(data: BrainData): Candidate[] {
       recommendation: 'This file is classified FROZEN. Confirm owner approval before modifying.',
       // A frozen warning needs a direct hit — proximity is not enough to cry CRITICAL.
       minStructural: CRITICAL_STRUCTURAL,
-      severityFor: () => 'critical',
+      severityFor: () => data.frozenFileSeverity ?? 'critical',
     })
   }
 

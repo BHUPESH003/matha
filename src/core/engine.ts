@@ -10,7 +10,19 @@ import {
 } from '@/core/schema.js'
 import { refreshFromGit, type AnalysisState, type StabilityRecord } from '@/codemap/index.js'
 import type { CoChangeRecord } from '@/codemap/git-analyser.js'
-import { matchAll, type BrainData, type MatchContext, type MatchResult } from '@/retrieve/match.js'
+import {
+  matchAll,
+  type BrainData,
+  type MatchContext,
+  type MatchResult,
+  type MatchSeverity,
+} from '@/retrieve/match.js'
+
+interface MathaConfig {
+  schema_version?: string
+  /** Downgrade frozen-file matches from 'critical' — see BrainData.frozenFileSeverity. */
+  frozenFileSeverity?: MatchSeverity
+}
 
 /**
  * The engine is the composition root: the only API the CLI and MCP surfaces
@@ -257,7 +269,7 @@ export class Engine {
 
   async loadBrain(): Promise<BrainData> {
     await this.maybeRefreshCodemap()
-    const [dangerZones, contracts, stability, decisions, coChanges, boundaries, analysis] =
+    const [dangerZones, contracts, stability, decisions, coChanges, boundaries, config, analysis] =
       await Promise.all([
         this.getDangerZones(),
         this.getContracts(),
@@ -265,6 +277,7 @@ export class Engine {
         this.getDecisions(),
         this.getCoChanges(),
         this.getBoundaries(),
+        this.cachedJson<MathaConfig>(path.join(this.mathaDir, 'config.json')),
         this.cachedJson<AnalysisState>(path.join(this.mathaDir, 'cortex', 'analysis.json')),
       ])
 
@@ -276,7 +289,16 @@ export class Engine {
       }
     }
 
-    return { dangerZones, contracts, stability, decisions, coChanges, boundaries, fileLastChanged }
+    return {
+      dangerZones,
+      contracts,
+      stability,
+      decisions,
+      coChanges,
+      boundaries,
+      fileLastChanged,
+      frozenFileSeverity: config?.frozenFileSeverity,
+    }
   }
 
   async match(context: MatchContext): Promise<{ results: MatchResult[]; diagnostics: Diagnostics }> {

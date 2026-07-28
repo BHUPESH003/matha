@@ -35,6 +35,8 @@ export interface ClassificationOptions {
   frozenThreshold?: number
   volatileThreshold?: number
   minAgeForFrozen?: number
+  /** A file touched more recently than this can't classify frozen, however low its long-run average. */
+  maxDaysSinceLastChangeForFrozen?: number
   repoPath?: string
 }
 
@@ -45,6 +47,13 @@ export interface ClassificationOptions {
 const DEFAULT_FROZEN_THRESHOLD = 2     // max changes/month
 const DEFAULT_VOLATILE_THRESHOLD = 8   // min changes/month
 const DEFAULT_MIN_AGE_FOR_FROZEN = 30  // days
+// A file changed in the last N days isn't settled yet, no matter how quiet
+// its long-run average looks — a bounded/incremental analysis window can
+// make a file's observed history short enough that one recent touch and a
+// handful of older commits average out to "low churn" (found in the field:
+// a 72-commit, business-critical file with a change 40 days ago classified
+// frozen purely on its long-run rate). Recency overrides the average.
+const DEFAULT_MAX_DAYS_SINCE_LAST_CHANGE_FOR_FROZEN = 60
 
 // ──────────────────────────────────────────────────────────────
 // MAIN FUNCTION
@@ -63,6 +72,8 @@ export function classifyStability(
     const frozenThreshold = options?.frozenThreshold ?? DEFAULT_FROZEN_THRESHOLD
     const volatileThreshold = options?.volatileThreshold ?? DEFAULT_VOLATILE_THRESHOLD
     const minAgeForFrozen = options?.minAgeForFrozen ?? DEFAULT_MIN_AGE_FOR_FROZEN
+    const maxDaysSinceLastChangeForFrozen =
+      options?.maxDaysSinceLastChangeForFrozen ?? DEFAULT_MAX_DAYS_SINCE_LAST_CHANGE_FOR_FROZEN
 
     const now = new Date(analysis.analysedAt || new Date().toISOString())
     const classifications: StabilityClassification[] = []
@@ -74,6 +85,7 @@ export function classifyStability(
         frozenThreshold,
         volatileThreshold,
         minAgeForFrozen,
+        maxDaysSinceLastChangeForFrozen,
       )
       classifications.push(classification)
     }
@@ -110,6 +122,7 @@ function classifyFile(
   frozenThreshold: number,
   volatileThreshold: number,
   minAgeForFrozen: number,
+  maxDaysSinceLastChangeForFrozen: number,
 ): StabilityClassification {
   const { filepath, changeCount, coChangedWith } = file
 
@@ -143,7 +156,8 @@ function classifyFile(
   if (
     changesPerMonth <= frozenThreshold &&
     ageInDays >= minAgeForFrozen &&
-    coChangeCount >= 3
+    coChangeCount >= 3 &&
+    daysSinceLastChange > maxDaysSinceLastChangeForFrozen
   ) {
     // FROZEN
     stability = 'frozen'

@@ -1,10 +1,10 @@
 {
   "stateVersion": 1,
-  "analysedAt": "2026-07-18T05:57:34.317Z",
-  "commitCount": 58,
-  "newestHash": "bc2e29e9a60e4af0afc4de7c1e98aabc756bb14b",
+  "analysedAt": "2026-07-28T11:56:43.780Z",
+  "commitCount": 60,
+  "newestHash": "996ff022474d2e36bdff581fc3b0b7d98fbd3714",
   "oldestDate": "2026-03-04T15:17:48.000Z",
-  "newestDate": "2026-07-18T04:45:00.000Z",
+  "newestDate": "2026-07-18T06:25:00.000Z",
   "files": {
     ".mcp.json": {
       "changeCount": 1,
@@ -23,16 +23,16 @@
       ]
     },
     "src/mcp/server.ts": {
-      "changeCount": 8,
-      "lastChanged": "2026-07-18T04:30:12.000Z",
+      "changeCount": 9,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
       "firstSeen": "2026-03-07T10:24:15.000Z",
       "authors": [
         "bhupesh003"
       ]
     },
     "src/mcp/tools.ts": {
-      "changeCount": 9,
-      "lastChanged": "2026-07-18T04:45:00.000Z",
+      "changeCount": 10,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
       "firstSeen": "2026-03-07T10:24:15.000Z",
       "authors": [
         "bhupesh003"
@@ -55,32 +55,32 @@
       ]
     },
     "README.md": {
-      "changeCount": 7,
-      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "changeCount": 8,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
       "firstSeen": "2026-03-07T17:10:27.000Z",
       "authors": [
         "bhupesh003"
       ]
     },
     "docs/analysis/03-target-architecture.md": {
-      "changeCount": 3,
-      "lastChanged": "2026-07-18T04:45:00.000Z",
+      "changeCount": 4,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
       "firstSeen": "2026-07-17T11:43:18.000Z",
       "authors": [
         "bhupesh003"
       ]
     },
     "docs/ide-workflow.md": {
-      "changeCount": 2,
-      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "changeCount": 3,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
       "firstSeen": "2026-03-07T17:45:20.000Z",
       "authors": [
         "bhupesh003"
       ]
     },
     "package.json": {
-      "changeCount": 20,
-      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "changeCount": 21,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
       "firstSeen": "2026-03-04T15:22:29.000Z",
       "authors": [
         "bhupesh003"
@@ -95,32 +95,32 @@
       ]
     },
     "src/core/engine.ts": {
-      "changeCount": 3,
-      "lastChanged": "2026-07-18T04:45:00.000Z",
+      "changeCount": 4,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
       "firstSeen": "2026-07-17T11:43:18.000Z",
       "authors": [
         "bhupesh003"
       ]
     },
     "src/core/schema.ts": {
-      "changeCount": 3,
-      "lastChanged": "2026-07-18T04:45:00.000Z",
+      "changeCount": 4,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
       "firstSeen": "2026-07-17T11:43:18.000Z",
       "authors": [
         "bhupesh003"
       ]
     },
     "src/retrieve/brief.ts": {
-      "changeCount": 3,
-      "lastChanged": "2026-07-18T04:45:00.000Z",
+      "changeCount": 4,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
       "firstSeen": "2026-07-17T11:43:18.000Z",
       "authors": [
         "bhupesh003"
       ]
     },
     "src/retrieve/match.ts": {
-      "changeCount": 3,
-      "lastChanged": "2026-07-18T04:45:00.000Z",
+      "changeCount": 4,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
       "firstSeen": "2026-07-17T11:43:18.000Z",
       "authors": [
         "bhupesh003"
@@ -135,8 +135,8 @@
       ]
     },
     "tests/eval/fixture.ts": {
-      "changeCount": 1,
-      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "changeCount": 2,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
       "firstSeen": "2026-07-17T13:40:52.000Z",
       "authors": [
         "bhupesh003"
@@ -199,8 +199,8 @@
       ]
     },
     "package-lock.json": {
-      "changeCount": 16,
-      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "changeCount": 17,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
       "firstSeen": "2026-03-04T15:22:29.000Z",
       "authors": [
         "bhupesh003"
@@ -231,8 +231,8 @@
       ]
     },
     "src/commands/before.ts": {
-      "changeCount": 7,
-      "lastChanged": "2026-07-18T04:45:00.000Z",
+      "changeCount": 8,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
       "firstSeen": "2026-03-04T16:52:57.000Z",
       "authors": [
         "bhupesh003"
@@ -255,8 +255,8 @@
       ]
     },
     "src/commands/migrate.ts": {
-      "changeCount": 2,
-      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "changeCount": 3,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
       "firstSeen": "2026-03-07T17:21:51.000Z",
       "authors": [
         "bhupesh003"
@@ -271,16 +271,16 @@
       ]
     },
     "src/index.ts": {
-      "changeCount": 7,
-      "lastChanged": "2026-07-18T04:45:00.000Z",
+      "changeCount": 8,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
       "firstSeen": "2026-03-07T10:24:15.000Z",
       "authors": [
         "bhupesh003"
       ]
     },
     "src/store/records.ts": {
-      "changeCount": 1,
-      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "changeCount": 2,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
       "firstSeen": "2026-07-17T11:43:18.000Z",
       "authors": [
         "bhupesh003"
@@ -367,8 +367,8 @@
       ]
     },
     "tests/utils/schema-version.test.ts": {
-      "changeCount": 2,
-      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "changeCount": 3,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
       "firstSeen": "2026-03-07T10:38:46.000Z",
       "authors": [
         "bhupesh003"
@@ -383,8 +383,8 @@
       ]
     },
     ".gitignore": {
-      "changeCount": 2,
-      "lastChanged": "2026-03-07T17:54:57.000Z",
+      "changeCount": 4,
+      "lastChanged": "2026-07-18T06:25:00.000Z",
       "firstSeen": "2026-03-04T15:22:29.000Z",
       "authors": [
         "bhupesh003"
@@ -503,8 +503,8 @@
       ]
     },
     "src/storage/writer.ts": {
-      "changeCount": 1,
-      "lastChanged": "2026-03-04T15:48:05.000Z",
+      "changeCount": 2,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
       "firstSeen": "2026-03-04T15:48:05.000Z",
       "authors": [
         "bhupesh003"
@@ -538,6 +538,94 @@
       "changeCount": 1,
       "lastChanged": "2026-07-18T04:45:00.000Z",
       "firstSeen": "2026-07-18T04:45:00.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    ".github/workflows/ci.yml": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "firstSeen": "2026-07-18T06:24:46.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/commands/boundary.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "firstSeen": "2026-07-18T06:24:46.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/commands/check.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "firstSeen": "2026-07-18T06:24:46.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/commands/export.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "firstSeen": "2026-07-18T06:24:46.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/commands/hooks.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "firstSeen": "2026-07-18T06:24:46.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/commands/onboard.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "firstSeen": "2026-07-18T06:24:46.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/commands/review.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "firstSeen": "2026-07-18T06:24:46.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "src/commands/ui.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "firstSeen": "2026-07-18T06:24:46.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/commands/phase4.test.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "firstSeen": "2026-07-18T06:24:46.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/mcp/lifecycle.test.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "firstSeen": "2026-07-18T06:24:46.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/retrieve/boundary.test.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "firstSeen": "2026-07-18T06:24:46.000Z",
       "authors": [
         "bhupesh003"
       ]

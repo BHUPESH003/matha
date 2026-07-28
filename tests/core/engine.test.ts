@@ -115,4 +115,26 @@ describe('Engine (in-memory index)', () => {
     expect(results.length).toBe(1)
     expect(results[0].matchType).toBe('danger_zone')
   })
+
+  it('config.json frozenFileSeverity threads through loadBrain into matching', async () => {
+    await fs.writeFile(
+      path.join(mathaDir, 'config.json'),
+      JSON.stringify({ schema_version: '1.0.0', frozenFileSeverity: 'warning' }),
+    )
+    await fs.writeFile(
+      path.join(mathaDir, 'cortex', 'stability.json'),
+      JSON.stringify([
+        {
+          filepath: 'src/core/ledger.ts', stability: 'frozen', confidence: 'high',
+          reason: 'low churn', classificationSource: 'derived',
+          changeCount: 1, coChangeCount: 3, ageInDays: 100, daysSinceLastChange: 200,
+        },
+      ]),
+    )
+    const { results } = await engine.match({
+      scope: '', intent: 'touch the ledger', filepaths: ['src/core/ledger.ts'],
+    })
+    expect(results).toHaveLength(1)
+    expect(results[0].severity).toBe('warning')
+  })
 })

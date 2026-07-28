@@ -79,6 +79,19 @@ describe('Phase 4 commands', () => {
     expect(result.queued).toBe(0)
   })
 
+  it('review degrades to a report instead of crashing on non-TTY stdin (field bug)', async () => {
+    await writeDecision('d1')
+    const lines: string[] = []
+    // No `ask` override — exercises the real isTTY branch; vitest's stdin is
+    // never a TTY, so this must fall back to printing rather than prompting
+    // (the reported bug: inquirer threw ExitPromptError and crashed instead).
+    const result = await runReview(repo, { log: (m) => lines.push(m) })
+    expect(result.exitCode).toBe(0)
+    expect(result.queued).toBe(1)
+    expect(result.confirmed).toBe(0)
+    expect(lines.join('\n')).toContain('no interactive terminal')
+  })
+
   // ── boundary ───────────────────────────────────────────────────────
 
   it('boundary add/list works and rejects near-duplicates', async () => {

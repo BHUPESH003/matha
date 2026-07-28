@@ -100,9 +100,13 @@ export async function assembleBrief(engine: Engine, opts: BriefOptions = {}): Pr
       ...(stale ? { possiblyStale: true } : {}),
     }
     const cost = estimateTokens(entry)
+    // Skip, don't stop: recency order has no relation to record size, so one
+    // verbose decision must not block every smaller one that sorts after it
+    // (found in the field — a single long decision silently zeroed out the
+    // rest of the section on every call, regardless of scope).
     if (spent + cost > budget) {
       truncated = true
-      break
+      continue
     }
     spent += cost
     recentDecisions.push(entry)
@@ -116,9 +120,12 @@ export async function assembleBrief(engine: Engine, opts: BriefOptions = {}): Pr
   for (const m of allMatches) {
     if (m.matchType === 'decision_pattern' && shownDecisionIds.has(m.recordId)) continue
     const cost = estimateTokens(m)
+    // Same fix as the decisions loop above: severity-then-score order means
+    // criticals are already in by the time a skip happens, but one oversized
+    // match must not silently block smaller lower-priority ones that follow.
     if (spent + cost > budget) {
       truncated = true
-      break
+      continue
     }
     spent += cost
     matchResults.push(m)

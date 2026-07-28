@@ -60,12 +60,12 @@ describe('stability-classifier', () => {
   it('file with low churn + high connectivity + age → FROZEN', () => {
     // 3 changes over 120 days = 0.75 changes/month (well under default 2)
     // coChangedWith has 3 files → high connectivity
-    // age 120 days >= 30 day minimum
+    // age 120 days >= 30 day minimum, quiet for 90 days (past the 60-day recency guard)
     const file = makeFile({
       filepath: 'src/core/engine.ts',
       changeCount: 3,
       firstSeen: daysAgo(120),
-      lastChanged: daysAgo(30),
+      lastChanged: daysAgo(90),
       coChangedWith: ['src/types.ts', 'src/config.ts', 'src/utils.ts'],
     })
 
@@ -75,6 +75,27 @@ describe('stability-classifier', () => {
     expect(c.stability).toBe('frozen')
     expect(c.reason).toContain('changes/month')
     expect(c.reason).toContain('co-changed')
+  })
+
+  it('recently-touched file never classifies FROZEN, however low its long-run average (field bug)', () => {
+    // Same shape as the FROZEN case above — low average churn, well connected,
+    // old enough — but touched 40 days ago. A bounded/incremental analysis
+    // window can make a historically high-churn, business-critical file look
+    // like this (few commits fall inside the window), so recency must veto
+    // "frozen" regardless of the average.
+    const file = makeFile({
+      filepath: 'src/utils/constants.ts',
+      changeCount: 3,
+      firstSeen: daysAgo(120),
+      lastChanged: daysAgo(40),
+      coChangedWith: ['src/types.ts', 'src/config.ts', 'src/utils.ts'],
+    })
+
+    const result = classifyStability(makeAnalysis([file]))
+    const c = result.classifications[0]
+
+    expect(c.stability).not.toBe('frozen')
+    expect(c.stability).toBe('stable')
   })
 
   // ──────────────────────────────────────────────────────────────
@@ -322,14 +343,15 @@ describe('stability-classifier', () => {
   // ──────────────────────────────────────────────────────────────
 
   it('custom frozenThreshold override changes classification', () => {
-    // 4 changes over 60 days = 2 changes/month
+    // 4 changes over 90 days = 1.33 changes/month
     // With default threshold (2) → borderline, with coChangeCount >= 3 → frozen
-    // With custom threshold (1) → not frozen (2 > 1)
+    // With custom threshold (1) → not frozen (1.33 > 1)
+    // lastChanged past the 60-day recency guard so that guard isn't what's under test here
     const file = makeFile({
       filepath: 'src/core.ts',
       changeCount: 4,
-      firstSeen: daysAgo(60),
-      lastChanged: daysAgo(1),
+      firstSeen: daysAgo(90),
+      lastChanged: daysAgo(90),
       coChangedWith: ['a.ts', 'b.ts', 'c.ts'],
     })
 

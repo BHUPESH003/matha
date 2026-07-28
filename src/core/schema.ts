@@ -181,11 +181,26 @@ function wordSet(text: string): Set<string> {
   )
 }
 
+// Jaccard ≥ 0.7 catches near-verbatim rewording (same rough length on both
+// sides). Overlap coefficient (intersection / smaller set) also catches an
+// expanded or contracted paraphrase — a longer restatement that keeps most
+// of the original's key terms scores low on Jaccard (the union balloons)
+// but high here. Found in the field: a real LLM paraphrase of an existing
+// decision scored 0.22 Jaccard (missed) but 0.54 overlap (caught) — this is
+// the intersection-only signal that closes that gap without embeddings.
+// MIN_SHARED_WORDS guards short text: two 3-word descriptions sharing 2
+// stopword-filtered words would otherwise hit 0.66 overlap by chance.
+const JACCARD_THRESHOLD = 0.7
+const OVERLAP_THRESHOLD = 0.5
+const MIN_SHARED_WORDS = 4
+
 /**
- * Lexical near-duplicate check for writes: Jaccard word overlap ≥ 0.7.
- * Agents re-record the same learning in slightly different words; the brain
- * should say "already known" instead of accumulating echoes. Strict on
- * purpose — a false rejection loses one record, a lax check pollutes ranking.
+ * Lexical near-duplicate check for writes. Agents re-record the same
+ * learning in different words; the brain should say "already known" instead
+ * of accumulating echoes. Two independent signals, either can fire — a false
+ * rejection loses one record, a lax check pollutes ranking, so both
+ * thresholds are calibrated to sit clear of genuinely-different corrections
+ * (tests/eval and tests/core/schema.test.ts pin the margins).
  */
 export function isNearDuplicate(a: string, b: string): boolean {
   const setA = wordSet(a)
@@ -193,7 +208,10 @@ export function isNearDuplicate(a: string, b: string): boolean {
   if (setA.size === 0 || setB.size === 0) return false
   let intersection = 0
   for (const w of setA) if (setB.has(w)) intersection++
-  return intersection / (setA.size + setB.size - intersection) >= 0.7
+  if (intersection < MIN_SHARED_WORDS) return false
+  const jaccard = intersection / (setA.size + setB.size - intersection)
+  const overlap = intersection / Math.min(setA.size, setB.size)
+  return jaccard >= JACCARD_THRESHOLD || overlap >= OVERLAP_THRESHOLD
 }
 
 /** First active record whose text near-duplicates the candidate, or null. */

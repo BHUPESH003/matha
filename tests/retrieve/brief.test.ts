@@ -92,4 +92,38 @@ describe('brief token budget', () => {
       .map((m) => m.recordId)
     expect(matchedDecisionIds).not.toContain('d-dup')
   })
+
+  it('one oversized recent decision does not silently drop every smaller one after it (field bug)', async () => {
+    // d-dup already exists from beforeEach; add a huge one that sorts FIRST
+    // (newest) and two normal ones that sort after it. The old `break` logic
+    // stopped the whole loop on the first miss, dropping smaller decisions
+    // that would have fit — this repros with a fixture matching that report.
+    const huge = 'word '.repeat(3000) // far larger than the whole budget alone
+    await fs.writeFile(
+      path.join(mathaDir, 'hippocampus', 'decisions', 'd-huge.json'),
+      JSON.stringify({
+        id: 'd-huge', timestamp: '2026-07-01T00:00:00Z', component: 'src/unrelated.ts',
+        previous_assumption: huge, correction: huge,
+        trigger: 't', confidence: 'confirmed', status: 'active', supersedes: null, session_id: 'd-huge',
+      }),
+    )
+    for (const id of ['d-small-a', 'd-small-b']) {
+      await fs.writeFile(
+        path.join(mathaDir, 'hippocampus', 'decisions', `${id}.json`),
+        JSON.stringify({
+          id, timestamp: '2026-06-01T00:00:00Z', component: 'src/other.ts',
+          previous_assumption: 'a small normal assumption', correction: 'a small normal correction',
+          trigger: 't', confidence: 'confirmed', status: 'active', supersedes: null, session_id: id,
+        }),
+      )
+    }
+
+    const brief = await assembleBrief(new Engine(mathaDir), { scope: '', intent: 'unrelated work' })
+    const ids = brief.recentDecisions.map((d) => d.id)
+    expect(ids).toContain('d-small-a')
+    expect(ids).toContain('d-small-b')
+    expect(ids).not.toContain('d-huge') // the oversized one is skipped, not fatal
+    expect(brief.truncated).toBe(true) // still true — something genuinely didn't fit
+    expect(brief.tokenEstimate).toBeLessThanOrEqual(BRIEF_TOKEN_BUDGET)
+  })
 })

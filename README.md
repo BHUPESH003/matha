@@ -168,6 +168,20 @@ There is also an MCP **prompt**, `matha_context`, which injects the brief plus t
 
 Retrieval is scored (structural path match × lexical relevance × confidence × recency) and the brief stays under a ~1,500-token budget — criticals are ranked first, so they are never the part that gets truncated. Every response includes `diagnostics.brainDir` — you always know which brain answered.
 
+Two things worth knowing about `brief.truncated` and `recentDecisions`: `truncated` means *something* didn't fit the budget (an oversized record, or the section budget itself), not that the whole response was cut short — check `matchResults.length` and `tokenEstimate` for the real picture. `recentDecisions` is intentionally global (most-recent-first across the whole brain), not scope-filtered — it's the "what's been learned lately" section; scope-relevant knowledge surfaces separately in `matchResults`.
+
+The sub-10ms warm p95 figure (from the eval harness) describes in-process retrieval inside a long-lived MCP server session with a warm cache — a `matha before` CLI invocation pays Node's process-startup cost on top of that (typically 150–250ms) and isn't the number that claim describes.
+
+### Tuning for large, high-file-count repos
+
+On a repo with a large fraction of files classified `frozen`, `matha check --strict` can flag an unusually large share of an ordinary diff as CRITICAL. Set `frozenFileSeverity: "warning"` in `.matha/config.json` to keep the signal without the block:
+
+```json
+{ "schema_version": "1.0.0", "frozenFileSeverity": "warning" }
+```
+
+The classifier itself also guards against the most common cause: a file touched within the last 60 days never classifies `frozen`, regardless of its long-run churn average — a bounded/incremental analysis window can otherwise make a historically active, business-critical file look "settled" just because few of its changes fall inside the analysed window.
+
 ---
 
 ## Initialising From An Existing Document

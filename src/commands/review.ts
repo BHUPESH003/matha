@@ -106,6 +106,22 @@ export async function runReview(
     return { exitCode: 0, queued: 0, confirmed: 0, retired: 0, skipped: 0 }
   }
 
+  // Non-interactive stdin (CI, piped input, a scripted agent session): the
+  // prompt library throws on the first read rather than degrading, so detect
+  // it up front and fall back to a plain report — same posture as catchup.
+  if (deps?.ask === undefined && !process.stdin.isTTY) {
+    log(`${queue.length} record(s) need review (no interactive terminal — printing, not prompting):\n`)
+    for (const [i, item] of queue.entries()) {
+      log(`[${i + 1}/${queue.length}] ${item.kind} ${item.id}`)
+      log(`  component: ${item.component}`)
+      log(`  ${item.summary}`)
+      for (const r of item.reasons) log(`  ⚠ ${r}`)
+    }
+    log('\nRun `matha review` from an interactive terminal to confirm/retire these.')
+    log('════════════════════════════════════════')
+    return { exitCode: 0, queued: queue.length, confirmed: 0, retired: 0, skipped: 0 }
+  }
+
   let confirmed = 0
   let retired = 0
   let skipped = 0
