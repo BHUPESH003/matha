@@ -2,7 +2,7 @@
   {
     "fileA": "package-lock.json",
     "fileB": "package.json",
-    "coChangeCount": 15
+    "coChangeCount": 17
   },
   {
     "fileA": "src/mcp/tools.ts",
@@ -30,9 +30,99 @@
     "coChangeCount": 3
   },
   {
+    "fileA": "README.md",
+    "fileB": "package.json",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "docs/analysis/03-target-architecture.md",
+    "fileB": "package.json",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "docs/analysis/03-target-architecture.md",
+    "fileB": "src/core/engine.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "docs/analysis/03-target-architecture.md",
+    "fileB": "src/core/schema.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "docs/analysis/03-target-architecture.md",
+    "fileB": "src/retrieve/brief.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "docs/analysis/03-target-architecture.md",
+    "fileB": "src/retrieve/match.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "docs/analysis/03-target-architecture.md",
+    "fileB": "tests/retrieve/match.test.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "src/core/engine.ts",
+    "fileB": "src/core/schema.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "src/core/engine.ts",
+    "fileB": "src/retrieve/brief.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "src/core/engine.ts",
+    "fileB": "src/retrieve/match.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "src/core/engine.ts",
+    "fileB": "tests/retrieve/match.test.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "src/core/schema.ts",
+    "fileB": "src/retrieve/brief.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "src/core/schema.ts",
+    "fileB": "src/retrieve/match.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "src/core/schema.ts",
+    "fileB": "tests/retrieve/match.test.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "src/retrieve/brief.ts",
+    "fileB": "src/retrieve/match.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "src/retrieve/brief.ts",
+    "fileB": "tests/retrieve/match.test.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "src/retrieve/match.ts",
+    "fileB": "tests/retrieve/match.test.ts",
+    "coChangeCount": 3
+  },
+  {
     "fileA": "src/commands/init.ts",
     "fileB": "tests/commands/init.test.ts",
     "coChangeCount": 3
+  },
+  {
+    "fileA": "README.md",
+    "fileB": "docs/analysis/03-target-architecture.md",
+    "coChangeCount": 2
   },
   {
     "fileA": "README.md",
@@ -41,7 +131,32 @@
   },
   {
     "fileA": "README.md",
-    "fileB": "package.json",
+    "fileB": "src/core/engine.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "README.md",
+    "fileB": "src/core/schema.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "README.md",
+    "fileB": "src/retrieve/brief.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "README.md",
+    "fileB": "src/retrieve/match.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "README.md",
+    "fileB": "tests/retrieve/brief.test.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "README.md",
+    "fileB": "tests/retrieve/match.test.ts",
     "coChangeCount": 2
   },
   {
@@ -51,27 +166,7 @@
   },
   {
     "fileA": "docs/analysis/03-target-architecture.md",
-    "fileB": "src/core/engine.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "docs/analysis/03-target-architecture.md",
-    "fileB": "src/core/schema.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "docs/analysis/03-target-architecture.md",
     "fileB": "src/mcp/tools.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "docs/analysis/03-target-architecture.md",
-    "fileB": "src/retrieve/brief.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "docs/analysis/03-target-architecture.md",
-    "fileB": "src/retrieve/match.ts",
     "coChangeCount": 2
   },
   {
@@ -81,7 +176,17 @@
   },
   {
     "fileA": "docs/analysis/03-target-architecture.md",
-    "fileB": "tests/retrieve/match.test.ts",
+    "fileB": "tests/retrieve/brief.test.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "package.json",
+    "fileB": "src/core/engine.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "package.json",
+    "fileB": "src/core/schema.ts",
     "coChangeCount": 2
   },
   {
@@ -96,7 +201,27 @@
   },
   {
     "fileA": "package.json",
+    "fileB": "src/retrieve/brief.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "package.json",
+    "fileB": "src/retrieve/match.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "package.json",
     "fileB": "tests/mcp/tools.test.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "package.json",
+    "fileB": "tests/retrieve/brief.test.ts",
+    "coChangeCount": 2
+  },
+  {
+    "fileA": "package.json",
+    "fileB": "tests/retrieve/match.test.ts",
     "coChangeCount": 2
   },
   {
@@ -122,131 +247,6 @@
   {
     "fileA": "src/commands/after.ts",
     "fileB": "src/retrieve/brief.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/commands/after.ts",
-    "fileB": "src/retrieve/match.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/commands/after.ts",
-    "fileB": "tests/mcp/tools.test.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/commands/after.ts",
-    "fileB": "tests/retrieve/match.test.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/core/engine.ts",
-    "fileB": "src/core/schema.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/core/engine.ts",
-    "fileB": "src/mcp/tools.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/core/engine.ts",
-    "fileB": "src/retrieve/brief.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/core/engine.ts",
-    "fileB": "src/retrieve/match.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/core/engine.ts",
-    "fileB": "tests/mcp/tools.test.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/core/engine.ts",
-    "fileB": "tests/retrieve/match.test.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/core/schema.ts",
-    "fileB": "src/mcp/tools.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/core/schema.ts",
-    "fileB": "src/retrieve/brief.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/core/schema.ts",
-    "fileB": "src/retrieve/match.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/core/schema.ts",
-    "fileB": "tests/mcp/tools.test.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/core/schema.ts",
-    "fileB": "tests/retrieve/match.test.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/mcp/tools.ts",
-    "fileB": "src/retrieve/brief.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/mcp/tools.ts",
-    "fileB": "src/retrieve/match.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/mcp/tools.ts",
-    "fileB": "tests/retrieve/match.test.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/retrieve/brief.ts",
-    "fileB": "src/retrieve/match.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/retrieve/brief.ts",
-    "fileB": "tests/mcp/tools.test.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/retrieve/brief.ts",
-    "fileB": "tests/retrieve/match.test.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/retrieve/match.ts",
-    "fileB": "tests/mcp/tools.test.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/retrieve/match.ts",
-    "fileB": "tests/retrieve/match.test.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "tests/mcp/tools.test.ts",
-    "fileB": "tests/retrieve/match.test.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": ".gitignore",
-    "fileB": "package.json",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "package.json",
-    "fileB": "src/index.ts",
     "coChangeCount": 2
   }
 ]

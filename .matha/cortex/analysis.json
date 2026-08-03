@@ -1,10 +1,10 @@
 {
   "stateVersion": 1,
-  "analysedAt": "2026-07-28T11:56:43.780Z",
-  "commitCount": 60,
-  "newestHash": "996ff022474d2e36bdff581fc3b0b7d98fbd3714",
+  "analysedAt": "2026-08-03T13:47:40.155Z",
+  "commitCount": 62,
+  "newestHash": "1b998e6cf2e372cc1908830dbd4d6a9a30b5d562",
   "oldestDate": "2026-03-04T15:17:48.000Z",
-  "newestDate": "2026-07-18T06:25:00.000Z",
+  "newestDate": "2026-07-28T13:37:09.000Z",
   "files": {
     ".mcp.json": {
       "changeCount": 1,
@@ -55,16 +55,16 @@
       ]
     },
     "README.md": {
-      "changeCount": 8,
-      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "changeCount": 9,
+      "lastChanged": "2026-07-28T13:27:27.000Z",
       "firstSeen": "2026-03-07T17:10:27.000Z",
       "authors": [
         "bhupesh003"
       ]
     },
     "docs/analysis/03-target-architecture.md": {
-      "changeCount": 4,
-      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "changeCount": 6,
+      "lastChanged": "2026-07-28T13:37:09.000Z",
       "firstSeen": "2026-07-17T11:43:18.000Z",
       "authors": [
         "bhupesh003"
@@ -79,8 +79,8 @@
       ]
     },
     "package.json": {
-      "changeCount": 21,
-      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "changeCount": 23,
+      "lastChanged": "2026-07-28T13:37:09.000Z",
       "firstSeen": "2026-03-04T15:22:29.000Z",
       "authors": [
         "bhupesh003"
@@ -95,32 +95,32 @@
       ]
     },
     "src/core/engine.ts": {
-      "changeCount": 4,
-      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "changeCount": 5,
+      "lastChanged": "2026-07-28T13:27:27.000Z",
       "firstSeen": "2026-07-17T11:43:18.000Z",
       "authors": [
         "bhupesh003"
       ]
     },
     "src/core/schema.ts": {
-      "changeCount": 4,
-      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "changeCount": 5,
+      "lastChanged": "2026-07-28T13:27:27.000Z",
       "firstSeen": "2026-07-17T11:43:18.000Z",
       "authors": [
         "bhupesh003"
       ]
     },
     "src/retrieve/brief.ts": {
-      "changeCount": 4,
-      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "changeCount": 5,
+      "lastChanged": "2026-07-28T13:27:27.000Z",
       "firstSeen": "2026-07-17T11:43:18.000Z",
       "authors": [
         "bhupesh003"
       ]
     },
     "src/retrieve/match.ts": {
-      "changeCount": 4,
-      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "changeCount": 5,
+      "lastChanged": "2026-07-28T13:27:27.000Z",
       "firstSeen": "2026-07-17T11:43:18.000Z",
       "authors": [
         "bhupesh003"
@@ -159,16 +159,16 @@
       ]
     },
     "tests/retrieve/brief.test.ts": {
-      "changeCount": 1,
-      "lastChanged": "2026-07-17T13:40:52.000Z",
+      "changeCount": 2,
+      "lastChanged": "2026-07-28T13:27:27.000Z",
       "firstSeen": "2026-07-17T13:40:52.000Z",
       "authors": [
         "bhupesh003"
       ]
     },
     "tests/retrieve/match.test.ts": {
-      "changeCount": 3,
-      "lastChanged": "2026-07-18T04:45:00.000Z",
+      "changeCount": 4,
+      "lastChanged": "2026-07-28T13:27:27.000Z",
       "firstSeen": "2026-07-17T11:43:18.000Z",
       "authors": [
         "bhupesh003"
@@ -199,8 +199,8 @@
       ]
     },
     "package-lock.json": {
-      "changeCount": 17,
-      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "changeCount": 19,
+      "lastChanged": "2026-07-28T13:37:09.000Z",
       "firstSeen": "2026-03-04T15:22:29.000Z",
       "authors": [
         "bhupesh003"
@@ -223,8 +223,8 @@
       ]
     },
     "src/codemap/stability-classifier.ts": {
-      "changeCount": 1,
-      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "changeCount": 2,
+      "lastChanged": "2026-07-28T13:27:27.000Z",
       "firstSeen": "2026-07-17T11:43:18.000Z",
       "authors": [
         "bhupesh003"
@@ -311,8 +311,8 @@
       ]
     },
     "tests/codemap/stability-classifier.test.ts": {
-      "changeCount": 1,
-      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "changeCount": 2,
+      "lastChanged": "2026-07-28T13:27:27.000Z",
       "firstSeen": "2026-07-17T11:43:18.000Z",
       "authors": [
         "bhupesh003"
@@ -343,8 +343,8 @@
       ]
     },
     "tests/core/engine.test.ts": {
-      "changeCount": 1,
-      "lastChanged": "2026-07-17T11:43:18.000Z",
+      "changeCount": 2,
+      "lastChanged": "2026-07-28T13:27:27.000Z",
       "firstSeen": "2026-07-17T11:43:18.000Z",
       "authors": [
         "bhupesh003"
@@ -423,8 +423,8 @@
       ]
     },
     "src/utils/markdown-parser.ts": {
-      "changeCount": 1,
-      "lastChanged": "2026-03-07T11:13:05.000Z",
+      "changeCount": 2,
+      "lastChanged": "2026-07-28T13:37:09.000Z",
       "firstSeen": "2026-03-07T11:13:05.000Z",
       "authors": [
         "bhupesh003"
@@ -439,8 +439,8 @@
       ]
     },
     "tests/utils/markdown-parser.test.ts": {
-      "changeCount": 1,
-      "lastChanged": "2026-03-07T11:13:05.000Z",
+      "changeCount": 2,
+      "lastChanged": "2026-07-28T13:37:09.000Z",
       "firstSeen": "2026-03-07T11:13:05.000Z",
       "authors": [
         "bhupesh003"
@@ -591,8 +591,8 @@
       ]
     },
     "src/commands/review.ts": {
-      "changeCount": 1,
-      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "changeCount": 2,
+      "lastChanged": "2026-07-28T13:27:27.000Z",
       "firstSeen": "2026-07-18T06:24:46.000Z",
       "authors": [
         "bhupesh003"
@@ -607,8 +607,8 @@
       ]
     },
     "tests/commands/phase4.test.ts": {
-      "changeCount": 1,
-      "lastChanged": "2026-07-18T06:24:46.000Z",
+      "changeCount": 2,
+      "lastChanged": "2026-07-28T13:27:27.000Z",
       "firstSeen": "2026-07-18T06:24:46.000Z",
       "authors": [
         "bhupesh003"
@@ -629,6 +629,22 @@
       "authors": [
         "bhupesh003"
       ]
+    },
+    ".gitattributes": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-28T13:37:09.000Z",
+      "firstSeen": "2026-07-28T13:37:09.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
+    },
+    "tests/core/schema.test.ts": {
+      "changeCount": 1,
+      "lastChanged": "2026-07-28T13:27:27.000Z",
+      "firstSeen": "2026-07-28T13:27:27.000Z",
+      "authors": [
+        "bhupesh003"
+      ]
     }
   },
   "coChangeCounts": {
@@ -642,39 +658,39 @@
     "src/mcp/server.ts|src/mcp/tools.ts": 3,
     "src/mcp/server.ts|tests/mcp/tools.test.ts": 3,
     "src/mcp/tools.ts|tests/mcp/tools.test.ts": 7,
-    "README.md|docs/analysis/03-target-architecture.md": 1,
+    "README.md|docs/analysis/03-target-architecture.md": 2,
     "README.md|docs/ide-workflow.md": 2,
-    "README.md|package.json": 2,
+    "README.md|package.json": 3,
     "README.md|src/commands/after.ts": 1,
-    "README.md|src/core/engine.ts": 1,
-    "README.md|src/core/schema.ts": 1,
+    "README.md|src/core/engine.ts": 2,
+    "README.md|src/core/schema.ts": 2,
     "README.md|src/mcp/server.ts": 1,
     "README.md|src/mcp/tools.ts": 1,
-    "README.md|src/retrieve/brief.ts": 1,
-    "README.md|src/retrieve/match.ts": 1,
+    "README.md|src/retrieve/brief.ts": 2,
+    "README.md|src/retrieve/match.ts": 2,
     "README.md|tests/e2e/wiring.test.ts": 1,
     "README.md|tests/eval/fixture.ts": 1,
     "README.md|tests/eval/golden.test.ts": 1,
     "README.md|tests/eval/harness.ts": 1,
     "README.md|tests/mcp/tools.test.ts": 1,
-    "README.md|tests/retrieve/brief.test.ts": 1,
-    "README.md|tests/retrieve/match.test.ts": 1,
+    "README.md|tests/retrieve/brief.test.ts": 2,
+    "README.md|tests/retrieve/match.test.ts": 2,
     "docs/analysis/03-target-architecture.md|docs/ide-workflow.md": 1,
-    "docs/analysis/03-target-architecture.md|package.json": 1,
+    "docs/analysis/03-target-architecture.md|package.json": 3,
     "docs/analysis/03-target-architecture.md|src/commands/after.ts": 2,
-    "docs/analysis/03-target-architecture.md|src/core/engine.ts": 2,
-    "docs/analysis/03-target-architecture.md|src/core/schema.ts": 2,
+    "docs/analysis/03-target-architecture.md|src/core/engine.ts": 3,
+    "docs/analysis/03-target-architecture.md|src/core/schema.ts": 3,
     "docs/analysis/03-target-architecture.md|src/mcp/server.ts": 1,
     "docs/analysis/03-target-architecture.md|src/mcp/tools.ts": 2,
-    "docs/analysis/03-target-architecture.md|src/retrieve/brief.ts": 2,
-    "docs/analysis/03-target-architecture.md|src/retrieve/match.ts": 2,
+    "docs/analysis/03-target-architecture.md|src/retrieve/brief.ts": 3,
+    "docs/analysis/03-target-architecture.md|src/retrieve/match.ts": 3,
     "docs/analysis/03-target-architecture.md|tests/e2e/wiring.test.ts": 1,
     "docs/analysis/03-target-architecture.md|tests/eval/fixture.ts": 1,
     "docs/analysis/03-target-architecture.md|tests/eval/golden.test.ts": 1,
     "docs/analysis/03-target-architecture.md|tests/eval/harness.ts": 1,
     "docs/analysis/03-target-architecture.md|tests/mcp/tools.test.ts": 2,
-    "docs/analysis/03-target-architecture.md|tests/retrieve/brief.test.ts": 1,
-    "docs/analysis/03-target-architecture.md|tests/retrieve/match.test.ts": 2,
+    "docs/analysis/03-target-architecture.md|tests/retrieve/brief.test.ts": 2,
+    "docs/analysis/03-target-architecture.md|tests/retrieve/match.test.ts": 3,
     "docs/ide-workflow.md|package.json": 1,
     "docs/ide-workflow.md|src/commands/after.ts": 1,
     "docs/ide-workflow.md|src/core/engine.ts": 1,
@@ -691,19 +707,19 @@
     "docs/ide-workflow.md|tests/retrieve/brief.test.ts": 1,
     "docs/ide-workflow.md|tests/retrieve/match.test.ts": 1,
     "package.json|src/commands/after.ts": 1,
-    "package.json|src/core/engine.ts": 1,
-    "package.json|src/core/schema.ts": 1,
+    "package.json|src/core/engine.ts": 2,
+    "package.json|src/core/schema.ts": 2,
     "package.json|src/mcp/server.ts": 2,
     "package.json|src/mcp/tools.ts": 2,
-    "package.json|src/retrieve/brief.ts": 1,
-    "package.json|src/retrieve/match.ts": 1,
+    "package.json|src/retrieve/brief.ts": 2,
+    "package.json|src/retrieve/match.ts": 2,
     "package.json|tests/e2e/wiring.test.ts": 1,
     "package.json|tests/eval/fixture.ts": 1,
     "package.json|tests/eval/golden.test.ts": 1,
     "package.json|tests/eval/harness.ts": 1,
     "package.json|tests/mcp/tools.test.ts": 2,
-    "package.json|tests/retrieve/brief.test.ts": 1,
-    "package.json|tests/retrieve/match.test.ts": 1,
+    "package.json|tests/retrieve/brief.test.ts": 2,
+    "package.json|tests/retrieve/match.test.ts": 2,
     "src/commands/after.ts|src/core/engine.ts": 2,
     "src/commands/after.ts|src/core/schema.ts": 2,
     "src/commands/after.ts|src/mcp/server.ts": 2,
@@ -717,29 +733,29 @@
     "src/commands/after.ts|tests/mcp/tools.test.ts": 2,
     "src/commands/after.ts|tests/retrieve/brief.test.ts": 1,
     "src/commands/after.ts|tests/retrieve/match.test.ts": 2,
-    "src/core/engine.ts|src/core/schema.ts": 2,
+    "src/core/engine.ts|src/core/schema.ts": 3,
     "src/core/engine.ts|src/mcp/server.ts": 1,
     "src/core/engine.ts|src/mcp/tools.ts": 2,
-    "src/core/engine.ts|src/retrieve/brief.ts": 2,
-    "src/core/engine.ts|src/retrieve/match.ts": 2,
+    "src/core/engine.ts|src/retrieve/brief.ts": 3,
+    "src/core/engine.ts|src/retrieve/match.ts": 3,
     "src/core/engine.ts|tests/e2e/wiring.test.ts": 1,
     "src/core/engine.ts|tests/eval/fixture.ts": 1,
     "src/core/engine.ts|tests/eval/golden.test.ts": 1,
     "src/core/engine.ts|tests/eval/harness.ts": 1,
     "src/core/engine.ts|tests/mcp/tools.test.ts": 2,
-    "src/core/engine.ts|tests/retrieve/brief.test.ts": 1,
-    "src/core/engine.ts|tests/retrieve/match.test.ts": 2,
+    "src/core/engine.ts|tests/retrieve/brief.test.ts": 2,
+    "src/core/engine.ts|tests/retrieve/match.test.ts": 3,
     "src/core/schema.ts|src/mcp/server.ts": 1,
     "src/core/schema.ts|src/mcp/tools.ts": 2,
-    "src/core/schema.ts|src/retrieve/brief.ts": 2,
-    "src/core/schema.ts|src/retrieve/match.ts": 2,
+    "src/core/schema.ts|src/retrieve/brief.ts": 3,
+    "src/core/schema.ts|src/retrieve/match.ts": 3,
     "src/core/schema.ts|tests/e2e/wiring.test.ts": 1,
     "src/core/schema.ts|tests/eval/fixture.ts": 1,
     "src/core/schema.ts|tests/eval/golden.test.ts": 1,
     "src/core/schema.ts|tests/eval/harness.ts": 1,
     "src/core/schema.ts|tests/mcp/tools.test.ts": 2,
-    "src/core/schema.ts|tests/retrieve/brief.test.ts": 1,
-    "src/core/schema.ts|tests/retrieve/match.test.ts": 2,
+    "src/core/schema.ts|tests/retrieve/brief.test.ts": 2,
+    "src/core/schema.ts|tests/retrieve/match.test.ts": 3,
     "src/mcp/server.ts|src/retrieve/brief.ts": 1,
     "src/mcp/server.ts|src/retrieve/match.ts": 1,
     "src/mcp/server.ts|tests/e2e/wiring.test.ts": 1,
@@ -756,21 +772,21 @@
     "src/mcp/tools.ts|tests/eval/harness.ts": 1,
     "src/mcp/tools.ts|tests/retrieve/brief.test.ts": 1,
     "src/mcp/tools.ts|tests/retrieve/match.test.ts": 2,
-    "src/retrieve/brief.ts|src/retrieve/match.ts": 2,
+    "src/retrieve/brief.ts|src/retrieve/match.ts": 3,
     "src/retrieve/brief.ts|tests/e2e/wiring.test.ts": 1,
     "src/retrieve/brief.ts|tests/eval/fixture.ts": 1,
     "src/retrieve/brief.ts|tests/eval/golden.test.ts": 1,
     "src/retrieve/brief.ts|tests/eval/harness.ts": 1,
     "src/retrieve/brief.ts|tests/mcp/tools.test.ts": 2,
-    "src/retrieve/brief.ts|tests/retrieve/brief.test.ts": 1,
-    "src/retrieve/brief.ts|tests/retrieve/match.test.ts": 2,
+    "src/retrieve/brief.ts|tests/retrieve/brief.test.ts": 2,
+    "src/retrieve/brief.ts|tests/retrieve/match.test.ts": 3,
     "src/retrieve/match.ts|tests/e2e/wiring.test.ts": 1,
     "src/retrieve/match.ts|tests/eval/fixture.ts": 1,
     "src/retrieve/match.ts|tests/eval/golden.test.ts": 1,
     "src/retrieve/match.ts|tests/eval/harness.ts": 1,
     "src/retrieve/match.ts|tests/mcp/tools.test.ts": 2,
-    "src/retrieve/match.ts|tests/retrieve/brief.test.ts": 1,
-    "src/retrieve/match.ts|tests/retrieve/match.test.ts": 2,
+    "src/retrieve/match.ts|tests/retrieve/brief.test.ts": 2,
+    "src/retrieve/match.ts|tests/retrieve/match.test.ts": 3,
     "tests/e2e/wiring.test.ts|tests/eval/fixture.ts": 1,
     "tests/e2e/wiring.test.ts|tests/eval/golden.test.ts": 1,
     "tests/e2e/wiring.test.ts|tests/eval/harness.ts": 1,
@@ -791,8 +807,8 @@
     "tests/eval/harness.ts|tests/retrieve/match.test.ts": 1,
     "tests/mcp/tools.test.ts|tests/retrieve/brief.test.ts": 1,
     "tests/mcp/tools.test.ts|tests/retrieve/match.test.ts": 2,
-    "tests/retrieve/brief.test.ts|tests/retrieve/match.test.ts": 1,
-    "package-lock.json|package.json": 15,
+    "tests/retrieve/brief.test.ts|tests/retrieve/match.test.ts": 2,
+    "package-lock.json|package.json": 17,
     "docs/matha_evaluation_report.md|src/mcp/tools.ts": 1,
     "src/commands/init.ts|tests/commands/init.test.ts": 3,
     ".gitignore|.npmignore": 1,
@@ -828,7 +844,7 @@
     "src/index.ts|tests/utils/markdown-parser.test.ts": 1,
     "src/utils/markdown-parser.ts|tests/commands/init.test.ts": 1,
     "src/utils/markdown-parser.ts|tests/fixtures/sample-brd.md": 1,
-    "src/utils/markdown-parser.ts|tests/utils/markdown-parser.test.ts": 1,
+    "src/utils/markdown-parser.ts|tests/utils/markdown-parser.test.ts": 2,
     "tests/commands/init.test.ts|tests/fixtures/sample-brd.md": 1,
     "tests/commands/init.test.ts|tests/utils/markdown-parser.test.ts": 1,
     "tests/fixtures/sample-brd.md|tests/utils/markdown-parser.test.ts": 1,
@@ -985,6 +1001,100 @@
     "tests/commands/catchup.test.ts|tests/mcp/tools.test.ts": 1,
     "tests/commands/catchup.test.ts|tests/retrieve/match.test.ts": 1,
     "tests/core/engine-autorefresh.test.ts|tests/mcp/tools.test.ts": 1,
-    "tests/core/engine-autorefresh.test.ts|tests/retrieve/match.test.ts": 1
+    "tests/core/engine-autorefresh.test.ts|tests/retrieve/match.test.ts": 1,
+    ".gitattributes|docs/analysis/03-target-architecture.md": 1,
+    ".gitattributes|package-lock.json": 1,
+    ".gitattributes|package.json": 1,
+    ".gitattributes|src/utils/markdown-parser.ts": 1,
+    ".gitattributes|tests/utils/markdown-parser.test.ts": 1,
+    "docs/analysis/03-target-architecture.md|package-lock.json": 2,
+    "docs/analysis/03-target-architecture.md|src/utils/markdown-parser.ts": 1,
+    "docs/analysis/03-target-architecture.md|tests/utils/markdown-parser.test.ts": 1,
+    "package-lock.json|src/utils/markdown-parser.ts": 1,
+    "package-lock.json|tests/utils/markdown-parser.test.ts": 1,
+    "package.json|src/utils/markdown-parser.ts": 1,
+    "package.json|tests/utils/markdown-parser.test.ts": 1,
+    "README.md|package-lock.json": 1,
+    "README.md|src/codemap/stability-classifier.ts": 1,
+    "README.md|src/commands/review.ts": 1,
+    "README.md|tests/codemap/stability-classifier.test.ts": 1,
+    "README.md|tests/commands/phase4.test.ts": 1,
+    "README.md|tests/core/engine.test.ts": 1,
+    "README.md|tests/core/schema.test.ts": 1,
+    "docs/analysis/03-target-architecture.md|src/codemap/stability-classifier.ts": 1,
+    "docs/analysis/03-target-architecture.md|src/commands/review.ts": 1,
+    "docs/analysis/03-target-architecture.md|tests/codemap/stability-classifier.test.ts": 1,
+    "docs/analysis/03-target-architecture.md|tests/commands/phase4.test.ts": 1,
+    "docs/analysis/03-target-architecture.md|tests/core/engine.test.ts": 1,
+    "docs/analysis/03-target-architecture.md|tests/core/schema.test.ts": 1,
+    "package-lock.json|src/codemap/stability-classifier.ts": 1,
+    "package-lock.json|src/commands/review.ts": 1,
+    "package-lock.json|src/core/engine.ts": 1,
+    "package-lock.json|src/core/schema.ts": 1,
+    "package-lock.json|src/retrieve/brief.ts": 1,
+    "package-lock.json|src/retrieve/match.ts": 1,
+    "package-lock.json|tests/codemap/stability-classifier.test.ts": 1,
+    "package-lock.json|tests/commands/phase4.test.ts": 1,
+    "package-lock.json|tests/core/engine.test.ts": 1,
+    "package-lock.json|tests/core/schema.test.ts": 1,
+    "package-lock.json|tests/retrieve/brief.test.ts": 1,
+    "package-lock.json|tests/retrieve/match.test.ts": 1,
+    "package.json|src/codemap/stability-classifier.ts": 1,
+    "package.json|src/commands/review.ts": 1,
+    "package.json|tests/codemap/stability-classifier.test.ts": 1,
+    "package.json|tests/commands/phase4.test.ts": 1,
+    "package.json|tests/core/engine.test.ts": 1,
+    "package.json|tests/core/schema.test.ts": 1,
+    "src/codemap/stability-classifier.ts|src/commands/review.ts": 1,
+    "src/codemap/stability-classifier.ts|src/core/engine.ts": 1,
+    "src/codemap/stability-classifier.ts|src/core/schema.ts": 1,
+    "src/codemap/stability-classifier.ts|src/retrieve/brief.ts": 1,
+    "src/codemap/stability-classifier.ts|src/retrieve/match.ts": 1,
+    "src/codemap/stability-classifier.ts|tests/codemap/stability-classifier.test.ts": 1,
+    "src/codemap/stability-classifier.ts|tests/commands/phase4.test.ts": 1,
+    "src/codemap/stability-classifier.ts|tests/core/engine.test.ts": 1,
+    "src/codemap/stability-classifier.ts|tests/core/schema.test.ts": 1,
+    "src/codemap/stability-classifier.ts|tests/retrieve/brief.test.ts": 1,
+    "src/codemap/stability-classifier.ts|tests/retrieve/match.test.ts": 1,
+    "src/commands/review.ts|src/core/engine.ts": 1,
+    "src/commands/review.ts|src/core/schema.ts": 1,
+    "src/commands/review.ts|src/retrieve/brief.ts": 1,
+    "src/commands/review.ts|src/retrieve/match.ts": 1,
+    "src/commands/review.ts|tests/codemap/stability-classifier.test.ts": 1,
+    "src/commands/review.ts|tests/commands/phase4.test.ts": 1,
+    "src/commands/review.ts|tests/core/engine.test.ts": 1,
+    "src/commands/review.ts|tests/core/schema.test.ts": 1,
+    "src/commands/review.ts|tests/retrieve/brief.test.ts": 1,
+    "src/commands/review.ts|tests/retrieve/match.test.ts": 1,
+    "src/core/engine.ts|tests/codemap/stability-classifier.test.ts": 1,
+    "src/core/engine.ts|tests/commands/phase4.test.ts": 1,
+    "src/core/engine.ts|tests/core/engine.test.ts": 1,
+    "src/core/engine.ts|tests/core/schema.test.ts": 1,
+    "src/core/schema.ts|tests/codemap/stability-classifier.test.ts": 1,
+    "src/core/schema.ts|tests/commands/phase4.test.ts": 1,
+    "src/core/schema.ts|tests/core/engine.test.ts": 1,
+    "src/core/schema.ts|tests/core/schema.test.ts": 1,
+    "src/retrieve/brief.ts|tests/codemap/stability-classifier.test.ts": 1,
+    "src/retrieve/brief.ts|tests/commands/phase4.test.ts": 1,
+    "src/retrieve/brief.ts|tests/core/engine.test.ts": 1,
+    "src/retrieve/brief.ts|tests/core/schema.test.ts": 1,
+    "src/retrieve/match.ts|tests/codemap/stability-classifier.test.ts": 1,
+    "src/retrieve/match.ts|tests/commands/phase4.test.ts": 1,
+    "src/retrieve/match.ts|tests/core/engine.test.ts": 1,
+    "src/retrieve/match.ts|tests/core/schema.test.ts": 1,
+    "tests/codemap/stability-classifier.test.ts|tests/commands/phase4.test.ts": 1,
+    "tests/codemap/stability-classifier.test.ts|tests/core/engine.test.ts": 1,
+    "tests/codemap/stability-classifier.test.ts|tests/core/schema.test.ts": 1,
+    "tests/codemap/stability-classifier.test.ts|tests/retrieve/brief.test.ts": 1,
+    "tests/codemap/stability-classifier.test.ts|tests/retrieve/match.test.ts": 1,
+    "tests/commands/phase4.test.ts|tests/core/engine.test.ts": 1,
+    "tests/commands/phase4.test.ts|tests/core/schema.test.ts": 1,
+    "tests/commands/phase4.test.ts|tests/retrieve/brief.test.ts": 1,
+    "tests/commands/phase4.test.ts|tests/retrieve/match.test.ts": 1,
+    "tests/core/engine.test.ts|tests/core/schema.test.ts": 1,
+    "tests/core/engine.test.ts|tests/retrieve/brief.test.ts": 1,
+    "tests/core/engine.test.ts|tests/retrieve/match.test.ts": 1,
+    "tests/core/schema.test.ts|tests/retrieve/brief.test.ts": 1,
+    "tests/core/schema.test.ts|tests/retrieve/match.test.ts": 1
   }
 }

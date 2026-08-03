@@ -143,6 +143,6 @@ export async function runAfter(
 }
 
 async function defaultAsk(question: string): Promise<string> {
-  const { input } = await import('@inquirer/prompts');
+  const { default: input } = await import('@inquirer/input');
   return await input({ message: question });
 }

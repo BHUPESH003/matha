@@ -155,7 +155,8 @@ AI agents connected via MCP have access to a deliberately small surface:
 
 ```
 matha_brief(scope?, intent?, filepaths?)   Token-budgeted project context + scored matches
-matha_match(scope, intent, filepaths?)     What does the brain know about this change?
+matha_match(scope?, intent, filepaths?)    What does the brain know about this change?
+                                             (scope omitted → keyword search over intent alone)
 matha_record(type, ...)                    The one write tool:
                                              decision | danger | contract   (new knowledge)
                                              violation | supersede | retire (lifecycle)

@@ -65,22 +65,28 @@ const tools: Tool[] = [
     description:
       'Matches your planned change against known danger zones, contracts, frozen files, and ' +
       'prior decisions, ranked by relevance score. Call BEFORE modifying files. ' +
-      'hasCritical:true means proceed with caution.',
+      'hasCritical:true means proceed with caution. scope is optional: omit it (or pass an ' +
+      'empty string) and matha_match becomes a keyword search over intent alone — every ' +
+      'record is scored by lexical relevance with no path requirement, so this also works ' +
+      'as "find anything the brain knows about X". A keyword-only search can never return ' +
+      'severity=critical (that requires a direct path match) — it is always safe to call broadly.',
     inputSchema: {
       type: 'object' as const,
       properties: {
         scope: {
           type: 'string',
-          description: 'Files or components being changed (comma-separated)',
+          description:
+            'Files or components being changed (comma-separated). Omit for a pure keyword ' +
+            'search across all records using intent alone.',
         },
-        intent: { type: 'string', description: 'What you are trying to do' },
+        intent: { type: 'string', description: 'What you are trying to do, or what to search for' },
         filepaths: {
           type: 'array',
           items: { type: 'string' },
           description: 'Specific files that will be modified',
         },
       },
-      required: ['scope', 'intent'],
+      required: ['intent'],
     },
   },
   {

@@ -130,7 +130,7 @@ This is deliberately low-friction. It works with any MCP-compatible agent, today
 | Tool | When to call it | What it returns |
 |------|-----------------|-----------------|
 | `matha_brief(scope?, intent?, filepaths?)` | Start of every session | Token-budgeted context: why, rules, recent decisions, and scored matches for the scope |
-| `matha_match(scope, intent, filepaths?)` | Before modifying files | Scored matches — danger zones, contracts, frozen files, prior decisions — with `hasCritical` |
+| `matha_match(scope?, intent, filepaths?)` | Before modifying files | Scored matches — danger zones, contracts, frozen files, prior decisions — with `hasCritical`. `scope` is optional: omit it for a keyword-only search over `intent` (never returns `critical` — that needs a direct path hit) |
 | `matha_record(type, ...)` | When the session learns something durable | The one write tool. New knowledge: `type=decision` (broken assumption + correction), `type=danger` (non-obvious failure pattern), `type=contract` (assertions that must stay true). Lifecycle: `type=violation` (an assertion was observed broken), `type=supersede` (replace a decision that proved wrong), `type=retire` (a record no longer applies, with reason) |
 | `matha_refresh()` | After significant commits | Re-runs git analysis and rebuilds the stability map and co-change graph (also happens automatically on read when HEAD moves) |
 

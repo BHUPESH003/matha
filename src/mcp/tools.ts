@@ -53,9 +53,14 @@ export async function mathaBrief(
   return JSON.stringify(brief)
 }
 
+/**
+ * scope is optional: pass intent alone for a keyword-only search across all
+ * records (matchAll falls back to a text-only structural floor when no
+ * query paths are given) — the closest thing to a "search by keyword" tool.
+ */
 export async function mathaMatch(
   engine: Engine,
-  scope: string,
+  scope: string = '',
   intent: string,
   filepaths: string[] = [],
 ): Promise<string> {

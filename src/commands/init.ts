@@ -161,6 +161,14 @@ export async function runInit(
     projectRoot,
   )
 
+  // .matha/cortex/ is derived from git history and rebuilds itself on read
+  // (auto-refresh, incremental past the first run) — committing it gives two
+  // parallel branches a guaranteed, non-mergeable JSON conflict on every
+  // merge for zero benefit. hippocampus/ and cerebellum/ are human/agent-
+  // authored knowledge and belong in git; only cortex/ is gitignored.
+  const gitignoreNote = await ensureCortexGitignored(projectRoot)
+  if (gitignoreNote) log(gitignoreNote)
+
   log('matha init complete')
   log(`created: ${created.length}`)
   log(`skipped: ${skipped.length}`)
@@ -238,6 +246,42 @@ async function listTopLevelDirectories(projectRoot: string): Promise<string[]> {
       .sort((a, b) => a.localeCompare(b))
   } catch {
     return []
+  }
+}
+
+const CORTEX_GITIGNORE_LINE = '.matha/cortex/'
+
+/**
+ * Adds `.matha/cortex/` to the project's .gitignore if it isn't already
+ * covered (checks for that exact line or a broader `.matha/` / `.matha`
+ * entry that would already exclude it). Creates .gitignore if missing.
+ * Never throws — a missing/unwritable .gitignore just means no note logged.
+ */
+async function ensureCortexGitignored(projectRoot: string): Promise<string | null> {
+  const gitignorePath = path.join(projectRoot, '.gitignore')
+  try {
+    let existing = ''
+    try {
+      existing = await fs.readFile(gitignorePath, 'utf-8')
+    } catch {
+      /* no .gitignore yet */
+    }
+    const lines = existing.split(/\r\n?|\n/).map((l) => l.trim())
+    const alreadyCovered = lines.some(
+      (l) => l === CORTEX_GITIGNORE_LINE || l === '.matha/' || l === '.matha',
+    )
+    if (alreadyCovered) return null
+
+    const needsNewline = existing.length > 0 && !existing.endsWith('\n')
+    const addition =
+      (needsNewline ? '\n' : '') +
+      (existing.length > 0 ? '\n' : '') +
+      '# matha: derived from git history, rebuilds automatically — not worth merge-conflicting over\n' +
+      `${CORTEX_GITIGNORE_LINE}\n`
+    await fs.writeFile(gitignorePath, existing + addition, 'utf-8')
+    return `Added ${CORTEX_GITIGNORE_LINE} to .gitignore (auto-derived, regenerates on read — see docs).`
+  } catch {
+    return null
   }
 }
 
@@ -349,8 +393,8 @@ async function safePrompt(ask: PromptFn, message: string): Promise<string> {
 }
 
 async function defaultAsk(message: string): Promise<string> {
-  const prompts = await import('@inquirer/prompts')
-  return prompts.input({ message })
+  const { default: input } = await import('@inquirer/input')
+  return input({ message })
 }
 
 /**

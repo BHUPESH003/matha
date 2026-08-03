@@ -218,6 +218,37 @@ describe('init command', () => {
     expect(allLogs).toContain('MCP server config written to .matha/mcp-config.json')
     expect(allLogs).toContain('Add this to your IDE MCP settings')
   })
+
+  // ── .gitignore for the derived cortex (merge-conflict prevention) ────
+
+  it('adds .matha/cortex/ to a fresh .gitignore', async () => {
+    await runInit(tmpDir, { ask: makeAsk(['why', '', '', '']) })
+    const gitignore = await fs.readFile(path.join(tmpDir, '.gitignore'), 'utf-8')
+    expect(gitignore).toContain('.matha/cortex/')
+  })
+
+  it('appends to an existing .gitignore without disturbing its content', async () => {
+    await fs.writeFile(path.join(tmpDir, '.gitignore'), 'node_modules\ndist\n')
+    await runInit(tmpDir, { ask: makeAsk(['why', '', '', '']) })
+    const gitignore = await fs.readFile(path.join(tmpDir, '.gitignore'), 'utf-8')
+    expect(gitignore).toContain('node_modules')
+    expect(gitignore).toContain('dist')
+    expect(gitignore).toContain('.matha/cortex/')
+  })
+
+  it('does not duplicate the entry if .matha/ is already ignored wholesale', async () => {
+    await fs.writeFile(path.join(tmpDir, '.gitignore'), '.matha/\n')
+    await runInit(tmpDir, { ask: makeAsk(['why', '', '', '']) })
+    const gitignore = await fs.readFile(path.join(tmpDir, '.gitignore'), 'utf-8')
+    expect(gitignore.match(/\.matha/g)).toHaveLength(1)
+  })
+
+  it('re-running init does not duplicate the .gitignore entry', async () => {
+    await runInit(tmpDir, { ask: makeAsk(['why', '', '', '']) })
+    await runInit(tmpDir, { ask: makeAsk(['', '', '', '']) })
+    const gitignore = await fs.readFile(path.join(tmpDir, '.gitignore'), 'utf-8')
+    expect(gitignore.match(/\.matha\/cortex\//g)).toHaveLength(1)
+  })
 })
 
 describe('init command --from (seed)', () => {

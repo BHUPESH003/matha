@@ -137,6 +137,19 @@ describe('MCP tools (consolidated surface)', () => {
     expect(dupZone.error).toContain('near-duplicate')
   })
 
+  it('matha_match with scope omitted is a keyword-only search — never critical', async () => {
+    await mathaRecord(engine, {
+      type: 'danger', component: 'rate limiting', // text-only component, no path
+      description: 'the limiter counts per pod, not per cluster',
+    })
+    // scope omitted entirely (relies on the default), matching how the MCP
+    // server calls this when a client sends no `scope` argument at all.
+    const match = JSON.parse(await (mathaMatch as any)(engine, undefined, 'tune rate limiting'))
+    expect(match.results.length).toBeGreaterThan(0)
+    expect(match.results[0].matchType).toBe('danger_zone')
+    expect(match.hasCritical).toBe(false) // text-only structural floor caps severity
+  })
+
   it('record rejects an unknown type with a readable reason', async () => {
     const bad = JSON.parse(await mathaRecord(engine, { type: 'note' as any, component: 'src/x.ts' }))
     expect(bad.success).toBe(false)
