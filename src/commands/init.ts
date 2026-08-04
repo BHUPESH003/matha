@@ -249,13 +249,22 @@ async function listTopLevelDirectories(projectRoot: string): Promise<string[]> {
   }
 }
 
-const CORTEX_GITIGNORE_LINE = '.matha/cortex/'
+// Only the three files refreshFromGit actually rewrites — NOT the whole
+// cortex/ directory, which also holds boundaries.json/ownership.json/
+// shape.json: human/seed-authored at init time, never touched again, and
+// exactly the kind of constant, team-shared content that belongs in git.
+const CORTEX_GITIGNORE_LINES = [
+  '.matha/cortex/analysis.json',
+  '.matha/cortex/stability.json',
+  '.matha/cortex/co-changes.json',
+]
 
 /**
- * Adds `.matha/cortex/` to the project's .gitignore if it isn't already
- * covered (checks for that exact line or a broader `.matha/` / `.matha`
- * entry that would already exclude it). Creates .gitignore if missing.
- * Never throws — a missing/unwritable .gitignore just means no note logged.
+ * Adds the auto-regenerated cortex files to the project's .gitignore —
+ * never the whole cortex/ directory. Skips any line already covered by an
+ * exact match or a broader `.matha/`/`.matha`/`.matha/cortex/` entry.
+ * Creates .gitignore if missing. Never throws — a missing/unwritable
+ * .gitignore just means no note logged.
  */
 async function ensureCortexGitignored(projectRoot: string): Promise<string | null> {
   const gitignorePath = path.join(projectRoot, '.gitignore')
@@ -267,19 +276,23 @@ async function ensureCortexGitignored(projectRoot: string): Promise<string | nul
       /* no .gitignore yet */
     }
     const lines = existing.split(/\r\n?|\n/).map((l) => l.trim())
-    const alreadyCovered = lines.some(
-      (l) => l === CORTEX_GITIGNORE_LINE || l === '.matha/' || l === '.matha',
+    const broadlyCovered = lines.some(
+      (l) => l === '.matha/' || l === '.matha' || l === '.matha/cortex/' || l === '.matha/cortex',
     )
-    if (alreadyCovered) return null
+    if (broadlyCovered) return null
+
+    const missing = CORTEX_GITIGNORE_LINES.filter((line) => !lines.includes(line))
+    if (missing.length === 0) return null
 
     const needsNewline = existing.length > 0 && !existing.endsWith('\n')
     const addition =
       (needsNewline ? '\n' : '') +
       (existing.length > 0 ? '\n' : '') +
-      '# matha: derived from git history, rebuilds automatically — not worth merge-conflicting over\n' +
-      `${CORTEX_GITIGNORE_LINE}\n`
+      '# matha: rebuilt from git history on read — not worth merge-conflicting over.\n' +
+      '# (boundaries.json/ownership.json/shape.json under cortex/ are constant, stay committed)\n' +
+      missing.map((line) => `${line}\n`).join('')
     await fs.writeFile(gitignorePath, existing + addition, 'utf-8')
-    return `Added ${CORTEX_GITIGNORE_LINE} to .gitignore (auto-derived, regenerates on read — see docs).`
+    return `Added ${missing.length} auto-derived cortex file(s) to .gitignore (regenerate on read — see docs).`
   } catch {
     return null
   }

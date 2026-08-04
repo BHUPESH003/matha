@@ -219,12 +219,19 @@ describe('init command', () => {
     expect(allLogs).toContain('Add this to your IDE MCP settings')
   })
 
-  // ── .gitignore for the derived cortex (merge-conflict prevention) ────
+  // ── .gitignore for the derived cortex files only (merge-conflict prevention) ────
 
-  it('adds .matha/cortex/ to a fresh .gitignore', async () => {
+  it('adds only the three auto-regenerated cortex files to a fresh .gitignore — never the whole dir', async () => {
     await runInit(tmpDir, { ask: makeAsk(['why', '', '', '']) })
     const gitignore = await fs.readFile(path.join(tmpDir, '.gitignore'), 'utf-8')
-    expect(gitignore).toContain('.matha/cortex/')
+    expect(gitignore).toContain('.matha/cortex/analysis.json')
+    expect(gitignore).toContain('.matha/cortex/stability.json')
+    expect(gitignore).toContain('.matha/cortex/co-changes.json')
+    // boundaries/ownership/shape are init-time-authored and constant — must stay OUT of .gitignore
+    expect(gitignore).not.toContain('.matha/cortex/boundaries.json')
+    expect(gitignore).not.toContain('.matha/cortex/ownership.json')
+    expect(gitignore).not.toContain('.matha/cortex/shape.json')
+    expect(gitignore).not.toContain('.matha/cortex/\n') // never the bare directory
   })
 
   it('appends to an existing .gitignore without disturbing its content', async () => {
@@ -233,21 +240,23 @@ describe('init command', () => {
     const gitignore = await fs.readFile(path.join(tmpDir, '.gitignore'), 'utf-8')
     expect(gitignore).toContain('node_modules')
     expect(gitignore).toContain('dist')
-    expect(gitignore).toContain('.matha/cortex/')
+    expect(gitignore).toContain('.matha/cortex/analysis.json')
   })
 
-  it('does not duplicate the entry if .matha/ is already ignored wholesale', async () => {
+  it('does not add anything if .matha/ is already ignored wholesale', async () => {
     await fs.writeFile(path.join(tmpDir, '.gitignore'), '.matha/\n')
     await runInit(tmpDir, { ask: makeAsk(['why', '', '', '']) })
     const gitignore = await fs.readFile(path.join(tmpDir, '.gitignore'), 'utf-8')
     expect(gitignore.match(/\.matha/g)).toHaveLength(1)
   })
 
-  it('re-running init does not duplicate the .gitignore entry', async () => {
+  it('re-running init does not duplicate the .gitignore entries', async () => {
     await runInit(tmpDir, { ask: makeAsk(['why', '', '', '']) })
     await runInit(tmpDir, { ask: makeAsk(['', '', '', '']) })
     const gitignore = await fs.readFile(path.join(tmpDir, '.gitignore'), 'utf-8')
-    expect(gitignore.match(/\.matha\/cortex\//g)).toHaveLength(1)
+    expect(gitignore.match(/\.matha\/cortex\/analysis\.json/g)).toHaveLength(1)
+    expect(gitignore.match(/\.matha\/cortex\/stability\.json/g)).toHaveLength(1)
+    expect(gitignore.match(/\.matha\/cortex\/co-changes\.json/g)).toHaveLength(1)
   })
 })
 

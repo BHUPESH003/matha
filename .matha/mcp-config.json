@@ -1,9 +1,10 @@
 {
   "mcpServers": {
     "matha": {
-      "command": "node",
+      "command": "npx",
       "args": [
-        "/home/pelocal/Desktop/Professional_Projects/personal-projects/matha/dist/index.js",
+        "-y",
+        "@10kdevs/matha",
         "serve",
         "--project",
         "/home/pelocal/Desktop/Professional_Projects/personal-projects/matha"

@@ -2,3 +2,9 @@ node_modules/
 dist/
 coverage/
 .matha/report.html
+
+# matha: rebuilt from git history on read — not worth merge-conflicting over.
+# (boundaries.json/ownership.json/shape.json under cortex/ are constant, stay committed)
+.matha/cortex/analysis.json
+.matha/cortex/stability.json
+.matha/cortex/co-changes.json

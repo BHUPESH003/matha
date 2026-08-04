@@ -2,41 +2,61 @@
   {
     "fileA": "package-lock.json",
     "fileB": "package.json",
-    "coChangeCount": 17
+    "coChangeCount": 18
   },
   {
     "fileA": "src/mcp/tools.ts",
     "fileB": "tests/mcp/tools.test.ts",
-    "coChangeCount": 7
-  },
-  {
-    "fileA": "src/commands/before.ts",
-    "fileB": "src/mcp/tools.ts",
-    "coChangeCount": 4
-  },
-  {
-    "fileA": "src/commands/before.ts",
-    "fileB": "tests/mcp/tools.test.ts",
-    "coChangeCount": 4
+    "coChangeCount": 8
   },
   {
     "fileA": "src/mcp/server.ts",
     "fileB": "src/mcp/tools.ts",
-    "coChangeCount": 3
+    "coChangeCount": 4
   },
   {
     "fileA": "src/mcp/server.ts",
     "fileB": "tests/mcp/tools.test.ts",
-    "coChangeCount": 3
+    "coChangeCount": 4
   },
   {
     "fileA": "README.md",
     "fileB": "package.json",
-    "coChangeCount": 3
+    "coChangeCount": 4
   },
   {
     "fileA": "docs/analysis/03-target-architecture.md",
     "fileB": "package.json",
+    "coChangeCount": 4
+  },
+  {
+    "fileA": "src/commands/init.ts",
+    "fileB": "tests/commands/init.test.ts",
+    "coChangeCount": 4
+  },
+  {
+    "fileA": "src/commands/before.ts",
+    "fileB": "src/mcp/tools.ts",
+    "coChangeCount": 4
+  },
+  {
+    "fileA": "src/commands/before.ts",
+    "fileB": "tests/mcp/tools.test.ts",
+    "coChangeCount": 4
+  },
+  {
+    "fileA": "README.md",
+    "fileB": "docs/analysis/03-target-architecture.md",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "README.md",
+    "fileB": "docs/ide-workflow.md",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "docs/analysis/03-target-architecture.md",
+    "fileB": "src/commands/after.ts",
     "coChangeCount": 3
   },
   {
@@ -51,6 +71,11 @@
   },
   {
     "fileA": "docs/analysis/03-target-architecture.md",
+    "fileB": "src/mcp/tools.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "docs/analysis/03-target-architecture.md",
     "fileB": "src/retrieve/brief.ts",
     "coChangeCount": 3
   },
@@ -61,7 +86,42 @@
   },
   {
     "fileA": "docs/analysis/03-target-architecture.md",
+    "fileB": "tests/mcp/tools.test.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "docs/analysis/03-target-architecture.md",
     "fileB": "tests/retrieve/match.test.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "package.json",
+    "fileB": "src/mcp/server.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "package.json",
+    "fileB": "src/mcp/tools.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "package.json",
+    "fileB": "tests/mcp/tools.test.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "src/commands/after.ts",
+    "fileB": "src/mcp/server.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "src/commands/after.ts",
+    "fileB": "src/mcp/tools.ts",
+    "coChangeCount": 3
+  },
+  {
+    "fileA": "src/commands/after.ts",
+    "fileB": "tests/mcp/tools.test.ts",
     "coChangeCount": 3
   },
   {
@@ -115,138 +175,78 @@
     "coChangeCount": 3
   },
   {
-    "fileA": "src/commands/init.ts",
-    "fileB": "tests/commands/init.test.ts",
+    "fileA": "docs/analysis/03-target-architecture.md",
+    "fileB": "package-lock.json",
     "coChangeCount": 3
   },
   {
     "fileA": "README.md",
-    "fileB": "docs/analysis/03-target-architecture.md",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "README.md",
-    "fileB": "docs/ide-workflow.md",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "README.md",
-    "fileB": "src/core/engine.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "README.md",
-    "fileB": "src/core/schema.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "README.md",
-    "fileB": "src/retrieve/brief.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "README.md",
-    "fileB": "src/retrieve/match.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "README.md",
-    "fileB": "tests/retrieve/brief.test.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "README.md",
-    "fileB": "tests/retrieve/match.test.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "docs/analysis/03-target-architecture.md",
     "fileB": "src/commands/after.ts",
     "coChangeCount": 2
   },
   {
-    "fileA": "docs/analysis/03-target-architecture.md",
-    "fileB": "src/mcp/tools.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "docs/analysis/03-target-architecture.md",
-    "fileB": "tests/mcp/tools.test.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "docs/analysis/03-target-architecture.md",
-    "fileB": "tests/retrieve/brief.test.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "package.json",
+    "fileA": "README.md",
     "fileB": "src/core/engine.ts",
     "coChangeCount": 2
   },
   {
-    "fileA": "package.json",
+    "fileA": "README.md",
     "fileB": "src/core/schema.ts",
     "coChangeCount": 2
   },
   {
-    "fileA": "package.json",
+    "fileA": "README.md",
     "fileB": "src/mcp/server.ts",
     "coChangeCount": 2
   },
   {
-    "fileA": "package.json",
+    "fileA": "README.md",
     "fileB": "src/mcp/tools.ts",
     "coChangeCount": 2
   },
   {
-    "fileA": "package.json",
+    "fileA": "README.md",
     "fileB": "src/retrieve/brief.ts",
     "coChangeCount": 2
   },
   {
-    "fileA": "package.json",
+    "fileA": "README.md",
     "fileB": "src/retrieve/match.ts",
     "coChangeCount": 2
   },
   {
-    "fileA": "package.json",
+    "fileA": "README.md",
     "fileB": "tests/mcp/tools.test.ts",
     "coChangeCount": 2
   },
   {
-    "fileA": "package.json",
+    "fileA": "README.md",
     "fileB": "tests/retrieve/brief.test.ts",
     "coChangeCount": 2
   },
   {
-    "fileA": "package.json",
+    "fileA": "README.md",
     "fileB": "tests/retrieve/match.test.ts",
     "coChangeCount": 2
   },
   {
-    "fileA": "src/commands/after.ts",
-    "fileB": "src/core/engine.ts",
+    "fileA": "docs/analysis/03-target-architecture.md",
+    "fileB": "docs/ide-workflow.md",
     "coChangeCount": 2
   },
   {
-    "fileA": "src/commands/after.ts",
-    "fileB": "src/core/schema.ts",
-    "coChangeCount": 2
-  },
-  {
-    "fileA": "src/commands/after.ts",
+    "fileA": "docs/analysis/03-target-architecture.md",
     "fileB": "src/mcp/server.ts",
     "coChangeCount": 2
   },
   {
-    "fileA": "src/commands/after.ts",
-    "fileB": "src/mcp/tools.ts",
+    "fileA": "docs/analysis/03-target-architecture.md",
+    "fileB": "tests/retrieve/brief.test.ts",
     "coChangeCount": 2
   },
   {
-    "fileA": "src/commands/after.ts",
-    "fileB": "src/retrieve/brief.ts",
+    "fileA": "docs/ide-workflow.md",
+    "fileB": "package.json",
     "coChangeCount": 2
   }
 ]
