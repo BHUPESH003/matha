@@ -4,7 +4,7 @@ import * as fs from 'fs/promises'
 import * as path from 'path'
 import * as os from 'os'
 import { runCatchup } from '../../src/commands/catchup.js'
-import { CURRENT_SCHEMA_VERSION } from '../../src/core/schema.js'
+import { CURRENT_SCHEMA_VERSION, componentToFilename } from '../../src/core/schema.js'
 
 describe('matha catchup (unaccounted work)', () => {
   let repo: string
@@ -35,12 +35,15 @@ describe('matha catchup (unaccounted work)', () => {
     // A decision recorded YESTERDAY covering src/payments/
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
     await fs.writeFile(
-      path.join(mathaDir, 'hippocampus', 'decisions', 'd1.json'),
+      path.join(mathaDir, 'hippocampus', 'decisions', `${componentToFilename('src/payments/')}.json`),
       JSON.stringify({
-        id: 'd1', timestamp: yesterday, component: 'src/payments/',
-        previous_assumption: 'assumed X', correction: 'actually Y',
-        trigger: 't', confidence: 'confirmed', status: 'active',
-        supersedes: null, session_id: 'd1',
+        component: 'src/payments/',
+        decisions: [{
+          id: 'd1', timestamp: yesterday, component: 'src/payments/',
+          previous_assumption: 'assumed X', correction: 'actually Y',
+          trigger: 't', confidence: 'confirmed', status: 'active',
+          supersedes: null, session_id: 'd1',
+        }],
       }),
     )
   })
@@ -68,7 +71,7 @@ describe('matha catchup (unaccounted work)', () => {
   })
 
   it('no decisions at all → bounded default window, still works', async () => {
-    await fs.rm(path.join(mathaDir, 'hippocampus', 'decisions', 'd1.json'))
+    await fs.rm(path.join(mathaDir, 'hippocampus', 'decisions', `${componentToFilename('src/payments/')}.json`))
     await commitFile('src/auth/session.ts', 's1', 'any work')
 
     const result = await runCatchup(repo, { log: () => {} })

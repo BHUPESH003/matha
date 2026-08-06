@@ -205,8 +205,16 @@ export async function writeFixtureBrain(projectDir: string): Promise<string> {
   })
   await write(path.join('hippocampus', 'danger-zones.json'), { zones: DANGER_ZONES })
   await write(path.join('hippocampus', 'boundaries.json'), { boundaries: BOUNDARIES })
+  const decisionsByComponent = new Map<string, typeof DECISIONS>()
   for (const d of DECISIONS) {
-    await write(path.join('hippocampus', 'decisions', `${d.id}.json`), d)
+    const key = componentToFilename(d.component)
+    decisionsByComponent.set(key, [...(decisionsByComponent.get(key) ?? []), d])
+  }
+  for (const [key, decisions] of decisionsByComponent) {
+    await write(path.join('hippocampus', 'decisions', `${key}.json`), {
+      component: decisions[0].component,
+      decisions,
+    })
   }
   for (const c of CONTRACTS) {
     await write(

@@ -54,20 +54,19 @@ describe('Engine (in-memory index)', () => {
 
   it('reads decisions from directory, newest first, with limit', async () => {
     const dir = path.join(mathaDir, 'hippocampus', 'decisions')
-    for (const [id, ts] of [
+    const decisions = [
       ['d1', '2026-01-01T00:00:00Z'],
       ['d2', '2026-03-01T00:00:00Z'],
       ['d3', '2026-02-01T00:00:00Z'],
-    ]) {
-      await fs.writeFile(
-        path.join(dir, `${id}.json`),
-        JSON.stringify({
-          id, timestamp: ts, component: 'src/x.ts', previous_assumption: 'aaa',
-          correction: 'bbb', trigger: 't', confidence: 'confirmed', status: 'active',
-          supersedes: null, session_id: id,
-        }),
-      )
-    }
+    ].map(([id, ts]) => ({
+      id, timestamp: ts, component: 'src/x.ts', previous_assumption: 'aaa',
+      correction: 'bbb', trigger: 't', confidence: 'confirmed', status: 'active',
+      supersedes: null, session_id: id,
+    }))
+    await fs.writeFile(
+      path.join(dir, 'src-x.ts.json'),
+      JSON.stringify({ component: 'src/x.ts', decisions }),
+    )
     const all = await engine.getDecisions()
     expect(all.map((d) => d.id)).toEqual(['d2', 'd3', 'd1'])
     expect((await engine.getDecisions(undefined, 2)).length).toBe(2)

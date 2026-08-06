@@ -258,6 +258,38 @@ describe('init command', () => {
     expect(gitignore.match(/\.matha\/cortex\/stability\.json/g)).toHaveLength(1)
     expect(gitignore.match(/\.matha\/cortex\/co-changes\.json/g)).toHaveLength(1)
   })
+
+  // ── decision file consolidation (pre-1.1 upgrade path) ──────────────
+
+  it('re-running init on a pre-1.1 repo consolidates one-file-per-decision into per-component files', async () => {
+    const decisionsDir = path.join(tmpDir, '.matha', 'hippocampus', 'decisions')
+    await fs.mkdir(decisionsDir, { recursive: true })
+    await fs.writeFile(
+      path.join(decisionsDir, 'session-001.json'),
+      JSON.stringify({
+        id: 'session-001', timestamp: '2026-01-01T00:00:00Z', component: 'src/auth.ts',
+        previous_assumption: 'a', correction: 'b', trigger: 't', confidence: 'confirmed',
+        status: 'active', supersedes: null, session_id: 'session-001',
+      }),
+    )
+    await fs.writeFile(
+      path.join(decisionsDir, 'session-002.json'),
+      JSON.stringify({
+        id: 'session-002', timestamp: '2026-01-02T00:00:00Z', component: 'src/auth.ts',
+        previous_assumption: 'c', correction: 'd', trigger: 't', confidence: 'confirmed',
+        status: 'active', supersedes: null, session_id: 'session-002',
+      }),
+    )
+
+    const logs: string[] = []
+    await runInit(tmpDir, { ask: makeAsk(['why', '', '', '']), log: (msg: string) => logs.push(msg) })
+
+    const remaining = await fs.readdir(decisionsDir)
+    expect(remaining).toEqual(['src-auth.ts.json'])
+    const group = JSON.parse(await fs.readFile(path.join(decisionsDir, 'src-auth.ts.json'), 'utf-8'))
+    expect(group.decisions.map((d: { id: string }) => d.id).sort()).toEqual(['session-001', 'session-002'])
+    expect(logs.some((l) => l.includes('Consolidated 2 legacy decision file'))).toBe(true)
+  })
 })
 
 describe('init command --from (seed)', () => {

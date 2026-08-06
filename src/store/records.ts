@@ -36,20 +36,38 @@ export async function getRules(mathaDir: string): Promise<string[]> {
 }
 
 // ── DECISIONS ────────────────────────────────────────────────────────
+//
+// One file per COMPONENT, not per decision — `decisions/<component>.json`
+// holds `{ component, decisions: DecisionEntry[] }`, same array-in-file
+// shape danger-zones.json already uses. A session that records five
+// corrections to the same module lands in one file, not five; two sessions
+// on unrelated components still never touch the same file. Append-only
+// still holds — recordDecision only ever pushes, never rewrites an
+// existing array entry.
+
+interface DecisionGroup {
+  component: string
+  decisions: DecisionEntry[]
+}
+
+function decisionGroupPath(mathaDir: string, component: string): string {
+  return path.join(mathaDir, 'hippocampus', 'decisions', `${componentToFilename(component)}.json`)
+}
 
 /**
- * Records a decision entry. Append-only: never modifies existing entries.
+ * Records a decision entry into its component's group file. Append-only:
+ * never modifies existing entries.
  * @throws if a decision with the same id already exists
  */
 export async function recordDecision(mathaDir: string, entry: DecisionEntry): Promise<void> {
-  const decisionPath = path.join(mathaDir, 'hippocampus', 'decisions', `${entry.id}.json`)
-  try {
-    await fs.access(decisionPath)
+  const groupPath = decisionGroupPath(mathaDir, entry.component)
+  const existing = await readJsonOrNull<DecisionGroup>(groupPath)
+  const decisions = existing?.decisions ?? []
+  if (decisions.some((d) => d.id === entry.id)) {
     throw new Error(`Decision with id '${entry.id}' already exists`)
-  } catch (err: any) {
-    if (err.code !== 'ENOENT') throw err
   }
-  await writeAtomic(decisionPath, entry)
+  decisions.push(entry)
+  await writeAtomic(groupPath, { component: entry.component, decisions }, { overwrite: true })
 }
 
 export async function getDecisions(
@@ -59,28 +77,89 @@ export async function getDecisions(
 ): Promise<DecisionEntry[]> {
   const decisionsDir = path.join(mathaDir, 'hippocampus', 'decisions')
 
-  let files: string[]
-  try {
-    files = await fs.readdir(decisionsDir)
-  } catch (err: any) {
-    if (err.code === 'ENOENT') return []
-    throw err
-  }
-
-  const entries: DecisionEntry[] = []
-  for (const file of files.filter((f) => f.endsWith('.json'))) {
+  let entries: DecisionEntry[]
+  if (component) {
+    const group = await readJsonOrNull<DecisionGroup>(decisionGroupPath(mathaDir, component))
+    entries = (group?.decisions ?? []).filter((d) => d.component === component)
+  } else {
+    let files: string[]
     try {
-      const entry = await readJsonOrNull<DecisionEntry>(path.join(decisionsDir, file))
-      if (entry) entries.push(entry)
-    } catch {
-      // Skip malformed files
+      files = await fs.readdir(decisionsDir)
+    } catch (err: any) {
+      if (err.code === 'ENOENT') return []
+      throw err
+    }
+
+    entries = []
+    for (const file of files.filter((f) => f.endsWith('.json'))) {
+      const group = await readJsonOrNull<DecisionGroup>(path.join(decisionsDir, file))
+      if (group?.decisions) entries.push(...group.decisions)
     }
   }
 
-  let filtered = component ? entries.filter((e) => e.component === component) : entries
-  filtered.sort((a, b) => b.timestamp.localeCompare(a.timestamp))
-  if (limit !== undefined && limit > 0) filtered = filtered.slice(0, limit)
-  return filtered
+  entries.sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+  return limit !== undefined && limit > 0 ? entries.slice(0, limit) : entries
+}
+
+/**
+ * One-time upgrade for repos on the pre-1.1 layout (one file per decision,
+ * named by id, holding a bare DecisionEntry). Groups them by component into
+ * the current shape and removes the old per-decision files. Idempotent —
+ * a group file (has a `decisions` array) is never mistaken for legacy.
+ * Called from `matha init` so re-running init on an existing repo upgrades
+ * it; never runs on the hot read path.
+ */
+export async function migrateLegacyDecisions(mathaDir: string): Promise<number> {
+  const decisionsDir = path.join(mathaDir, 'hippocampus', 'decisions')
+  let files: string[]
+  try {
+    files = await fs.readdir(decisionsDir)
+  } catch {
+    return 0
+  }
+
+  const legacy: { file: string; entry: DecisionEntry }[] = []
+  for (const file of files.filter((f) => f.endsWith('.json'))) {
+    const parsed = await readJsonOrNull<DecisionEntry | DecisionGroup>(
+      path.join(decisionsDir, file),
+    )
+    // Only treat it as a legacy decision if it actually has the fields
+    // recordDecision requires — old stray/malformed files (e.g. a leftover
+    // manual validation report someone dropped in this dir) are left alone
+    // rather than crashing the whole migration.
+    if (
+      parsed &&
+      'id' in parsed &&
+      !('decisions' in parsed) &&
+      typeof (parsed as DecisionEntry).component === 'string' &&
+      typeof (parsed as DecisionEntry).timestamp === 'string'
+    ) {
+      legacy.push({ file, entry: parsed as DecisionEntry })
+    }
+  }
+  if (legacy.length === 0) return 0
+
+  const byGroupPath = new Map<string, DecisionEntry[]>()
+  for (const { entry } of legacy) {
+    const groupPath = decisionGroupPath(mathaDir, entry.component)
+    const bucket = byGroupPath.get(groupPath) ?? []
+    bucket.push(entry)
+    byGroupPath.set(groupPath, bucket)
+  }
+
+  for (const [groupPath, newEntries] of byGroupPath) {
+    const existing = await readJsonOrNull<DecisionGroup>(groupPath)
+    const decisions = [...(existing?.decisions ?? []), ...newEntries]
+    decisions.sort((a, b) => a.timestamp.localeCompare(b.timestamp))
+    await writeAtomic(groupPath, { component: newEntries[0].component, decisions }, {
+      overwrite: true,
+    })
+  }
+
+  for (const { file } of legacy) {
+    await fs.unlink(path.join(decisionsDir, file))
+  }
+  return legacy.length
 }
 
 // ── LIFECYCLE (Phase 4) ──────────────────────────────────────────────
@@ -98,17 +177,36 @@ export interface LifecyclePatch {
   last_confirmed?: string
 }
 
-/** Applies a lifecycle patch to a decision. Returns false if the id is unknown. */
+/**
+ * Applies a lifecycle patch to a decision. The caller only has the id, not
+ * its component, so this scans group files the same way getDecisions()
+ * already does for an unscoped read — cheap, since there's one file per
+ * component, not per decision. Returns false if the id is unknown.
+ */
 export async function updateDecisionLifecycle(
   mathaDir: string,
   id: string,
   patch: LifecyclePatch,
 ): Promise<boolean> {
-  const decisionPath = path.join(mathaDir, 'hippocampus', 'decisions', `${id}.json`)
-  const entry = await readJsonOrNull<DecisionEntry>(decisionPath)
-  if (!entry) return false
-  await writeAtomic(decisionPath, { ...entry, ...patch }, { overwrite: true })
-  return true
+  const decisionsDir = path.join(mathaDir, 'hippocampus', 'decisions')
+  let files: string[]
+  try {
+    files = await fs.readdir(decisionsDir)
+  } catch {
+    return false
+  }
+
+  for (const file of files.filter((f) => f.endsWith('.json'))) {
+    const groupPath = path.join(decisionsDir, file)
+    const group = await readJsonOrNull<DecisionGroup>(groupPath)
+    const entry = group?.decisions.find((d) => d.id === id)
+    if (entry) {
+      Object.assign(entry, patch)
+      await writeAtomic(groupPath, group, { overwrite: true })
+      return true
+    }
+  }
+  return false
 }
 
 /** Applies a lifecycle patch to a danger zone. Returns false if the id is unknown. */

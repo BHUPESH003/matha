@@ -2,7 +2,7 @@ import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 import { writeAtomic } from '@/storage/writer.js'
 import { readJsonOrNull } from '@/storage/reader.js'
-import { getIntent, getRules } from '@/store/records.js'
+import { getIntent, getRules, migrateLegacyDecisions } from '@/store/records.js'
 import { CURRENT_SCHEMA_VERSION } from '@/core/schema.js'
 import type { ParsedBrainSeed } from '@/utils/markdown-parser.js'
 import { refreshFromGit } from '@/codemap/index.js'
@@ -168,6 +168,10 @@ export async function runInit(
   // authored knowledge and belong in git; only cortex/ is gitignored.
   const gitignoreNote = await ensureCortexGitignored(projectRoot)
   if (gitignoreNote) log(gitignoreNote)
+
+  // Upgrade path for repos still on the one-file-per-decision layout.
+  const migrated = await migrateLegacyDecisions(mathaDir)
+  if (migrated > 0) log(`Consolidated ${migrated} legacy decision file(s) into per-component files.`)
 
   log('matha init complete')
   log(`created: ${created.length}`)

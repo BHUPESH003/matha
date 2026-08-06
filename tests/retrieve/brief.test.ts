@@ -4,6 +4,7 @@ import * as path from 'path'
 import * as os from 'os'
 import { Engine } from '../../src/core/engine.js'
 import { assembleBrief, BRIEF_TOKEN_BUDGET } from '../../src/retrieve/brief.js'
+import { componentToFilename } from '../../src/core/schema.js'
 
 describe('brief token budget', () => {
   let tmpDir: string
@@ -40,7 +41,10 @@ describe('brief token budget', () => {
       previous_assumption: 'assumed something', correction: 'learned otherwise',
       trigger: 't', confidence: 'confirmed', status: 'active', supersedes: null, session_id: 'd-dup',
     }
-    await fs.writeFile(path.join(mathaDir, 'hippocampus', 'decisions', 'd-dup.json'), JSON.stringify(d))
+    await fs.writeFile(
+      path.join(mathaDir, 'hippocampus', 'decisions', `${componentToFilename(d.component)}.json`),
+      JSON.stringify({ component: d.component, decisions: [d] }),
+    )
   })
 
   afterEach(async () => {
@@ -99,24 +103,25 @@ describe('brief token budget', () => {
     // stopped the whole loop on the first miss, dropping smaller decisions
     // that would have fit — this repros with a fixture matching that report.
     const huge = 'word '.repeat(3000) // far larger than the whole budget alone
-    await fs.writeFile(
-      path.join(mathaDir, 'hippocampus', 'decisions', 'd-huge.json'),
-      JSON.stringify({
-        id: 'd-huge', timestamp: '2026-07-01T00:00:00Z', component: 'src/unrelated.ts',
-        previous_assumption: huge, correction: huge,
-        trigger: 't', confidence: 'confirmed', status: 'active', supersedes: null, session_id: 'd-huge',
-      }),
-    )
-    for (const id of ['d-small-a', 'd-small-b']) {
-      await fs.writeFile(
-        path.join(mathaDir, 'hippocampus', 'decisions', `${id}.json`),
-        JSON.stringify({
-          id, timestamp: '2026-06-01T00:00:00Z', component: 'src/other.ts',
-          previous_assumption: 'a small normal assumption', correction: 'a small normal correction',
-          trigger: 't', confidence: 'confirmed', status: 'active', supersedes: null, session_id: id,
-        }),
-      )
+    const dHuge = {
+      id: 'd-huge', timestamp: '2026-07-01T00:00:00Z', component: 'src/unrelated.ts',
+      previous_assumption: huge, correction: huge,
+      trigger: 't', confidence: 'confirmed', status: 'active', supersedes: null, session_id: 'd-huge',
     }
+    await fs.writeFile(
+      path.join(mathaDir, 'hippocampus', 'decisions', `${componentToFilename(dHuge.component)}.json`),
+      JSON.stringify({ component: dHuge.component, decisions: [dHuge] }),
+    )
+
+    const smallDecisions = ['d-small-a', 'd-small-b'].map((id) => ({
+      id, timestamp: '2026-06-01T00:00:00Z', component: 'src/other.ts',
+      previous_assumption: 'a small normal assumption', correction: 'a small normal correction',
+      trigger: 't', confidence: 'confirmed', status: 'active', supersedes: null, session_id: id,
+    }))
+    await fs.writeFile(
+      path.join(mathaDir, 'hippocampus', 'decisions', `${componentToFilename('src/other.ts')}.json`),
+      JSON.stringify({ component: 'src/other.ts', decisions: smallDecisions }),
+    )
 
     const brief = await assembleBrief(new Engine(mathaDir), { scope: '', intent: 'unrelated work' })
     const ids = brief.recentDecisions.map((d) => d.id)

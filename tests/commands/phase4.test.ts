@@ -3,7 +3,7 @@ import { execSync } from 'child_process'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import * as os from 'os'
-import { CURRENT_SCHEMA_VERSION } from '../../src/core/schema.js'
+import { CURRENT_SCHEMA_VERSION, componentToFilename } from '../../src/core/schema.js'
 import { runReview } from '../../src/commands/review.js'
 import { runBoundaryAdd, runBoundaryList } from '../../src/commands/boundary.js'
 import { runCheck } from '../../src/commands/check.js'
@@ -17,15 +17,27 @@ describe('Phase 4 commands', () => {
   let mathaDir: string
 
   async function writeDecision(id: string, overrides: Record<string, unknown> = {}) {
-    await fs.writeFile(
-      path.join(mathaDir, 'hippocampus', 'decisions', `${id}.json`),
-      JSON.stringify({
-        id, timestamp: '2026-07-01T00:00:00Z', component: 'src/pay.ts',
-        previous_assumption: 'assumed retries idempotent', correction: 'they double-charge',
-        trigger: 't', confidence: 'probable', status: 'active',
-        supersedes: null, session_id: id, ...overrides,
-      }),
+    const entry = {
+      id, timestamp: '2026-07-01T00:00:00Z', component: 'src/pay.ts',
+      previous_assumption: 'assumed retries idempotent', correction: 'they double-charge',
+      trigger: 't', confidence: 'probable', status: 'active',
+      supersedes: null, session_id: id, ...overrides,
+    }
+    const groupPath = path.join(
+      mathaDir, 'hippocampus', 'decisions', `${componentToFilename(entry.component as string)}.json`,
     )
+    const existing = await fs.readFile(groupPath, 'utf-8').then(JSON.parse).catch(() => ({ decisions: [] }))
+    existing.component = entry.component
+    existing.decisions = [...(existing.decisions ?? []), entry]
+    await fs.writeFile(groupPath, JSON.stringify(existing))
+  }
+
+  async function readDecision(id: string, component: string) {
+    const groupPath = path.join(
+      mathaDir, 'hippocampus', 'decisions', `${componentToFilename(component)}.json`,
+    )
+    const group = JSON.parse(await fs.readFile(groupPath, 'utf-8'))
+    return group.decisions.find((d: { id: string }) => d.id === id)
   }
 
   beforeEach(async () => {
@@ -45,8 +57,13 @@ describe('Phase 4 commands', () => {
   // ── review ─────────────────────────────────────────────────────────
 
   it('review confirms, retires, and skips queued records', async () => {
-    await writeDecision('d-confirm')
-    await writeDecision('d-retire', { component: 'src/auth.ts', previous_assumption: 'assumed TTL fixed', correction: 'TTL is sliding' })
+    // Distinct timestamps so queue order (newest first) is deterministic —
+    // it must not depend on incidental on-disk file/group ordering.
+    await writeDecision('d-confirm', { timestamp: '2026-07-02T00:00:00Z' })
+    await writeDecision('d-retire', {
+      component: 'src/auth.ts', timestamp: '2026-07-01T00:00:00Z',
+      previous_assumption: 'assumed TTL fixed', correction: 'TTL is sliding',
+    })
     await fs.writeFile(
       path.join(mathaDir, 'hippocampus', 'danger-zones.json'),
       JSON.stringify({ zones: [{ id: 'z-skip', component: 'src/z.ts', pattern: 'p', description: 'suspicious race', confidence: 'uncertain' }] }),
@@ -60,15 +77,11 @@ describe('Phase 4 commands', () => {
     expect(result.retired).toBe(1)
     expect(result.skipped).toBe(1)
 
-    const confirmed = JSON.parse(
-      await fs.readFile(path.join(mathaDir, 'hippocampus', 'decisions', 'd-confirm.json'), 'utf-8'),
-    )
+    const confirmed = await readDecision('d-confirm', 'src/pay.ts')
     expect(confirmed.confidence).toBe('confirmed')
     expect(confirmed.last_confirmed).toBeTruthy()
 
-    const retired = JSON.parse(
-      await fs.readFile(path.join(mathaDir, 'hippocampus', 'decisions', 'd-retire.json'), 'utf-8'),
-    )
+    const retired = await readDecision('d-retire', 'src/auth.ts')
     expect(retired.status).toBe('retired')
     expect(retired.retired_reason).toContain('v2')
   })

@@ -4,6 +4,7 @@ import * as path from 'path'
 import * as os from 'os'
 import { Engine } from '../../src/core/engine.js'
 import { mathaRecord } from '../../src/mcp/tools.js'
+import { componentToFilename } from '../../src/core/schema.js'
 import { recordContract } from '../../src/store/records.js'
 import { componentToFilename } from '../../src/core/schema.js'
 
@@ -13,15 +14,27 @@ describe('matha_record lifecycle verbs (Phase 4)', () => {
   let engine: Engine
 
   async function writeDecision(id: string, overrides: Record<string, unknown> = {}) {
-    await fs.writeFile(
-      path.join(mathaDir, 'hippocampus', 'decisions', `${id}.json`),
-      JSON.stringify({
-        id, timestamp: '2026-07-01T00:00:00Z', component: 'src/x.ts',
-        previous_assumption: 'assumed something', correction: 'actually otherwise',
-        trigger: 't', confidence: 'probable', status: 'active',
-        supersedes: null, session_id: id, ...overrides,
-      }),
+    const entry = {
+      id, timestamp: '2026-07-01T00:00:00Z', component: 'src/x.ts',
+      previous_assumption: 'assumed something', correction: 'actually otherwise',
+      trigger: 't', confidence: 'probable', status: 'active',
+      supersedes: null, session_id: id, ...overrides,
+    }
+    const groupPath = path.join(
+      mathaDir, 'hippocampus', 'decisions', `${componentToFilename(entry.component as string)}.json`,
     )
+    const existing = await fs.readFile(groupPath, 'utf-8').then(JSON.parse).catch(() => ({ decisions: [] }))
+    existing.component = entry.component
+    existing.decisions = [...(existing.decisions ?? []), entry]
+    await fs.writeFile(groupPath, JSON.stringify(existing))
+  }
+
+  async function readDecision(id: string, component = 'src/x.ts') {
+    const groupPath = path.join(
+      mathaDir, 'hippocampus', 'decisions', `${componentToFilename(component)}.json`,
+    )
+    const group = JSON.parse(await fs.readFile(groupPath, 'utf-8'))
+    return group.decisions.find((d: { id: string }) => d.id === id)
   }
 
   beforeEach(async () => {
@@ -44,9 +57,7 @@ describe('matha_record lifecycle verbs (Phase 4)', () => {
     expect(result.success).toBe(true)
     expect(result.retired).toBe('decision')
 
-    const stored = JSON.parse(
-      await fs.readFile(path.join(mathaDir, 'hippocampus', 'decisions', 'd1.json'), 'utf-8'),
-    )
+    const stored = await readDecision('d1')
     expect(stored.status).toBe('retired')
     expect(stored.retired_reason).toContain('v2 rewrite')
     expect(stored.previous_assumption).toBe('assumed something') // content immutable
@@ -85,15 +96,11 @@ describe('matha_record lifecycle verbs (Phase 4)', () => {
     expect(result.success).toBe(true)
     expect(result.superseded).toBe('d-old')
 
-    const old = JSON.parse(
-      await fs.readFile(path.join(mathaDir, 'hippocampus', 'decisions', 'd-old.json'), 'utf-8'),
-    )
+    const old = await readDecision('d-old')
     expect(old.status).toBe('superseded')
     expect(old.superseded_by).toBe(result.id)
 
-    const next = JSON.parse(
-      await fs.readFile(path.join(mathaDir, 'hippocampus', 'decisions', `${result.id}.json`), 'utf-8'),
-    )
+    const next = await readDecision(result.id)
     expect(next.supersedes).toBe('d-old')
     expect(next.status).toBe('active')
     expect(next.confidence).toBe('probable') // cap applies to supersede too

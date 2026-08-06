@@ -67,12 +67,13 @@ describe('MCP tools (consolidated surface)', () => {
       }),
     )
     expect(result.success).toBe(true)
-    const stored = JSON.parse(
+    const group = JSON.parse(
       await fs.readFile(
-        path.join(mathaDir, 'hippocampus', 'decisions', `${result.id}.json`),
+        path.join(mathaDir, 'hippocampus', 'decisions', `${componentToFilename('src/x.ts')}.json`),
         'utf-8',
       ),
     )
+    const stored = group.decisions.find((d: { id: string }) => d.id === result.id)
     expect(stored.confidence).toBe('probable')
 
     // uncertain is still allowed — it's a demotion, not a promotion

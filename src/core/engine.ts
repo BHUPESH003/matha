@@ -167,10 +167,13 @@ export class Engine {
   }
 
   async getDecisions(component?: string, limit?: number): Promise<DecisionEntry[]> {
-    const all = await this.cachedDirJson<DecisionEntry>(
+    // One file per component (`decisions/<component>.json` → { component,
+    // decisions: [] }), not one file per decision — see records.ts.
+    const groups = await this.cachedDirJson<{ component: string; decisions: DecisionEntry[] }>(
       path.join(this.mathaDir, 'hippocampus', 'decisions'),
     )
-    let filtered = component ? all.filter((d) => d.component === component) : [...all]
+    const all = groups.flatMap((g) => g.decisions ?? [])
+    let filtered = component ? all.filter((d) => d.component === component) : all
     filtered.sort((a, b) => b.timestamp.localeCompare(a.timestamp))
     if (limit !== undefined && limit > 0) filtered = filtered.slice(0, limit)
     return filtered

@@ -6,9 +6,11 @@ import {
   getDecisions,
   getDangerZones,
   recordDangerZone,
+  migrateLegacyDecisions,
   type DecisionEntry,
   type DangerZone,
 } from '@/store/records.js'
+import { componentToFilename } from '@/core/schema.js'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import * as os from 'os'
@@ -86,7 +88,7 @@ describe('hippocampus', () => {
   // ── recordDecision ───────────────────────────────────────────────
 
   describe('recordDecision', () => {
-    it('writes a decision entry to decisions/ directory', async () => {
+    it('writes a decision entry into its component group file', async () => {
       const entry: DecisionEntry = {
         id: 'decision-001',
         timestamp: '2026-03-04T10:00:00Z',
@@ -102,14 +104,42 @@ describe('hippocampus', () => {
 
       await recordDecision(mathaDir, entry)
 
-      const decisionPath = path.join(
+      const groupPath = path.join(
         mathaDir,
         'hippocampus',
         'decisions',
-        'decision-001.json',
+        `${componentToFilename('auth')}.json`,
       )
-      const content = JSON.parse(await fs.readFile(decisionPath, 'utf-8'))
-      expect(content).toEqual(entry)
+      const content = JSON.parse(await fs.readFile(groupPath, 'utf-8'))
+      expect(content).toEqual({ component: 'auth', decisions: [entry] })
+    })
+
+    it('appends a second decision on the same component into the same file', async () => {
+      const entry1: DecisionEntry = {
+        id: 'decision-001',
+        timestamp: '2026-03-04T10:00:00Z',
+        component: 'auth',
+        previous_assumption: 'A1',
+        correction: 'C1',
+        trigger: 'T1',
+        confidence: 'confirmed',
+        status: 'active',
+        supersedes: null,
+        session_id: 'session-001',
+      }
+      const entry2: DecisionEntry = { ...entry1, id: 'decision-003', correction: 'C3' }
+
+      await recordDecision(mathaDir, entry1)
+      await recordDecision(mathaDir, entry2)
+
+      const groupPath = path.join(
+        mathaDir,
+        'hippocampus',
+        'decisions',
+        `${componentToFilename('auth')}.json`,
+      )
+      const content = JSON.parse(await fs.readFile(groupPath, 'utf-8'))
+      expect(content.decisions).toHaveLength(2)
     })
 
     it('rejects if a decision with the same id already exists', async () => {
@@ -148,13 +178,13 @@ describe('hippocampus', () => {
 
       await recordDecision(mathaDir, entry)
 
-      const decisionPath = path.join(
+      const groupPath = path.join(
         mathaDir,
         'hippocampus',
         'decisions',
-        'decision-002.json',
+        `${componentToFilename('storage')}.json`,
       )
-      await expect(fs.access(decisionPath)).resolves.toBeUndefined()
+      await expect(fs.access(groupPath)).resolves.toBeUndefined()
     })
   })
 
@@ -197,13 +227,13 @@ describe('hippocampus', () => {
       }
 
       await fs.writeFile(
-        path.join(decisionsDir, 'decision-001.json'),
-        JSON.stringify(entry1),
+        path.join(decisionsDir, `${componentToFilename(entry1.component)}.json`),
+        JSON.stringify({ component: entry1.component, decisions: [entry1] }),
         'utf-8',
       )
       await fs.writeFile(
-        path.join(decisionsDir, 'decision-002.json'),
-        JSON.stringify(entry2),
+        path.join(decisionsDir, `${componentToFilename(entry2.component)}.json`),
+        JSON.stringify({ component: entry2.component, decisions: [entry2] }),
         'utf-8',
       )
 
@@ -244,13 +274,13 @@ describe('hippocampus', () => {
       }
 
       await fs.writeFile(
-        path.join(decisionsDir, 'decision-001.json'),
-        JSON.stringify(entry1),
+        path.join(decisionsDir, `${componentToFilename(entry1.component)}.json`),
+        JSON.stringify({ component: entry1.component, decisions: [entry1] }),
         'utf-8',
       )
       await fs.writeFile(
-        path.join(decisionsDir, 'decision-002.json'),
-        JSON.stringify(entry2),
+        path.join(decisionsDir, `${componentToFilename(entry2.component)}.json`),
+        JSON.stringify({ component: entry2.component, decisions: [entry2] }),
         'utf-8',
       )
 
@@ -263,8 +293,9 @@ describe('hippocampus', () => {
       const decisionsDir = path.join(mathaDir, 'hippocampus', 'decisions')
       await fs.mkdir(decisionsDir, { recursive: true })
 
+      const decisions: DecisionEntry[] = []
       for (let i = 1; i <= 5; i++) {
-        const entry: DecisionEntry = {
+        decisions.push({
           id: `decision-00${i}`,
           timestamp: `2026-03-0${i}T10:00:00Z`,
           component: 'test',
@@ -275,18 +306,104 @@ describe('hippocampus', () => {
           status: 'active',
           supersedes: null,
           session_id: `session-00${i}`,
-        }
-        await fs.writeFile(
-          path.join(decisionsDir, `decision-00${i}.json`),
-          JSON.stringify(entry),
-          'utf-8',
-        )
+        })
       }
+      await fs.writeFile(
+        path.join(decisionsDir, `${componentToFilename('test')}.json`),
+        JSON.stringify({ component: 'test', decisions }),
+        'utf-8',
+      )
 
       const result = await getDecisions(mathaDir, undefined, 2)
       expect(result).toHaveLength(2)
       expect(result[0].id).toBe('decision-005') // most recent
       expect(result[1].id).toBe('decision-004')
+    })
+  })
+
+  // ── migrateLegacyDecisions ────────────────────────────────────────
+
+  describe('migrateLegacyDecisions', () => {
+    it('groups pre-1.1 bare-entry files by component and removes the old files', async () => {
+      const decisionsDir = path.join(mathaDir, 'hippocampus', 'decisions')
+      await fs.mkdir(decisionsDir, { recursive: true })
+
+      const legacy1: DecisionEntry = {
+        id: 'session-001',
+        timestamp: '2026-03-01T10:00:00Z',
+        component: 'auth',
+        previous_assumption: 'A1',
+        correction: 'C1',
+        trigger: 'T1',
+        confidence: 'confirmed',
+        status: 'active',
+        supersedes: null,
+        session_id: 'session-001',
+      }
+      const legacy2: DecisionEntry = { ...legacy1, id: 'session-002', correction: 'C2' }
+      await fs.writeFile(path.join(decisionsDir, 'session-001.json'), JSON.stringify(legacy1))
+      await fs.writeFile(path.join(decisionsDir, 'session-002.json'), JSON.stringify(legacy2))
+
+      const migrated = await migrateLegacyDecisions(mathaDir)
+      expect(migrated).toBe(2)
+
+      const remaining = await fs.readdir(decisionsDir)
+      expect(remaining).toEqual([`${componentToFilename('auth')}.json`])
+
+      const result = await getDecisions(mathaDir)
+      expect(result.map((d) => d.id).sort()).toEqual(['session-001', 'session-002'])
+    })
+
+    it('is idempotent — a second run is a no-op', async () => {
+      const decisionsDir = path.join(mathaDir, 'hippocampus', 'decisions')
+      await fs.mkdir(decisionsDir, { recursive: true })
+      const legacy: DecisionEntry = {
+        id: 'session-001',
+        timestamp: '2026-03-01T10:00:00Z',
+        component: 'auth',
+        previous_assumption: 'A1',
+        correction: 'C1',
+        trigger: 'T1',
+        confidence: 'confirmed',
+        status: 'active',
+        supersedes: null,
+        session_id: 'session-001',
+      }
+      await fs.writeFile(path.join(decisionsDir, 'session-001.json'), JSON.stringify(legacy))
+
+      await migrateLegacyDecisions(mathaDir)
+      const second = await migrateLegacyDecisions(mathaDir)
+      expect(second).toBe(0)
+    })
+
+    it('returns 0 when the decisions directory does not exist', async () => {
+      expect(await migrateLegacyDecisions(mathaDir)).toBe(0)
+    })
+
+    it('leaves a malformed/stray file alone instead of crashing the migration', async () => {
+      const decisionsDir = path.join(mathaDir, 'hippocampus', 'decisions')
+      await fs.mkdir(decisionsDir, { recursive: true })
+      await fs.writeFile(
+        path.join(decisionsDir, 'stray-report.json'),
+        JSON.stringify({ id: 'stray', session_title: 'not a decision', findings: {} }),
+      )
+      const legacy: DecisionEntry = {
+        id: 'session-001',
+        timestamp: '2026-03-01T10:00:00Z',
+        component: 'auth',
+        previous_assumption: 'A1',
+        correction: 'C1',
+        trigger: 'T1',
+        confidence: 'confirmed',
+        status: 'active',
+        supersedes: null,
+        session_id: 'session-001',
+      }
+      await fs.writeFile(path.join(decisionsDir, 'session-001.json'), JSON.stringify(legacy))
+
+      const migrated = await migrateLegacyDecisions(mathaDir)
+      expect(migrated).toBe(1)
+      await expect(fs.access(path.join(decisionsDir, 'stray-report.json'))).resolves.toBeUndefined()
     })
   })
 

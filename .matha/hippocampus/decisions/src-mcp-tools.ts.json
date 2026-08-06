@@ -1,0 +1,17 @@
+{
+  "component": "src/mcp/tools.ts",
+  "decisions": [
+    {
+      "id": "1784348894591-dogfood-confidence-cap",
+      "timestamp": "2026-07-18T04:28:14.591Z",
+      "component": "src/mcp/tools.ts",
+      "previous_assumption": "Agents could be trusted with the full confidence enum on matha_record, choosing confirmed only for verified facts",
+      "correction": "First real field use: the agent self-assigned confirmed on day one, bypassing the review loop and taking full 1.0 ranking weight. MCP writes are now capped at probable (uncertain still allowed); confirmed is reserved for human surfaces (matha after, future matha review).",
+      "trigger": "dogfood-session",
+      "confidence": "confirmed",
+      "status": "active",
+      "supersedes": null,
+      "session_id": "1784348894591-dogfood-confidence-cap"
+    }
+  ]
+}
