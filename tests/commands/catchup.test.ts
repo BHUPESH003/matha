@@ -35,16 +35,13 @@ describe('matha catchup (unaccounted work)', () => {
     // A decision recorded YESTERDAY covering src/payments/
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
     await fs.writeFile(
-      path.join(mathaDir, 'hippocampus', 'decisions', `${componentToFilename('src/payments/')}.json`),
+      path.join(mathaDir, 'hippocampus', 'decisions', `${componentToFilename('src/payments/')}.jsonl`),
       JSON.stringify({
-        component: 'src/payments/',
-        decisions: [{
-          id: 'd1', timestamp: yesterday, component: 'src/payments/',
-          previous_assumption: 'assumed X', correction: 'actually Y',
-          trigger: 't', confidence: 'confirmed', status: 'active',
-          supersedes: null, session_id: 'd1',
-        }],
-      }),
+        id: 'd1', timestamp: yesterday, component: 'src/payments/',
+        previous_assumption: 'assumed X', correction: 'actually Y',
+        trigger: 't', confidence: 'confirmed', status: 'active',
+        supersedes: null, session_id: 'd1',
+      }) + '\n',
     )
   })
 
@@ -71,7 +68,7 @@ describe('matha catchup (unaccounted work)', () => {
   })
 
   it('no decisions at all → bounded default window, still works', async () => {
-    await fs.rm(path.join(mathaDir, 'hippocampus', 'decisions', `${componentToFilename('src/payments/')}.json`))
+    await fs.rm(path.join(mathaDir, 'hippocampus', 'decisions', `${componentToFilename('src/payments/')}.jsonl`))
     await commitFile('src/auth/session.ts', 's1', 'any work')
 
     const result = await runCatchup(repo, { log: () => {} })

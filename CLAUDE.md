@@ -11,7 +11,11 @@ after pulling if tools behave unexpectedly (stale build).
 Project rules that retrieval also serves (kept in .matha/, source of truth):
 
 - Decision history is append-only; never modify existing entries.
-- All .matha/ writes must be atomic (temp + rename).
+- All .matha/ writes must be atomic: temp+rename for single-writer whole-file
+  replacement; O_APPEND (raw append, no read-modify-write) for the
+  decisions/ log specifically, since it's the one record type multiple
+  team members' agents write to concurrently and temp+rename can silently
+  drop a concurrent writer's update.
 - matha never requires network access or an API key.
 - Scoring constants in src/retrieve/match.ts are tuned against
   tests/eval/ — change them only with the golden set updated.

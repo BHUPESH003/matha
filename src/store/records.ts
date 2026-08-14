@@ -1,7 +1,7 @@
 import * as path from 'path'
 import * as fs from 'fs/promises'
-import { readJsonOrNull } from '@/storage/reader.js'
-import { writeAtomic } from '@/storage/writer.js'
+import { readJsonOrNull, readJsonLines } from '@/storage/reader.js'
+import { appendJsonLine, writeAtomic, writeTextAtomic } from '@/storage/writer.js'
 import {
   componentToFilename,
   type BoundaryRecord,
@@ -37,37 +37,51 @@ export async function getRules(mathaDir: string): Promise<string[]> {
 
 // ── DECISIONS ────────────────────────────────────────────────────────
 //
-// One file per COMPONENT, not per decision — `decisions/<component>.json`
-// holds `{ component, decisions: DecisionEntry[] }`, same array-in-file
-// shape danger-zones.json already uses. A session that records five
-// corrections to the same module lands in one file, not five; two sessions
-// on unrelated components still never touch the same file. Append-only
-// still holds — recordDecision only ever pushes, never rewrites an
-// existing array entry.
+// One file per COMPONENT, not per decision — `decisions/<component>.jsonl`
+// holds one DecisionEntry per line. A session that records five
+// corrections to the same module lands in one file, not five; two
+// sessions on unrelated components still never touch the same file.
+//
+// JSON-lines, not a JSON array, specifically so recordDecision never has
+// to read-modify-write the file — it only ever appends a line. Two team
+// members' agents both landing a decision on the same component at the
+// same time used to race on a single read-modify-rename cycle and could
+// silently drop whichever wrote second. A raw append can't lose a write
+// that way: both lines land, in whatever order the OS scheduled them.
+// Append-only still holds — recordDecision only ever appends, never
+// rewrites an existing line.
 
-interface DecisionGroup {
-  component: string
-  decisions: DecisionEntry[]
+function decisionFilePath(mathaDir: string, component: string): string {
+  return path.join(mathaDir, 'hippocampus', 'decisions', `${componentToFilename(component)}.jsonl`)
 }
 
-function decisionGroupPath(mathaDir: string, component: string): string {
-  return path.join(mathaDir, 'hippocampus', 'decisions', `${componentToFilename(component)}.json`)
+/** Whole-file JSONL rewrite — only for single-actor operations (migration,
+ * lifecycle patch) where read-modify-write is acceptable. recordDecision
+ * never uses this; it only appends. */
+async function writeDecisionsFile(filePath: string, entries: DecisionEntry[]): Promise<void> {
+  const text = entries.map((e) => JSON.stringify(e)).join('\n') + (entries.length ? '\n' : '')
+  await writeTextAtomic(filePath, text)
 }
 
 /**
- * Records a decision entry into its component's group file. Append-only:
- * never modifies existing entries.
+ * Records a decision entry by appending it as one line to its component's
+ * file. Append-only: never modifies existing entries.
+ *
+ * The duplicate-id check reads the file first, so it is best-effort under
+ * true concurrency (two processes could both pass the check before either
+ * appends) — but ids are `Date.now()` + random bytes (see mcp/tools.ts,
+ * commands/after.ts), so a collision between independent writers isn't a
+ * realistic case. What this reliably catches is a caller retrying the same
+ * write (e.g. an MCP client resending on timeout).
  * @throws if a decision with the same id already exists
  */
 export async function recordDecision(mathaDir: string, entry: DecisionEntry): Promise<void> {
-  const groupPath = decisionGroupPath(mathaDir, entry.component)
-  const existing = await readJsonOrNull<DecisionGroup>(groupPath)
-  const decisions = existing?.decisions ?? []
-  if (decisions.some((d) => d.id === entry.id)) {
+  const filePath = decisionFilePath(mathaDir, entry.component)
+  const existing = await readJsonLines<DecisionEntry>(filePath)
+  if (existing.some((d) => d.id === entry.id)) {
     throw new Error(`Decision with id '${entry.id}' already exists`)
   }
-  decisions.push(entry)
-  await writeAtomic(groupPath, { component: entry.component, decisions }, { overwrite: true })
+  await appendJsonLine(filePath, entry)
 }
 
 export async function getDecisions(
@@ -79,8 +93,7 @@ export async function getDecisions(
 
   let entries: DecisionEntry[]
   if (component) {
-    const group = await readJsonOrNull<DecisionGroup>(decisionGroupPath(mathaDir, component))
-    entries = (group?.decisions ?? []).filter((d) => d.component === component)
+    entries = await readJsonLines<DecisionEntry>(decisionFilePath(mathaDir, component))
   } else {
     let files: string[]
     try {
@@ -91,9 +104,8 @@ export async function getDecisions(
     }
 
     entries = []
-    for (const file of files.filter((f) => f.endsWith('.json'))) {
-      const group = await readJsonOrNull<DecisionGroup>(path.join(decisionsDir, file))
-      if (group?.decisions) entries.push(...group.decisions)
+    for (const file of files.filter((f) => f.endsWith('.jsonl'))) {
+      entries.push(...(await readJsonLines<DecisionEntry>(path.join(decisionsDir, file))))
     }
   }
 
@@ -102,12 +114,14 @@ export async function getDecisions(
 }
 
 /**
- * One-time upgrade for repos on the pre-1.1 layout (one file per decision,
- * named by id, holding a bare DecisionEntry). Groups them by component into
- * the current shape and removes the old per-decision files. Idempotent —
- * a group file (has a `decisions` array) is never mistaken for legacy.
- * Called from `matha init` so re-running init on an existing repo upgrades
- * it; never runs on the hot read path.
+ * One-time upgrade for repos still on a pre-1.2 layout: either the
+ * pre-1.1 shape (one file per decision, named by id, holding a bare
+ * DecisionEntry) or the 1.1 shape (`decisions/<component>.json` holding
+ * `{ component, decisions: DecisionEntry[] }`). Both are consolidated into
+ * `decisions/<component>.jsonl` and the old `.json` files removed.
+ * Idempotent — once migrated, no `.json` files remain to convert. Called
+ * from `matha init` so re-running init on an existing repo upgrades it;
+ * never runs on the hot read path.
  */
 export async function migrateLegacyDecisions(mathaDir: string): Promise<number> {
   const decisionsDir = path.join(mathaDir, 'hippocampus', 'decisions')
@@ -118,48 +132,53 @@ export async function migrateLegacyDecisions(mathaDir: string): Promise<number> 
     return 0
   }
 
-  const legacy: { file: string; entry: DecisionEntry }[] = []
+  const byComponent = new Map<string, DecisionEntry[]>()
+  const consumedFiles: string[] = []
+
   for (const file of files.filter((f) => f.endsWith('.json'))) {
-    const parsed = await readJsonOrNull<DecisionEntry | DecisionGroup>(
+    const parsed = await readJsonOrNull<DecisionEntry | { component: string; decisions: DecisionEntry[] }>(
       path.join(decisionsDir, file),
     )
-    // Only treat it as a legacy decision if it actually has the fields
-    // recordDecision requires — old stray/malformed files (e.g. a leftover
-    // manual validation report someone dropped in this dir) are left alone
-    // rather than crashing the whole migration.
-    if (
-      parsed &&
+    if (!parsed) continue
+
+    if ('decisions' in parsed && Array.isArray(parsed.decisions)) {
+      // 1.1 grouped-array shape
+      const bucket = byComponent.get(parsed.component) ?? []
+      bucket.push(...parsed.decisions)
+      byComponent.set(parsed.component, bucket)
+      consumedFiles.push(file)
+    } else if (
       'id' in parsed &&
-      !('decisions' in parsed) &&
       typeof (parsed as DecisionEntry).component === 'string' &&
       typeof (parsed as DecisionEntry).timestamp === 'string'
     ) {
-      legacy.push({ file, entry: parsed as DecisionEntry })
+      // pre-1.1 bare-entry shape. Stray/malformed files (e.g. a leftover
+      // manual validation report with no `component` field) don't match
+      // either branch and are left alone rather than crashing the
+      // migration.
+      const entry = parsed as DecisionEntry
+      const bucket = byComponent.get(entry.component) ?? []
+      bucket.push(entry)
+      byComponent.set(entry.component, bucket)
+      consumedFiles.push(file)
     }
   }
-  if (legacy.length === 0) return 0
 
-  const byGroupPath = new Map<string, DecisionEntry[]>()
-  for (const { entry } of legacy) {
-    const groupPath = decisionGroupPath(mathaDir, entry.component)
-    const bucket = byGroupPath.get(groupPath) ?? []
-    bucket.push(entry)
-    byGroupPath.set(groupPath, bucket)
+  if (byComponent.size === 0) return 0
+
+  let migratedCount = 0
+  for (const [component, newEntries] of byComponent) {
+    const jsonlPath = decisionFilePath(mathaDir, component)
+    const merged = [...(await readJsonLines<DecisionEntry>(jsonlPath)), ...newEntries]
+    merged.sort((a, b) => a.timestamp.localeCompare(b.timestamp))
+    await writeDecisionsFile(jsonlPath, merged)
+    migratedCount += newEntries.length
   }
 
-  for (const [groupPath, newEntries] of byGroupPath) {
-    const existing = await readJsonOrNull<DecisionGroup>(groupPath)
-    const decisions = [...(existing?.decisions ?? []), ...newEntries]
-    decisions.sort((a, b) => a.timestamp.localeCompare(b.timestamp))
-    await writeAtomic(groupPath, { component: newEntries[0].component, decisions }, {
-      overwrite: true,
-    })
-  }
-
-  for (const { file } of legacy) {
+  for (const file of consumedFiles) {
     await fs.unlink(path.join(decisionsDir, file))
   }
-  return legacy.length
+  return migratedCount
 }
 
 // ── LIFECYCLE (Phase 4) ──────────────────────────────────────────────
@@ -196,13 +215,13 @@ export async function updateDecisionLifecycle(
     return false
   }
 
-  for (const file of files.filter((f) => f.endsWith('.json'))) {
-    const groupPath = path.join(decisionsDir, file)
-    const group = await readJsonOrNull<DecisionGroup>(groupPath)
-    const entry = group?.decisions.find((d) => d.id === id)
+  for (const file of files.filter((f) => f.endsWith('.jsonl'))) {
+    const filePath = path.join(decisionsDir, file)
+    const entries = await readJsonLines<DecisionEntry>(filePath)
+    const entry = entries.find((d) => d.id === id)
     if (entry) {
       Object.assign(entry, patch)
-      await writeAtomic(groupPath, group, { overwrite: true })
+      await writeDecisionsFile(filePath, entries)
       return true
     }
   }

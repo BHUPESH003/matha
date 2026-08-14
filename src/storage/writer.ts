@@ -89,6 +89,30 @@ export async function writeTextAtomic(filePath: string, text: string): Promise<v
 }
 
 /**
+ * Appends one JSON value as a line to a file, creating it if needed.
+ *
+ * Unlike writeAtomic's temp+rename (single-writer, whole-file replace),
+ * this uses a raw O_APPEND write. Two processes can both read-modify-
+ * rename around each other with temp+rename, and the second rename
+ * silently discards whichever wrote first — O_APPEND can't lose a write
+ * that way: per POSIX/Linux write(2), the seek-to-end and the write are
+ * one atomic step, so two concurrent appenders can never land at the
+ * same offset and clobber each other.
+ *
+ * (PIPE_BUF, the 4096-byte figure people reach for here, bounds atomicity
+ * for pipes/FIFOs specifically — POSIX leaves write ordering on regular
+ * files implementation-defined, but a single write() syscall to a local
+ * filesystem isn't torn by a concurrent writer regardless of size. The
+ * one real gap is a non-POSIX-conforming filesystem — an NFS mount
+ * without special locking being the classic case — where this guarantee
+ * doesn't hold; not a concern for a repo-local .matha/ directory.)
+ */
+export async function appendJsonLine(filePath: string, item: unknown): Promise<void> {
+  await fs.mkdir(path.dirname(filePath), { recursive: true })
+  await fs.appendFile(filePath, JSON.stringify(item) + '\n', 'utf-8')
+}
+
+/**
  * Appends an item to a JSON array file.
  *
  * - Creates the file with `[item]` if it does not yet exist.

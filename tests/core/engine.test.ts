@@ -64,8 +64,8 @@ describe('Engine (in-memory index)', () => {
       supersedes: null, session_id: id,
     }))
     await fs.writeFile(
-      path.join(dir, 'src-x.ts.json'),
-      JSON.stringify({ component: 'src/x.ts', decisions }),
+      path.join(dir, 'src-x.ts.jsonl'),
+      decisions.map((d) => JSON.stringify(d)).join('\n') + '\n',
     )
     const all = await engine.getDecisions()
     expect(all.map((d) => d.id)).toEqual(['d2', 'd3', 'd1'])

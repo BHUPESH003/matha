@@ -169,7 +169,8 @@ export async function runInit(
   const gitignoreNote = await ensureCortexGitignored(projectRoot)
   if (gitignoreNote) log(gitignoreNote)
 
-  // Upgrade path for repos still on the one-file-per-decision layout.
+  // Upgrade path for repos still on a pre-1.2 decisions layout (one file
+  // per decision, or one JSON-array file per component).
   const migrated = await migrateLegacyDecisions(mathaDir)
   if (migrated > 0) log(`Consolidated ${migrated} legacy decision file(s) into per-component files.`)
 

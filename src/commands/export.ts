@@ -97,7 +97,7 @@ export async function runExport(
     lines.push('## Decisions (active, newest first)', '')
     for (const d of active) {
       lines.push(
-        `- **${d.component}** _(${d.confidence}, ${d.timestamp.slice(0, 10)})_`,
+        `- **${d.component}** _(${d.confidence}, ${d.timestamp.slice(0, 10)}, session ${d.session_id})_`,
         `  - assumed: ${d.previous_assumption}`,
         `  - actually: ${d.correction}`,
       )

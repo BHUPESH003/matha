@@ -59,6 +59,32 @@ describe('migrate command', () => {
     expect(after.mtimeMs).toBe(before.mtimeMs)
   })
 
+  it('outdated schema also consolidates legacy decision files into .jsonl', async () => {
+    await fs.writeFile(configPath, JSON.stringify({ schema_version: '1.0.0' }))
+    const decisionsDir = path.join(tmpDir, '.matha', 'hippocampus', 'decisions')
+    await fs.mkdir(decisionsDir, { recursive: true })
+    await fs.writeFile(
+      path.join(decisionsDir, 'auth.json'),
+      JSON.stringify({
+        component: 'auth',
+        decisions: [{
+          id: 'd1', timestamp: '2026-01-01T00:00:00Z', component: 'auth',
+          previous_assumption: 'a', correction: 'b', trigger: 't', confidence: 'confirmed',
+          status: 'active', supersedes: null, session_id: 'd1',
+        }],
+      }),
+    )
+
+    const result = await runMigrate(tmpDir, { log })
+    expect(result.exitCode).toBe(0)
+    expect(result.message).toContain('consolidated')
+
+    const remaining = await fs.readdir(decisionsDir)
+    expect(remaining).toEqual(['auth.jsonl'])
+    const config = JSON.parse(await fs.readFile(configPath, 'utf-8'))
+    expect(config.schema_version).toBe(CURRENT_SCHEMA_VERSION)
+  })
+
   it('newer schema than this MATHA → exit 1 with upgrade hint', async () => {
     await fs.writeFile(configPath, JSON.stringify({ schema_version: '99.0.0' }))
     const result = await runMigrate(tmpDir, { log })

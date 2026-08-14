@@ -130,6 +130,37 @@ export class Engine {
     return out
   }
 
+  /**
+   * Reads every `.jsonl` file in a directory and flattens their lines into
+   * one array — one cached-text read per file (mtime+size invalidated,
+   * same as cachedJson), one JSON.parse per line. A line that fails to
+   * parse is skipped rather than failing the whole read: an append-only
+   * log written by concurrent processes can have a torn trailing line if
+   * this read catches a writer mid-append.
+   */
+  private async cachedDirJsonl<T>(absDir: string): Promise<T[]> {
+    let files: string[]
+    try {
+      files = await fs.readdir(absDir)
+    } catch {
+      return []
+    }
+    const out: T[] = []
+    for (const f of files.filter((f) => f.endsWith('.jsonl'))) {
+      const text = await this.cachedText(path.join(absDir, f))
+      if (!text) continue
+      for (const line of text.split('\n')) {
+        if (!line.trim()) continue
+        try {
+          out.push(JSON.parse(line) as T)
+        } catch {
+          // torn/malformed line — skip rather than fail the whole read
+        }
+      }
+    }
+    return out
+  }
+
   // ── RECORD READS ─────────────────────────────────────────────────
 
   async getIntent(): Promise<IntentRecord | null> {
@@ -167,12 +198,11 @@ export class Engine {
   }
 
   async getDecisions(component?: string, limit?: number): Promise<DecisionEntry[]> {
-    // One file per component (`decisions/<component>.json` → { component,
-    // decisions: [] }), not one file per decision — see records.ts.
-    const groups = await this.cachedDirJson<{ component: string; decisions: DecisionEntry[] }>(
+    // One file per component (`decisions/<component>.jsonl`, one
+    // DecisionEntry per line), not one file per decision — see records.ts.
+    const all = await this.cachedDirJsonl<DecisionEntry>(
       path.join(this.mathaDir, 'hippocampus', 'decisions'),
     )
-    const all = groups.flatMap((g) => g.decisions ?? [])
     let filtered = component ? all.filter((d) => d.component === component) : all
     filtered.sort((a, b) => b.timestamp.localeCompare(a.timestamp))
     if (limit !== undefined && limit > 0) filtered = filtered.slice(0, limit)

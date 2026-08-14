@@ -34,6 +34,7 @@ interface UiRecord {
   status: string
   date: string
   needsReview: boolean
+  sessionId: string
 }
 
 export async function runUi(
@@ -75,6 +76,7 @@ export async function runUi(
       status: d.status + (stale ? ' · possibly stale' : ''),
       date: d.timestamp.slice(0, 10),
       needsReview: d.status === 'active' && (d.confidence !== 'confirmed' || stale),
+      sessionId: d.session_id,
     })
   }
   for (const z of brain.dangerZones) {
@@ -88,6 +90,7 @@ export async function runUi(
       status,
       date: '',
       needsReview: status === 'active' && z.confidence !== 'confirmed',
+      sessionId: '',
     })
   }
   for (const b of brain.boundaries ?? []) {
@@ -100,6 +103,7 @@ export async function runUi(
       status: b.status ?? 'active',
       date: b.created.slice(0, 10),
       needsReview: false,
+      sessionId: '',
     })
   }
   for (const c of brain.contracts) {
@@ -115,6 +119,7 @@ export async function runUi(
       status: 'active',
       date: c.last_updated.slice(0, 10),
       needsReview: violated.length > 0,
+      sessionId: '',
     })
   }
 
@@ -183,7 +188,7 @@ function renderHtml(dataJson: string): string {
   <input type="search" id="f-text" placeholder="search text or path…">
 </div>
 <table>
-  <thead><tr><th>Type</th><th>Component</th><th>Record</th><th>Confidence</th><th>Status</th><th>Date</th></tr></thead>
+  <thead><tr><th>Type</th><th>Component</th><th>Record</th><th>Confidence</th><th>Status</th><th>Date</th><th>Session</th></tr></thead>
   <tbody id="rows"></tbody>
 </table>
 
@@ -215,7 +220,7 @@ function render() {
     (!status || r.status.startsWith(status)) &&
     (!conf || r.confidence === conf) &&
     (!review || r.needsReview) &&
-    (!q || (r.component + ' ' + r.text + ' ' + r.id).toLowerCase().includes(q))
+    (!q || (r.component + ' ' + r.text + ' ' + r.id + ' ' + r.sessionId).toLowerCase().includes(q))
   );
   document.getElementById('count').textContent = '(' + rows.length + ' of ' + DATA.records.length + ')';
   document.getElementById('rows').innerHTML = rows.map(r =>
@@ -223,8 +228,9 @@ function render() {
     (r.needsReview ? ' <span class="review" title="unconfirmed or possibly stale">⚠ review</span>' : '') + '</td>' +
     '<td class="comp">' + esc(r.component) + '</td>' +
     '<td>' + esc(r.text) + '</td>' +
-    '<td>' + esc(r.confidence) + '</td><td>' + esc(r.status) + '</td><td>' + esc(r.date) + '</td></tr>'
-  ).join('') || '<tr><td colspan="6" class="count">no records match the filters</td></tr>';
+    '<td>' + esc(r.confidence) + '</td><td>' + esc(r.status) + '</td><td>' + esc(r.date) + '</td>' +
+    '<td class="comp">' + esc(r.sessionId) + '</td></tr>'
+  ).join('') || '<tr><td colspan="7" class="count">no records match the filters</td></tr>';
 }
 document.querySelectorAll('.filters select, .filters input').forEach(el =>
   el.addEventListener(el.type === 'search' ? 'input' : 'change', render));

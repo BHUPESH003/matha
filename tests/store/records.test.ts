@@ -104,14 +104,14 @@ describe('hippocampus', () => {
 
       await recordDecision(mathaDir, entry)
 
-      const groupPath = path.join(
+      const filePath = path.join(
         mathaDir,
         'hippocampus',
         'decisions',
-        `${componentToFilename('auth')}.json`,
+        `${componentToFilename('auth')}.jsonl`,
       )
-      const content = JSON.parse(await fs.readFile(groupPath, 'utf-8'))
-      expect(content).toEqual({ component: 'auth', decisions: [entry] })
+      const lines = (await fs.readFile(filePath, 'utf-8')).trim().split('\n').map((l) => JSON.parse(l))
+      expect(lines).toEqual([entry])
     })
 
     it('appends a second decision on the same component into the same file', async () => {
@@ -132,14 +132,14 @@ describe('hippocampus', () => {
       await recordDecision(mathaDir, entry1)
       await recordDecision(mathaDir, entry2)
 
-      const groupPath = path.join(
+      const filePath = path.join(
         mathaDir,
         'hippocampus',
         'decisions',
-        `${componentToFilename('auth')}.json`,
+        `${componentToFilename('auth')}.jsonl`,
       )
-      const content = JSON.parse(await fs.readFile(groupPath, 'utf-8'))
-      expect(content.decisions).toHaveLength(2)
+      const lines = (await fs.readFile(filePath, 'utf-8')).trim().split('\n')
+      expect(lines).toHaveLength(2)
     })
 
     it('rejects if a decision with the same id already exists', async () => {
@@ -162,6 +162,29 @@ describe('hippocampus', () => {
       await expect(recordDecision(mathaDir, duplicate)).rejects.toThrow()
     })
 
+    it('never loses a write when two decisions land on the same component concurrently', async () => {
+      const base = {
+        timestamp: '2026-03-04T10:00:00Z',
+        component: 'shared',
+        previous_assumption: 'A',
+        correction: 'C',
+        trigger: 'T',
+        confidence: 'confirmed' as const,
+        status: 'active' as const,
+        supersedes: null,
+        session_id: 'session-001',
+      }
+      const entryA: DecisionEntry = { ...base, id: 'decision-a' }
+      const entryB: DecisionEntry = { ...base, id: 'decision-b' }
+
+      // Two agents recording a decision on the same component at once —
+      // the read-modify-write-whole-file version of this used to drop one.
+      await Promise.all([recordDecision(mathaDir, entryA), recordDecision(mathaDir, entryB)])
+
+      const result = await getDecisions(mathaDir, 'shared')
+      expect(result.map((d) => d.id).sort()).toEqual(['decision-a', 'decision-b'])
+    })
+
     it('creates the decisions directory if it does not exist', async () => {
       const entry: DecisionEntry = {
         id: 'decision-002',
@@ -178,13 +201,13 @@ describe('hippocampus', () => {
 
       await recordDecision(mathaDir, entry)
 
-      const groupPath = path.join(
+      const filePath = path.join(
         mathaDir,
         'hippocampus',
         'decisions',
-        `${componentToFilename('storage')}.json`,
+        `${componentToFilename('storage')}.jsonl`,
       )
-      await expect(fs.access(groupPath)).resolves.toBeUndefined()
+      await expect(fs.access(filePath)).resolves.toBeUndefined()
     })
   })
 
@@ -227,13 +250,13 @@ describe('hippocampus', () => {
       }
 
       await fs.writeFile(
-        path.join(decisionsDir, `${componentToFilename(entry1.component)}.json`),
-        JSON.stringify({ component: entry1.component, decisions: [entry1] }),
+        path.join(decisionsDir, `${componentToFilename(entry1.component)}.jsonl`),
+        JSON.stringify(entry1) + '\n',
         'utf-8',
       )
       await fs.writeFile(
-        path.join(decisionsDir, `${componentToFilename(entry2.component)}.json`),
-        JSON.stringify({ component: entry2.component, decisions: [entry2] }),
+        path.join(decisionsDir, `${componentToFilename(entry2.component)}.jsonl`),
+        JSON.stringify(entry2) + '\n',
         'utf-8',
       )
 
@@ -274,13 +297,13 @@ describe('hippocampus', () => {
       }
 
       await fs.writeFile(
-        path.join(decisionsDir, `${componentToFilename(entry1.component)}.json`),
-        JSON.stringify({ component: entry1.component, decisions: [entry1] }),
+        path.join(decisionsDir, `${componentToFilename(entry1.component)}.jsonl`),
+        JSON.stringify(entry1) + '\n',
         'utf-8',
       )
       await fs.writeFile(
-        path.join(decisionsDir, `${componentToFilename(entry2.component)}.json`),
-        JSON.stringify({ component: entry2.component, decisions: [entry2] }),
+        path.join(decisionsDir, `${componentToFilename(entry2.component)}.jsonl`),
+        JSON.stringify(entry2) + '\n',
         'utf-8',
       )
 
@@ -309,8 +332,8 @@ describe('hippocampus', () => {
         })
       }
       await fs.writeFile(
-        path.join(decisionsDir, `${componentToFilename('test')}.json`),
-        JSON.stringify({ component: 'test', decisions }),
+        path.join(decisionsDir, `${componentToFilename('test')}.jsonl`),
+        decisions.map((d) => JSON.stringify(d)).join('\n') + '\n',
         'utf-8',
       )
 
@@ -348,10 +371,38 @@ describe('hippocampus', () => {
       expect(migrated).toBe(2)
 
       const remaining = await fs.readdir(decisionsDir)
-      expect(remaining).toEqual([`${componentToFilename('auth')}.json`])
+      expect(remaining).toEqual([`${componentToFilename('auth')}.jsonl`])
 
       const result = await getDecisions(mathaDir)
       expect(result.map((d) => d.id).sort()).toEqual(['session-001', 'session-002'])
+    })
+
+    it('converts a 1.1 grouped-array file (component.json) into component.jsonl', async () => {
+      const decisionsDir = path.join(mathaDir, 'hippocampus', 'decisions')
+      await fs.mkdir(decisionsDir, { recursive: true })
+      const entry: DecisionEntry = {
+        id: 'decision-001',
+        timestamp: '2026-03-01T10:00:00Z',
+        component: 'auth',
+        previous_assumption: 'A1',
+        correction: 'C1',
+        trigger: 'T1',
+        confidence: 'confirmed',
+        status: 'active',
+        supersedes: null,
+        session_id: 'session-001',
+      }
+      await fs.writeFile(
+        path.join(decisionsDir, `${componentToFilename('auth')}.json`),
+        JSON.stringify({ component: 'auth', decisions: [entry] }),
+      )
+
+      const migrated = await migrateLegacyDecisions(mathaDir)
+      expect(migrated).toBe(1)
+
+      const remaining = await fs.readdir(decisionsDir)
+      expect(remaining).toEqual([`${componentToFilename('auth')}.jsonl`])
+      expect(await getDecisions(mathaDir)).toEqual([entry])
     })
 
     it('is idempotent — a second run is a no-op', async () => {

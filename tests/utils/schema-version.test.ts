@@ -92,13 +92,15 @@ describe('schema-version', () => {
   })
 
   it('config.json with newer patch version → returns newer', async () => {
+    const [maj, min, patch] = CURRENT_SCHEMA_VERSION.split('.').map(Number)
+    const newerPatch = `${maj}.${min}.${patch + 1}`
     await fs.writeFile(
       path.join(mathaDir, 'config.json'),
-      JSON.stringify({ schema_version: '1.0.1' }),
+      JSON.stringify({ schema_version: newerPatch }),
     )
     const result = await checkSchemaVersion(mathaDir)
     expect(result.status).toBe('newer')
-    expect(result.version).toBe('1.0.1')
+    expect(result.version).toBe(newerPatch)
   })
 
   // ──────────────────────────────────────────────────────────────

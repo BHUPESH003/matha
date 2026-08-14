@@ -4,7 +4,14 @@
  * store module must import these from here — never redefine locally.
  */
 
-export const CURRENT_SCHEMA_VERSION = '1.0.0'
+/**
+ * 1.0.0 → 1.1.0: decisions/<component>.json (JSON array, read-modify-write)
+ * → decisions/<component>.jsonl (one entry per line, append-only). A repo
+ * still on 1.0.0 has its decisions invisible to a 1.1.0 reader until
+ * `matha migrate` (or `matha init`) runs migrateLegacyDecisions — see
+ * commands/migrate.ts.
+ */
+export const CURRENT_SCHEMA_VERSION = '1.1.0'
 
 // ── RECORD TYPES ─────────────────────────────────────────────────────
 

@@ -285,9 +285,10 @@ describe('init command', () => {
     await runInit(tmpDir, { ask: makeAsk(['why', '', '', '']), log: (msg: string) => logs.push(msg) })
 
     const remaining = await fs.readdir(decisionsDir)
-    expect(remaining).toEqual(['src-auth.ts.json'])
-    const group = JSON.parse(await fs.readFile(path.join(decisionsDir, 'src-auth.ts.json'), 'utf-8'))
-    expect(group.decisions.map((d: { id: string }) => d.id).sort()).toEqual(['session-001', 'session-002'])
+    expect(remaining).toEqual(['src-auth.ts.jsonl'])
+    const lines = (await fs.readFile(path.join(decisionsDir, 'src-auth.ts.jsonl'), 'utf-8')).trim().split('\n')
+    const entries = lines.map((l) => JSON.parse(l))
+    expect(entries.map((d: { id: string }) => d.id).sort()).toEqual(['session-001', 'session-002'])
     expect(logs.some((l) => l.includes('Consolidated 2 legacy decision file'))).toBe(true)
   })
 })

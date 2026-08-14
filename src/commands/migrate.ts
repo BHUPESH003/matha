@@ -2,6 +2,7 @@ import * as path from 'path';
 import { readJsonOrNull } from '@/storage/reader.js';
 import { writeAtomic } from '@/storage/writer.js';
 import { CURRENT_SCHEMA_VERSION } from '@/core/schema.js';
+import { migrateLegacyDecisions } from '@/store/records.js';
 
 export interface MigrateResult {
   exitCode: number;
@@ -20,6 +21,14 @@ export interface MigrateResult {
  * (retired_reason, superseded_by, last_confirmed), hippocampus/boundaries.json,
  * cortex/analysis.json. Old brains read fine without them; stamping the
  * version is the whole migration.
+ *
+ * 1.0.0 → 1.1.0: decisions storage moved from decisions/<component>.json
+ * (array, read-modify-write) to decisions/<component>.jsonl (append-only).
+ * This one is NOT just a version stamp — a 1.1.0 reader can't see 1.0.0's
+ * .json decision files at all, so skipping this step silently drops every
+ * recorded decision from matha_brief. migrateLegacyDecisions runs here too
+ * (not just from `matha init`), since re-running init isn't the command a
+ * returning user reaches for after a version bump.
  */
 export async function runMigrate(
   projectRoot: string = process.cwd(),
@@ -52,13 +61,16 @@ export async function runMigrate(
     return { exitCode: 1, message };
   }
 
+  const decisionsMigrated = await migrateLegacyDecisions(mathaDir);
+
   await writeAtomic(
     configPath,
     { ...config, schema_version: CURRENT_SCHEMA_VERSION },
     { overwrite: true },
   );
 
-  const message = `Migrated ${current ?? 'legacy (unversioned)'} → v${CURRENT_SCHEMA_VERSION}.`;
+  const decisionsNote = decisionsMigrated > 0 ? ` (${decisionsMigrated} legacy decision(s) consolidated)` : '';
+  const message = `Migrated ${current ?? 'legacy (unversioned)'} → v${CURRENT_SCHEMA_VERSION}.${decisionsNote}`;
   log(message);
   return { exitCode: 0, message };
 }

@@ -6,7 +6,6 @@ import { Engine } from '../../src/core/engine.js'
 import { mathaRecord } from '../../src/mcp/tools.js'
 import { componentToFilename } from '../../src/core/schema.js'
 import { recordContract } from '../../src/store/records.js'
-import { componentToFilename } from '../../src/core/schema.js'
 
 describe('matha_record lifecycle verbs (Phase 4)', () => {
   let tmpDir: string
@@ -20,21 +19,18 @@ describe('matha_record lifecycle verbs (Phase 4)', () => {
       trigger: 't', confidence: 'probable', status: 'active',
       supersedes: null, session_id: id, ...overrides,
     }
-    const groupPath = path.join(
-      mathaDir, 'hippocampus', 'decisions', `${componentToFilename(entry.component as string)}.json`,
+    const filePath = path.join(
+      mathaDir, 'hippocampus', 'decisions', `${componentToFilename(entry.component as string)}.jsonl`,
     )
-    const existing = await fs.readFile(groupPath, 'utf-8').then(JSON.parse).catch(() => ({ decisions: [] }))
-    existing.component = entry.component
-    existing.decisions = [...(existing.decisions ?? []), entry]
-    await fs.writeFile(groupPath, JSON.stringify(existing))
+    await fs.appendFile(filePath, JSON.stringify(entry) + '\n', 'utf-8')
   }
 
   async function readDecision(id: string, component = 'src/x.ts') {
-    const groupPath = path.join(
-      mathaDir, 'hippocampus', 'decisions', `${componentToFilename(component)}.json`,
+    const filePath = path.join(
+      mathaDir, 'hippocampus', 'decisions', `${componentToFilename(component)}.jsonl`,
     )
-    const group = JSON.parse(await fs.readFile(groupPath, 'utf-8'))
-    return group.decisions.find((d: { id: string }) => d.id === id)
+    const lines = (await fs.readFile(filePath, 'utf-8')).trim().split('\n').filter(Boolean)
+    return lines.map((l) => JSON.parse(l)).find((d: { id: string }) => d.id === id)
   }
 
   beforeEach(async () => {

@@ -42,8 +42,8 @@ describe('brief token budget', () => {
       trigger: 't', confidence: 'confirmed', status: 'active', supersedes: null, session_id: 'd-dup',
     }
     await fs.writeFile(
-      path.join(mathaDir, 'hippocampus', 'decisions', `${componentToFilename(d.component)}.json`),
-      JSON.stringify({ component: d.component, decisions: [d] }),
+      path.join(mathaDir, 'hippocampus', 'decisions', `${componentToFilename(d.component)}.jsonl`),
+      JSON.stringify(d) + '\n',
     )
   })
 
@@ -109,8 +109,8 @@ describe('brief token budget', () => {
       trigger: 't', confidence: 'confirmed', status: 'active', supersedes: null, session_id: 'd-huge',
     }
     await fs.writeFile(
-      path.join(mathaDir, 'hippocampus', 'decisions', `${componentToFilename(dHuge.component)}.json`),
-      JSON.stringify({ component: dHuge.component, decisions: [dHuge] }),
+      path.join(mathaDir, 'hippocampus', 'decisions', `${componentToFilename(dHuge.component)}.jsonl`),
+      JSON.stringify(dHuge) + '\n',
     )
 
     const smallDecisions = ['d-small-a', 'd-small-b'].map((id) => ({
@@ -119,8 +119,8 @@ describe('brief token budget', () => {
       trigger: 't', confidence: 'confirmed', status: 'active', supersedes: null, session_id: id,
     }))
     await fs.writeFile(
-      path.join(mathaDir, 'hippocampus', 'decisions', `${componentToFilename('src/other.ts')}.json`),
-      JSON.stringify({ component: 'src/other.ts', decisions: smallDecisions }),
+      path.join(mathaDir, 'hippocampus', 'decisions', `${componentToFilename('src/other.ts')}.jsonl`),
+      smallDecisions.map((d) => JSON.stringify(d)).join('\n') + '\n',
     )
 
     const brief = await assembleBrief(new Engine(mathaDir), { scope: '', intent: 'unrelated work' })
