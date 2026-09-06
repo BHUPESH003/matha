@@ -178,10 +178,22 @@ The sub-10ms warm p95 figure (from the eval harness) describes in-process retrie
 On a repo with a large fraction of files classified `frozen`, `matha check --strict` can flag an unusually large share of an ordinary diff as CRITICAL. Set `frozenFileSeverity: "warning"` in `.matha/config.json` to keep the signal without the block:
 
 ```json
-{ "schema_version": "1.0.0", "frozenFileSeverity": "warning" }
+{ "schema_version": "1.1.0", "frozenFileSeverity": "warning" }
 ```
 
 The classifier itself also guards against the most common cause: a file touched within the last 60 days never classifies `frozen`, regardless of its long-run churn average — a bounded/incremental analysis window can otherwise make a historically active, business-critical file look "settled" just because few of its changes fall inside the analysed window.
+
+---
+
+## Benchmarks
+
+```bash
+npm run eval:report
+```
+
+Runs matha's own golden-set retrieval eval (the CI gate in `tests/eval/golden.test.ts`) standalone, against a naive substring-match baseline (matha's own pre-scoring behaviour), and writes [`BENCHMARKS.md`](BENCHMARKS.md). Deterministic — the fixture clock is fixed, so recall/precision are exactly reproducible on any machine.
+
+This is an in-house fixture, not a public academic benchmark — there is no published dataset for "retrieve the right decision for a given file + intent," which is a narrower, more structural task than conversational long-memory QA. The numbers are honest about that scope, not a leaderboard claim.
 
 ---
 

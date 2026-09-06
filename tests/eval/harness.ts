@@ -1,7 +1,13 @@
 import { performance } from 'perf_hooks'
 import { Engine } from '../../src/core/engine.js'
 import { assembleBrief, BRIEF_TOKEN_BUDGET } from '../../src/retrieve/brief.js'
+import type { MatchContext, MatchResult } from '../../src/retrieve/match.js'
 import type { GoldenQuery } from './fixture.js'
+
+/** Pluggable so scripts/eval-report.ts can run the same queries through a
+ * comparison matcher (e.g. a naive baseline) and reuse all the metric math
+ * below — only the match step differs between "current" and "baseline". */
+export type Matcher = (engine: Engine, context: MatchContext) => Promise<{ results: MatchResult[] }>
 
 /**
  * Golden-set runner (target-architecture §3.1). Metrics per run:
@@ -36,6 +42,7 @@ export async function runGoldenSet(
   engine: Engine,
   queries: GoldenQuery[],
   now: number,
+  matcher: Matcher = (e, c) => e.match(c),
 ): Promise<EvalMetrics> {
   // Warm the engine cache once — production is a long-lived server process,
   // so warm latency is the number that matters.
@@ -45,7 +52,7 @@ export async function runGoldenSet(
   for (const q of queries) {
     const context = { scope: q.scope, intent: q.intent, filepaths: q.filepaths ?? [], now }
     const t0 = performance.now()
-    const { results } = await engine.match(context)
+    const { results } = await matcher(engine, context)
     const latencyMs = performance.now() - t0
 
     const top5 = results.slice(0, 5).map((r) => r.recordId)

@@ -17,6 +17,7 @@
     "dev": "tsx src/index.ts",
     "serve": "tsx src/index.ts serve",
     "cli": "tsx src/index.ts",
+    "eval:report": "tsx scripts/eval-report.ts",
     "prepublishOnly": "npm run build && npx vitest run"
   },
   "type": "module",
